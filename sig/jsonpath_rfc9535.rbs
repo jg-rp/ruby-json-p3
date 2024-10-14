@@ -1,0 +1,91 @@
+module JsonpathRfc9535
+  VERSION: String
+  
+  class JSONPathError < StandardError
+    def initialize: (String, Token) -> void
+  end
+
+  class JSONPathSyntaxError < JSONPathError end
+
+  class Span 
+    attr_reader start: Integer
+    attr_reader stop: Integer
+
+    def initialize: (Integer, Integer) -> void
+  end
+
+  class Token
+    EOI: Symbol
+    ERROR: Symbol
+
+    SHORTHAND_NAME: Symbol
+    COLON: Symbol
+    COMMA: Symbol
+    DOT: Symbol
+    DOUBLE_DOT: Symbol
+    FILTER: Symbol
+    INDEX: Symbol
+    LBRACKET: Symbol
+    NAME: Symbol
+    RBRACKET: Symbol
+    ROOT: Symbol
+    WILD: Symbol
+
+    AND: Symbol
+    CURRENT: Symbol
+    DOUBLE_QUOTE_STRING: Symbol
+    EQ: Symbol
+    FALSE: Symbol
+    FLOAT: Symbol
+    FUNCTION: Symbol
+    GE: Symbol
+    GT: Symbol
+    INT: Symbol
+    LE: Symbol
+    LPAREN: Symbol
+    LT: Symbol
+    NE: Symbol
+    NOT: Symbol
+    NULL: Symbol
+    OP: Symbol
+    OR: Symbol
+    RPAREN: Symbol
+    SINGLE_QUOTE_STRING: Symbol
+    TRUE: Symbol
+
+    attr_reader type: Symbol
+    attr_reader value: String
+
+    def initialize: (Symbol, String, Span, String) -> void
+    def expect: (Symbol) -> void
+  end
+
+  class Lexer
+    attr_reader tokens: Array[Token]
+    @filter_depth: Integer
+    @paren_stack: Array[Integer]
+    @start: Integer
+    @pos: Integer
+    @query: String
+    @length: Integer
+    @char: Array[String]
+    def initialize: (String) -> void
+    def run: () -> void
+    def emit: (Symbol) -> void
+    def next: () -> String
+    def ignore: () -> void
+    def backup: () -> void
+    def peek: () -> String
+    def accept?: (Regexp) -> bool
+    def accept_match?: (Regexp) -> bool
+    def ignore_whitespace?: () -> bool
+    def error: (String) -> void
+    def lex_root: () -> (Symbol | nil)
+    def lex_segment: () -> (Symbol | nil)
+    def lex_descendant_segment: () -> (Symbol | nil)
+    def lex_inside_bracketed_segment: () -> (Symbol | nil)
+    def lex_shorthand_selector: () -> (Symbol | nil)
+    def lex_inside_filter: () -> (Symbol | nil)
+    def lex_string_factory: (String, Symbol) -> untyped
+  end
+end
