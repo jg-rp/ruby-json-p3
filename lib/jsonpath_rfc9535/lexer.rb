@@ -4,7 +4,24 @@ require_relative "errors"
 require_relative "token"
 
 module JsonpathRfc9535
-  class Lexer
+  # Return an array of tokens for the JSONPath expression _query_.
+  #
+  # @param query [String] the JSONPath expression to tokenize.
+  # @return [Array<Token>]
+  def tokenize(query)
+    lexer = Lexer.new(query)
+    lexer.run
+    lexer.tokens
+  end
+
+  # JSONPath query expreession lexical scanner.
+  #
+  # @see tokenize
+  class Lexer # rubocop:disable Metrics/ClassLength
+    RE_INT = /\A-?[0-9]+/
+    RE_NAME = /\A[\u0080-\uFFFFa-zA-Z_][\u0080-\uFFFFa-zA-Z0-9_-]*/
+    RE_WHITESPACE = /\A[ \n\r\t]+/
+
     # @dynamic tokens
     attr_reader :tokens
 
@@ -17,19 +34,6 @@ module JsonpathRfc9535
       @query = query
       @length = query.length
       @chars = query.chars
-
-      # TODO: Don't do this here. A new Lexer instance is created for every query.
-      self.class.define_method(:lex_double_quoted_string_inside_bracketed_segment,
-                               lex_string_factory('"', :lex_inside_bracketed_segment))
-
-      self.class.define_method(:lex_single_quoted_string_inside_bracketed_segment,
-                               lex_string_factory("'", :lex_inside_bracketed_segment))
-
-      self.class.define_method(:lex_double_quoted_string_inside_filter_expression,
-                               lex_string_factory('"', :lex_inside_filter))
-
-      self.class.define_method(:lex_single_quoted_string_inside_filter_expression,
-                               lex_string_factory("'", :lex_inside_filter))
     end
 
     def run
@@ -80,7 +84,7 @@ module JsonpathRfc9535
     end
 
     def accept_match?(pattern)
-      match = @query.match(pattern, @pos)
+      match = @query[@pos..].match(pattern)
       return false if match.nil?
 
       group = match[0] or raise
@@ -94,7 +98,7 @@ module JsonpathRfc9535
         raise JSONPathError.new(msg, Token.new(Token::ERROR, msg, Span.new(@start, @pos), @query))
       end
 
-      if accept_match?(/[ \n\r\t]+/)
+      if accept_match?(RE_WHITESPACE)
         ignore
         return true
       end
@@ -110,8 +114,7 @@ module JsonpathRfc9535
       c = self.next
 
       unless c == "$"
-        backup
-        error "expected '$', found #{c}"
+        error "expected '$', found '#{c}'"
         return nil
       end
 
@@ -132,21 +135,22 @@ module JsonpathRfc9535
         emit Token::EOI
         nil
       when "."
-        if peek == "."
-          self.next
-          emit Token::DOUBLE_DOT
-          return :lex_descendant_segment
-        end
-        :lex_shorthand_selector
+        return :lex_shorthand_selector unless peek == "."
+
+        self.next
+        emit Token::DOUBLE_DOT
+        :lex_descendant_segment
       when "["
         emit Token::LBRACKET
         :lex_inside_bracketed_segment
       else
-        backup
-        return :lex_inside_filter if @filter_depth.positive?
-
-        error "expected '.', '..' or a bracketed selection, found '#{c}'"
-        nil
+        if @filter_depth.positive?
+          backup
+          :lex_inside_filter
+        else
+          error "expected '.', '..' or a bracketed selection, found '#{c}'"
+          nil
+        end
       end
     end
 
@@ -157,26 +161,27 @@ module JsonpathRfc9535
         nil
       when "*"
         emit Token::WILD
-        lex_segment
+        :lex_segment
       when "["
         emit Token::LBRACKET
         :lex_inside_bracketed_segment
       else
         backup
-        if accept_match?(/[\u0080-\uFFFFa-zA-Z_][\u0080-\uFFFFa-zA-Z0-9_-]*/)
+        if accept_match?(RE_NAME)
           emit Token::NAME
           :lex_segment
         else
-          error "unexpected descendant selection"
+          c = self.next
+          error "unexpected descendant selection token '#{c}'"
           nil
         end
       end
     end
 
     def lex_shorthand_selector # rubocop:disable Metrics/MethodLength
-      ignore # move past dot
+      ignore # ignore dot
 
-      if ignore_whitespace?
+      if accept_match?(RE_WHITESPACE)
         error "unexpected whitespace after dot"
         return nil
       end
@@ -184,12 +189,12 @@ module JsonpathRfc9535
       if peek == "*"
         self.next
         emit Token::WILD
-        return lex_segment
+        return :lex_segment
       end
 
-      if accept_match?(/[\u0080-\uFFFFa-zA-Z_][\u0080-\uFFFFa-zA-Z0-9_-]*/)
+      if accept_match?(RE_NAME)
         emit Token::NAME
-        return lex_segment
+        return :lex_segment
       end
 
       error "unexpected shorthand selector '#{peek}'"
@@ -204,7 +209,7 @@ module JsonpathRfc9535
         case c
         when "]"
           emit Token::RBRACKET
-          return @filter_depth.positive? ? :lex_inside_filter : lex_segment
+          return @filter_depth.positive? ? :lex_inside_filter : :lex_segment
         when ""
           error "unclosed bracketed selection"
           return nil
@@ -224,7 +229,7 @@ module JsonpathRfc9535
           return :lex_double_quoted_string_inside_bracketed_segment
         else
           backup
-          if accept_match?(/-?[0-9]+/)
+          if accept_match?(/\A-?[0-9]+/)
             # Index selector or part of a slice selector.
             emit Token::INDEX
           else
@@ -318,35 +323,36 @@ module JsonpathRfc9535
             emit Token::GT
           end
         else
-          if accept_match?(/-?[0-9]+/)
+          backup
+          if accept_match?(RE_INT)
             if peek == "."
               # A float
               self.next
-              unless accept_match?(/-?[0-9]+/) # rubocop:disable Metrics/BlockNesting
+              unless accept_match?(RE_INT) # rubocop:disable Metrics/BlockNesting
                 error "a fractional digit is required after a decimal point"
                 return nil
               end
 
-              accept_match?(/[eE][+-]?[0-9]+/)
+              accept_match?(/\A[eE][+-]?[0-9]+/)
               emit Token::FLOAT
-            elsif accept_match?(/[eE]-[0-9]+/)
-              # An int, or float if exponent is negative
+            # An int, or float if exponent is negative
+            elsif accept_match?(/\A[eE]-[0-9]+/)
               emit Token::FLOAT
             else
-              accept_match?(/[eE][+-]?[0-9]+/)
+              accept_match?(/\A[eE][+-]?[0-9]+/)
               emit Token::INT
             end
-          elsif accept_match?(/&&/)
+          elsif accept_match?(/\A&&/)
             emit Token::AND
-          elsif accept_match?(/\|\|/)
+          elsif accept_match?(/\A\|\|/)
             emit Token::OR
-          elsif accept_match?(/true/)
+          elsif accept_match?(/\Atrue/)
             emit Token::TRUE
-          elsif accept_match?(/false/)
+          elsif accept_match?(/\Afalse/)
             emit Token::FALSE
-          elsif accept_match?(/null/)
+          elsif accept_match?(/\Anull/)
             emit Token::NULL
-          elsif accept_match?(/[a-z][a-z_0-9]*/)
+          elsif accept_match?(/\A[a-z][a-z_0-9]*/)
             # Function name
             # Keep track of parentheses for this function call.
             @paren_stack << 1
@@ -361,45 +367,60 @@ module JsonpathRfc9535
       end
     end
 
-    def lex_string_factory(quote, state) # rubocop:disable Metrics/MethodLength, Metrics/AbcSize, Metrics/CyclomaticComplexity
-      token = quote == "'" ? Token::SINGLE_QUOTE_STRING : Token::DOUBLE_QUOTE_STRING
+    class << self
+      def lex_string_factory(quote, state) # rubocop:disable Metrics/MethodLength, Metrics/AbcSize, Metrics/CyclomaticComplexity
+        token = quote == "'" ? Token::SINGLE_QUOTE_STRING : Token::DOUBLE_QUOTE_STRING
 
-      proc  { # rubocop:disable Metrics/BlockLength
-        ignore # move past openning quote
+        proc  { # rubocop:disable Metrics/BlockLength
+          # @type self: Lexer
+          ignore # move past openning quote
 
-        if peek == ""
-          # an empty string
-          emit token
-          self.next
-          ignore
-          return state
-        end
-
-        loop do
-          head = @query[@os...@pos + 2] or raise
-          c = self.next
-
-          if ["\\\\", "\\#{quote}"].include?(head)
-            self.next
-            next
-          end
-
-          case c
-          when ""
-            error "unclosed string starting at index #{@start}"
-            return nil
-          when "\\" && head.match(%r{\\[bfnrtu/]}).nil?
-            error "invalid escape"
-            return nil
-          when quote
-            backup
+          if peek == ""
+            # an empty string
             emit token
             self.next
-            ignore # move past closing quote
+            ignore
             return state
           end
-        end
-      }
+
+          loop do
+            head = @query[@os...@pos + 2] or raise
+            c = self.next
+
+            if ["\\\\", "\\#{quote}"].include?(head)
+              self.next
+              next
+            end
+
+            case c
+            when ""
+              error "unclosed string starting at index #{@start}"
+              return nil
+            when "\\" && head.match(%r{\\[bfnrtu/]}).nil?
+              error "invalid escape"
+              return nil
+            when quote
+              backup
+              emit token
+              self.next
+              ignore # move past closing quote
+              return state
+            end
+          end
+        }
+      end
     end
+
+    define_method(:lex_double_quoted_string_inside_bracketed_segment,
+                  lex_string_factory('"', :lex_inside_bracketed_segment))
+
+    define_method(:lex_single_quoted_string_inside_bracketed_segment,
+                  lex_string_factory("'", :lex_inside_bracketed_segment))
+
+    define_method(:lex_double_quoted_string_inside_filter_expression,
+                  lex_string_factory('"', :lex_inside_filter))
+
+    define_method(:lex_single_quoted_string_inside_filter_expression,
+                  lex_string_factory("'", :lex_inside_filter))
   end
 end

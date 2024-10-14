@@ -12,3 +12,7 @@ gem "minitest", "~> 5.16"
 gem "rubocop", "~> 1.21"
 
 gem "steep", "~> 1.8"
+
+gem "simplecov", require: false, group: :test
+
+gem "yard", "~> 0.9.37"

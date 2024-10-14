@@ -12,6 +12,26 @@ module JsonpathRfc9535
       @start = start
       @stop = stop
     end
+
+    def ==(other)
+      self.class == other.class &&
+        @start == other.start &&
+        @stop == other.stop
+    end
+
+    alias eql? ==
+
+    def hash
+      @start.hash ^ @stop.hash
+    end
+
+    def deconstruct
+      [@start, @stop]
+    end
+
+    def deconstruct_keys(_)
+      { start: @start, stop: @stop }
+    end
   end
 
   class Token
@@ -53,8 +73,8 @@ module JsonpathRfc9535
     SINGLE_QUOTE_STRING = :token_single_quote_string
     TRUE = :token_true
 
-    # @dynamic type, value
-    attr_reader :type, :value
+    # @dynamic type, value, span, query
+    attr_reader :type, :value, :span, :query
 
     def initialize(type, value, span, query)
       @type = type
@@ -64,7 +84,11 @@ module JsonpathRfc9535
     end
 
     def ==(other)
-      self.class == other.class && @type == other.type && @value == other.value
+      self.class == other.class &&
+        @type == other.type &&
+        @value == other.value &&
+        @span == other.span &&
+        @query == other.query
     end
 
     alias eql? ==

@@ -55,6 +55,8 @@ module JsonpathRfc9535
 
     attr_reader type: Symbol
     attr_reader value: String
+    attr_reader span: Span
+    attr_reader query: String
 
     def initialize: (Symbol, String, Span, String) -> void
     def expect: (Symbol) -> void
@@ -86,6 +88,6 @@ module JsonpathRfc9535
     def lex_inside_bracketed_segment: () -> (Symbol | nil)
     def lex_shorthand_selector: () -> (Symbol | nil)
     def lex_inside_filter: () -> (Symbol | nil)
-    def lex_string_factory: (String, Symbol) -> untyped
+    def self.lex_string_factory: (String, Symbol) -> untyped
   end
 end
