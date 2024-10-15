@@ -3,11 +3,14 @@
 require_relative "errors"
 
 module JsonpathRfc9535
+  # The start and end position of a token in a query string.
   class Span
     # @dynamic start, stop
     attr_reader :start
     attr_reader :stop
 
+    # @param start [Integer] the index of the character at the start of the token.
+    # @param stop [Integer] one past te index of the character at the end of the token.
     def initialize(start, stop)
       @start = start
       @stop = stop
