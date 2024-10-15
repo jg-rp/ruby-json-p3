@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-require_relative "error"
+require_relative "errors"
 require_relative "segment"
 require_relative "selector"
 require_relative "token"
@@ -41,7 +41,7 @@ module JsonpathRfc9535
   end
 
   # A JSONPath expression parser.
-  class Parser
+  class Parser # rubocop:disable Metrics/ClassLength
     def initialize(env)
       @env = env
     end
@@ -66,11 +66,11 @@ module JsonpathRfc9535
         when Token::DOUBLE_DOT
           token = stream.next
           selectors = parse_selectors(stream)
-          segments << RecursiveDescentSegment.new(env, token, selectors)
+          segments << RecursiveDescentSegment.new(@env, token, selectors)
         when Token::LBRACKET, Token::NAME, Token::WILD
-          token = stream.next
+          token = stream.peek
           selectors = parse_selectors(stream)
-          segments << ChildSegment.new(env, token, selectors)
+          segments << ChildSegment.new(@env, token, selectors)
         else
           break
         end
@@ -135,6 +135,73 @@ module JsonpathRfc9535
       raise JSONPathSyntaxError("empty segment", segment_token) if selectors.empty?
 
       selectors
+    end
+
+    def parse_index_or_slice(stream) # rubocop:disable Metrics/MethodLength, Metrics/AbcSize
+      token = stream.next
+      index = parse_i_json_int(token)
+
+      return IndexSelector.new(@env, token, index) unless stream.peek.type == Token::COLON
+
+      stream.next # move past colon
+      stop = nil
+      step = nil
+
+      case stream.peek.type
+      when Token::INT
+        stop = parse_i_json_int(stream.next)
+      when Token::COLON
+        stream.next # move past colon
+      end
+
+      case stream.peek.type
+      when Token::INT
+        step = parse_i_json_int(stream.next)
+      else
+        error_token = stream.next
+        raise JSONPathSyntaxError("expected a slice, found '#{token.value}'", error_token)
+      end
+
+      SliceSelector.new(@env, token, index, stop, step)
+    end
+
+    def parse_slice_selector(stream) # rubocop:disable Metrics/MethodLength, Metrics/AbcSize
+      stream.expect(Token::COLON)
+      token = stream.next
+
+      start = nil
+      stop = nil
+      step = nil
+
+      case stream.peek.type
+      when Token::INT
+        stop = parse_i_json_int(stream.next)
+      when Token::COLON
+        stream.next # move past colon
+      end
+
+      case stream.peek.type
+      when Token::INT
+        step = parse_i_json_int(stream.next)
+      else
+        error_token = stream.next
+        raise JSONPathSyntaxError("expected a slice, found '#{token.value}'", error_token)
+      end
+
+      SliceSelector.new(@env, token, start, stop, step)
+    end
+
+    def parse_filter_selector(_stream)
+      raise "not implemented"
+    end
+
+    def parse_i_json_int(token)
+      # TODO: int check range
+      if token.value.length > 1 && token.value.starts_with("0", "-0")
+        raise JSONPathSyntaxError("invalid index '#{token.value}'", token)
+      end
+
+      token.value.to_i
     end
   end
 end

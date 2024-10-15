@@ -1,11 +1,13 @@
 # frozen_string_literal: true
 
+require_relative "node"
+
 module JsonpathRfc9535
   # A compiled JSONPath expression ready to be applied to JSON-like values.
   class JSONPath
     def initialize(env, segments)
       @env = env
-      @egments = segments
+      @segments = segments
     end
 
     def to_s

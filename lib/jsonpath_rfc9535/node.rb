@@ -1,11 +1,11 @@
 # frozen_string_literal: true
 
 module JsonpathRfc9535
-  # @dynamic value, location, root
-  attr_reader :value, :location, :root
-
   # A JSON-like value and its location.
   class JSONPathNode
+    # @dynamic value, location, root
+    attr_reader :value, :location, :root
+
     # @param value [JSON-like] the value at this node.
     # @param location [Array<String | Integer>] the sequence of names and/or indicies leading to _value_ in _root_.
     # @param root [JSON-like] the root value containing _value_ at _location_.
@@ -30,7 +30,7 @@ module JsonpathRfc9535
     end
 
     def to_s
-      "JSONPathNode('#{path}')"
+      "JSONPathNode(#{value} at #{path})"
     end
   end
 end

@@ -4,16 +4,6 @@ require_relative "errors"
 require_relative "token"
 
 module JsonpathRfc9535
-  # Return an array of tokens for the JSONPath expression _query_.
-  #
-  # @param query [String] the JSONPath expression to tokenize.
-  # @return [Array<Token>]
-  def tokenize(query)
-    lexer = Lexer.new(query)
-    lexer.run
-    lexer.tokens
-  end
-
   # JSONPath query expreession lexical scanner.
   #
   # @see tokenize
@@ -34,6 +24,16 @@ module JsonpathRfc9535
       @query = query
       @length = query.length
       @chars = query.chars
+    end
+
+    # Return an array of tokens for the JSONPath expression _query_.
+    #
+    # @param query [String] the JSONPath expression to tokenize.
+    # @return [Array<Token>]
+    def self.tokenize(query)
+      lexer = Lexer.new(query)
+      lexer.run
+      lexer.tokens
     end
 
     def run

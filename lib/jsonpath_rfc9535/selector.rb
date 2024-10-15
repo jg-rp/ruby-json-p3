@@ -35,6 +35,7 @@ module JsonpathRfc9535
     def resolve(node)
       [node.new_child(node.value.fetch(@name), @name)]
     rescue StandardError
+      # TODO: narrow errors
       []
     end
 
