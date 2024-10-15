@@ -15,6 +15,11 @@ module JsonpathRfc9535
     def resolve(_node)
       raise "selectors must implement resolve(node)"
     end
+
+    # Return true if this selector is a singular selector.
+    def singular?
+      false
+    end
   end
 
   # The name selector select values from hashes given a key.
@@ -31,6 +36,10 @@ module JsonpathRfc9535
       [node.new_child(node.value.fetch(@name), @name)]
     rescue StandardError
       []
+    end
+
+    def singular?
+      true
     end
 
     def to_s
@@ -64,6 +73,10 @@ module JsonpathRfc9535
       [node.new_child(node.value.fetch(@index), @index)]
     rescue StandardError
       []
+    end
+
+    def singular?
+      true
     end
 
     def to_s
@@ -123,12 +136,12 @@ module JsonpathRfc9535
     end
 
     def resolve(node)
-      return [] unless node.value.is_a?(Array) || @step.zero?
+      return [] unless node.value.is_a?(Array) || @step == 0 # rubocop:disable Style/NumericPredicate
 
-      # TODO: cap stop and step? or does zip cover this?
+      # TODO: cap start and stop? or does zip cover this?
       length = node.value.length
       indicies = stop.nil? ? (start || 0...length).step(step || 1) : (start || 0...stop).step(step || 1)
-      indicies.to_a.zip(node.value[indicies]).map do |i, v|
+      node.value[indicies].zip(indicies).map do |i, v|
         node.new_child(v, i.negative? && length >= i.abs ? length + i : i)
       end
     end
@@ -155,6 +168,33 @@ module JsonpathRfc9535
     end
   end
 
-  # TODO: FilterSelector
-  # TODO: Define node
+  class FilterSelector < Selector
+    # @dynamic expression
+    attr_reader :expression
+
+    def initialize(env, token, expression)
+      super(env, token)
+      @expresion = expression
+    end
+
+    def resolve(_node)
+      raise "Not Implemented"
+    end
+
+    def to_s
+      "?#{@expression}"
+    end
+
+    def ==(other)
+      self.class == other.class &&
+        @expression == other.start &&
+        @token == other.token
+    end
+
+    alias eql? ==
+
+    def hash
+      @expression.hash ^ @token.hash
+    end
+  end
 end

@@ -1,0 +1,36 @@
+# frozen_string_literal: true
+
+module JsonpathRfc9535
+  # @dynamic value, location, root
+  attr_reader :value, :location, :root
+
+  # A JSON-like value and its location.
+  class JSONPathNode
+    # @param value [JSON-like] the value at this node.
+    # @param location [Array<String | Integer>] the sequence of names and/or indicies leading to _value_ in _root_.
+    # @param root [JSON-like] the root value containing _value_ at _location_.
+    def initialize(value, location, root)
+      @value = value
+      @location = location
+      @root = root
+    end
+
+    # Return the normalized path to this node.
+    # @return [String] the normalized path.
+    def path
+      segments = @location.map { |i| i.is_a?(String) ? "['#{i}']" : "[#{i}]" }
+      "$#{segments.join("")}"
+    end
+
+    # Return a new node that is a child of this node.
+    # @param value the JSON-like value at the new node.
+    # @param key [Integer, String] the array index or hash key assiciated with _value_.
+    def new_child(value, key)
+      JSONPathNode.new(value, @location + [key], @root)
+    end
+
+    def to_s
+      "JSONPathNode('#{path}')"
+    end
+  end
+end
