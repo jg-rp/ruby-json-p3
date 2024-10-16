@@ -20,13 +20,13 @@ module JsonpathRfc9535
     def find(root)
       nodes = [JSONPathNode.new(root, [], root)]
       @segments.each { |segment| nodes = segment.resolve(nodes) }
-      JSONPathNodeList.new(nodes)
+      JSONPathNodeList.new(nodes) # TODO: avoid new?
     end
 
     alias apply find
 
     # Return true if this JSONPath expression is a singular query.
-    def singular_query?
+    def singular?
       @segments.each do |segment|
         return false if segment.instance_of? RecursiveDescentSegment
         return false unless segment.selectors.length == 1 && segment.selectors[0].singular?

@@ -1,6 +1,9 @@
 # frozen_string_literal: true
 
+require "set"
+
 require_relative "errors"
+require_relative "filter"
 require_relative "function"
 require_relative "segment"
 require_relative "selector"
@@ -112,7 +115,7 @@ module JsonpathRfc9535
         case stream.peek.type
         when Token::RBRACKET
           break
-        when Token::Index
+        when Token::INDEX
           selectors << parse_index_or_slice(stream)
         when Token::DOUBLE_QUOTE_STRING, Token::SINGLE_QUOTE_STRING
           token = stream.next
@@ -201,8 +204,8 @@ module JsonpathRfc9535
     end
 
     def parse_filter_selector(stream) # rubocop:disable Metrics/AbcSize, Metrics/MethodLength
-      token = stream.peek
-      expression = parse_filter_selector(stream)
+      token = stream.next
+      expression = parse_filter_expression(stream)
 
       # Raise if expression must be compared.
       if expression.is_a? FunctionExpression
@@ -217,7 +220,7 @@ module JsonpathRfc9535
         raise JSONPathSyntaxError.new("filter expression literals must be compared", expression.token)
       end
 
-      FilterSelector.new(@env, token, expression)
+      FilterSelector.new(@env, token, FilterExpression.new(token, expression))
     end
 
     def parse_filter_expression(stream, precedence = Precedence::LOWEST) # rubocop:disable Metrics/AbcSize, Metrics/MethodLength, Metrics/CyclomaticComplexity
@@ -346,12 +349,12 @@ module JsonpathRfc9535
 
     def parse_root_query(stream)
       token = stream.next
-      RootQueryExpression.new(token, JSONPath.new(@env, parse_query(stream))) # TODO: in filter
+      RootQueryExpression.new(token, JSONPath.new(@env, parse_query(stream))) # TODO: in filter?
     end
 
     def parse_relative_query(stream)
       token = stream.next
-      RelativeQueryExpression.new(token, JSONPath.new(@env, parse_query(stream))) # TODO: in filter
+      RelativeQueryExpression.new(token, JSONPath.new(@env, parse_query(stream))) # TODO: in filter?
     end
 
     def parse_infix_expression(stream, left) # rubocop:disable Metrics/AbcSize, Metrics/MethodLength, Metrics/CyclomaticComplexity
@@ -403,31 +406,73 @@ module JsonpathRfc9535
       token.value
     end
 
-    def raise_for_non_comparable_function(expression)
-      # TODO:
-      raise "not implemented"
+    def raise_for_non_comparable_function(expression) # rubocop:disable Metrics/AbcSize
+      if expresion.is_a?(QueryExpression) && !expression.query.singular?
+        raise JSONPathSyntaxError.new("non-singular query is not comparable", expression.token)
+      end
+
+      return unless expression.is_a?(FunctionExpression)
+
+      func = @env.function_extensions[expression.name]
+      return unless func.RETURN_TYPE != ExpressionType::VALUE
+
+      raise JSONPathTypeError.new("result of #{expression.name}() is not comparable", expresion.token)
     end
 
     def raise_for_uncompared_literal(expression)
-      # TODO:
-      raise "not implemented"
+      return unless expreession.is_a? FilterExpressionLiteral
+
+      raise JSONPathSyntaxError.new("expression literals must be compared",
+                                    expression.token)
     end
 
-    def validate_function_extension_sugnature(token, args)
-      # TODO:
-      raise "not implemented"
+    def validate_function_extension_sugnature(token, args) # rubocop:disable Metrics/AbcSize, Metrics/MethodLength, Metrics/CyclomaticComplexity, Metrics/PerceivedComplexity
+      func = @env.function_extensions.fetch(token.value)
+
+      unless args.length == func.ARG_TYPES.length
+        raise JSONPathTypeError.new("#{token.value}() takes #{func.ARG_TYPES.length} arguments (#{args.length} given)",
+                                    token)
+      end
+
+      func.ARG_TYPES.each_with_index do |t, i|
+        arg = args[i]
+        case t
+        when ExpressionType.VALUE
+          unless arg.is_a?(FilterExpressionLiteral) ||
+                 (arg.is_a?(QueryExpression) && arg.query.singular?) ||
+                 (function_return_type(arg) == ExpressionType::VALUE)
+            raise JSONPathTypeError.new("#{token.value}() argument #{i} must be of ValueType", arg.token)
+          end
+        when ExpressionType.LOGICAL
+          unless arg.is_a?(QueryExpression) || arg.is_a?(InfixExpression)
+            raise JSONPathTypeError.new("#{token.value}() argument #{i} must be of LogicalType", arg.token)
+          end
+        when ExpressionType.NODES
+          unless arg.is_a?(QueryExpression) || function_return_type(arg) == ExpressionType.NODES
+            raise JSONPathTypeError.new("#{token.value}() argument #{i} must be of NodesType", arg.token)
+          end
+        end
+      end
+    rescue KeyError
+      raise JSONPathNameError.new("function '#{token.value}' is not defined", token)
+    end
+
+    def function_return_type(expression)
+      return nil unless expression.is_a? FunctionExpression
+
+      @env.function_extensions[expression.name].RETURN_TYPE
     end
 
     PRECEDENCES = {
       Token::AND => Precedence::LOGICAL_AND,
       Token::OR => Precedence::LOGICAL_OR,
-      TOKEN::NOT => Precedence::PREFIX,
-      Token::EQ => Precednece::RELATIONAL,
-      Token::GE => Precednece::RELATIONAL,
-      Token::GT => Precednece::RELATIONAL,
-      Token::LE => Precednece::RELATIONAL,
-      Token::LT => Precednece::RELATIONAL,
-      Token::NE => Precednece::RELATIONAL,
+      Token::NOT => Precedence::PREFIX,
+      Token::EQ => Precedence::RELATIONAL,
+      Token::GE => Precedence::RELATIONAL,
+      Token::GT => Precedence::RELATIONAL,
+      Token::LE => Precedence::RELATIONAL,
+      Token::LT => Precedence::RELATIONAL,
+      Token::NE => Precedence::RELATIONAL,
       Token::RPAREN => Precedence::LOWEST
     }.freeze
 

@@ -12,6 +12,7 @@ module JsonpathRfc9535
     end
 
     # Apply this selector to _node_.
+    # @return [Array<JSONPathNode>]
     def resolve(_node)
       raise "selectors must implement resolve(node)"
     end
@@ -34,8 +35,9 @@ module JsonpathRfc9535
 
     def resolve(node)
       [node.new_child(node.value.fetch(@name), @name)]
-    rescue StandardError
-      # TODO: narrow errors
+    rescue KeyError
+      []
+    rescue IndexError
       []
     end
 
@@ -169,17 +171,32 @@ module JsonpathRfc9535
     end
   end
 
+  # Select array elements or hash values according to a filter expression.
   class FilterSelector < Selector
     # @dynamic expression
     attr_reader :expression
 
     def initialize(env, token, expression)
       super(env, token)
-      @expresion = expression
+      @expression = expression
     end
 
-    def resolve(_node)
-      raise "Not Implemented"
+    def resolve(node) # rubocop:disable Metrics/MethodLength, Metrics/AbcSize
+      nodes = []
+
+      if node.value.is_a?(Array)
+        node.value.each_with_index do |e, i|
+          context = FilterContext.new(@env, e, node.root)
+          nodes << node.new_child(e, i) if @expression.evaluate(context)
+        end
+      elsif node.value.is_a?(Hash)
+        node.value.each_pair do |k, v|
+          context = FilterContext.new(@env, v, node.root)
+          nodes << node.new_child(v, k) if @expression.evaluate(context)
+        end
+      end
+
+      nodes
     end
 
     def to_s

@@ -8,9 +8,10 @@ module JsonpathRfc9535
   DefaultEnvironment = JSONPathEnvironment.new
 
   def self.main
-    path = DefaultEnvironment.compile("$.foo.*")
+    path = DefaultEnvironment.compile("$[?@.a]")
     puts path
-    nodes = path.find({ "foo" => { "bar" => 42, "baz" => 7 } })
-    puts nodes
+    data = [{ "a" => "b", "d" => "e" }, { "b" => "c", "d" => "f" }]
+    nodes = path.find(data)
+    puts "==", nodes.inspect, "=="
   end
 end

@@ -28,7 +28,7 @@ module JsonpathRfc9535
     end
 
     def evaluate(context)
-      truthy? @expression.evaluate(context)
+      JsonpathRfc9535.truthy?(@expression.evaluate(context))
     end
 
     def to_s
@@ -112,7 +112,7 @@ module JsonpathRfc9535
     end
 
     def evaluate(_context)
-      !truthy?(@expression.evaluate(context))
+      !JsonpathRfc9535.truthy?(@expression.evaluate(context))
     end
 
     def to_s
@@ -167,7 +167,7 @@ module JsonpathRfc9535
   # A logical `&&` expression.
   class LogicalAndExpression < InfixExpression
     def evaluate(context)
-      truthy?(@left.evaluate(context)) && truthy?(@right.evaluate(context))
+      JsonpathRfc9535.truthy?(@left.evaluate(context)) && JsonpathRfc9535.truthy?(@right.evaluate(context))
     end
 
     def to_s
@@ -178,7 +178,7 @@ module JsonpathRfc9535
   # A logical `||` expression.
   class LogicalOrExpression < InfixExpression
     def evaluate(context)
-      truthy?(@left.evaluate(context)) || truthy?(@right.evaluate(context))
+      JsonpathRfc9535.truthy?(@left.evaluate(context)) || JsonpathRfc9535.truthy?(@right.evaluate(context))
     end
 
     def to_s
@@ -189,7 +189,7 @@ module JsonpathRfc9535
   # An `==` expression.
   class EqExpression < InfixExpression
     def evaluate(context)
-      eq?(@left.evaluate(context), @right.evaluate(context))
+      JsonpathRfc9535.eq?(@left.evaluate(context), @right.evaluate(context))
     end
 
     def to_s
@@ -200,7 +200,7 @@ module JsonpathRfc9535
   # A `!=` expression.
   class NeExpression < InfixExpression
     def evaluate(context)
-      !eq?(@left.evaluate(context), @right.evaluate(context))
+      !JsonpathRfc9535.eq?(@left.evaluate(context), @right.evaluate(context))
     end
 
     def to_s
@@ -213,7 +213,7 @@ module JsonpathRfc9535
     def evaluate(context)
       left = @left.evaluate(context)
       right = @right.evaluate(context)
-      eq?(left, right) || lt?(left, right)
+      JsonpathRfc9535.eq?(left, right) || JsonpathRfc9535.lt?(left, right)
     end
 
     def to_s
@@ -226,7 +226,7 @@ module JsonpathRfc9535
     def evaluate(context)
       left = @left.evaluate(context)
       right = @right.evaluate(context)
-      eq?(left, right) || lt?(right, left)
+      JsonpathRfc9535.eq?(left, right) || JsonpathRfc9535.lt?(right, left)
     end
 
     def to_s
@@ -237,7 +237,7 @@ module JsonpathRfc9535
   # A `<` expression.
   class LtExpression < InfixExpression
     def evaluate(context)
-      lt?(@left.evaluate(context), @right.evaluate(context))
+      JsonpathRfc9535.lt?(@left.evaluate(context), @right.evaluate(context))
     end
 
     def to_s
@@ -248,7 +248,7 @@ module JsonpathRfc9535
   # A `>` expression.
   class GtExpression < InfixExpression
     def evaluate(context)
-      lt?(@right.evaluate(context), @left.evaluate(context))
+      JsonpathRfc9535.lt?(@right.evaluate(context), @left.evaluate(context))
     end
 
     def to_s
@@ -287,7 +287,7 @@ module JsonpathRfc9535
   end
 
   # An embedded query starting at the current node.
-  class RelativeQueryExpression < Expression
+  class RelativeQueryExpression < QueryExpression
     def evaluate(context)
       unless context.current.is_a?(Array) || context.current.is_a?(Hash)
         return @query.empty? ? context.current : []
@@ -295,12 +295,20 @@ module JsonpathRfc9535
 
       @query.find(context.current)
     end
+
+    def to_s
+      "@#{@query.to_s[1..]}"
+    end
   end
 
   # An embedded query starting at the root node.
-  class RootQueryExpression < Expression
+  class RootQueryExpression < QueryExpression
     def evaluate(context)
       @query.find(context.root)
+    end
+
+    def to_s
+      @query.to_s
     end
   end
 
@@ -369,14 +377,14 @@ module JsonpathRfc9535
     end
   end
 
-  private_class_method def self.truthy?(obj)
+  def self.truthy?(obj)
     return false if obj.is_a?(JSONPathNodeList) && obj.empty?
     return false if obj == :nothing
 
-    !(obj.is_a?(Boolean) && obj == false)
+    obj == true
   end
 
-  private_class_method def self.eq?(left, right) # rubocop:disable Metrics/MethodLength, Metrics/CyclomaticComplexity, Metrics/PerceivedComplexity, Metrics/AbcSize
+  def self.eq?(left, right) # rubocop:disable Metrics/MethodLength, Metrics/CyclomaticComplexity, Metrics/PerceivedComplexity, Metrics/AbcSize
     right, left = left, right if right is_a? JSONPathNodeList
 
     if left.is_a? JSONPathNodeList
@@ -396,7 +404,7 @@ module JsonpathRfc9535
     left == right
   end
 
-  private_class_method def self.lt?(left, right)
+  def self.lt?(left, right)
     return left < right if left.is_a?(String) && right.is_a?(String)
     return left < right if (left.is_a?(Integer) || left.is_a?(Float)) &&
                            (right.is_a?(Integer) || right.is_a?(Float))
