@@ -41,6 +41,14 @@ module JsonpathRfc9535
     end
   end
 
+  class Precedence
+    LOWEST = 1
+    LOGICAL_OR = 3
+    LOGICAL_AND = 4
+    RELATIONAL = 5
+    PREFIX = 7
+  end
+
   # A JSONPath expression parser.
   class Parser # rubocop:disable Metrics/ClassLength
     def initialize(env)
@@ -192,17 +200,255 @@ module JsonpathRfc9535
       SliceSelector.new(@env, token, start, stop, step)
     end
 
-    def parse_filter_selector(_stream)
-      raise "not implemented"
+    def parse_filter_selector(stream) # rubocop:disable Metrics/AbcSize, Metrics/MethodLength
+      token = stream.peek
+      expression = parse_filter_selector(stream)
+
+      # Raise if expression must be compared.
+      if expression.is_a? FunctionExpression
+        func = @env.function_extensions[expression.name]
+        if !func.nil? && func.RETURN_TYPE == ExpressionType::VALUE
+          raise JSONPathTypeError.new("result of #{expresion.name}() must be compared", token)
+        end
+      end
+
+      # Raise if expression is a literal.
+      if expression.is_a? FilterExpressionLiteral
+        raise JSONPathSyntaxError.new("filter expression literals must be compared", expression.token)
+      end
+
+      FilterSelector.new(@env, token, expression)
+    end
+
+    def parse_filter_expression(stream, precedence = Precedence::LOWEST) # rubocop:disable Metrics/AbcSize, Metrics/MethodLength, Metrics/CyclomaticComplexity
+      left = case stream.peek.type
+             when Token::DOUBLE_QUOTE_STRING
+               token = stream.next
+               StringLiteral.new(token, decode_string_literal(token))
+             when Token::FALSE
+               BooleanLiteral.new(stream.next, false)
+             when Token::TRUE
+               BooleanLiteral.new(stream.next, true)
+             when Token::FLOAT
+               parse_float_literal(stream)
+             when Token::FUNCTION
+               parse_function_expression(stream)
+             when Token::INT
+               token = stream.next
+               IntegerLiteral.new(token, parse_i_json_int(token))
+             when Token::LPAREN
+               parse_grouped_expression(stream)
+             when Token::NOT
+               parse_prefix_expression(stream)
+             when Token::ROOT
+               parse_root_query(stream)
+             when Token::CURRENT
+               parse_relative_query(stream)
+             when Token::SINGLE_QUOTE_STRING
+               token = stream.next
+               StringLiteral.new(token, decode_string_literal(token))
+             else
+               token = stream.next
+               raise JSONPathSyntaxError.new("unexpected '#{token.value}'", token)
+             end
+
+      loop do
+        peeked = stream.peek
+        if peeked.type == Token::EOI ||
+           peeked.type == Token::RBRACKET ||
+           PRECEDENCES.fetch(peek.type, Precedence::LOWEST) < precedence
+          break
+        end
+
+        return left unless BINARY_OPERATORS.key?(peeked.type)
+
+        left = parse_infix_expression(stream, left)
+      end
+
+      left
+    end
+
+    def parse_float_literal(stream)
+      token = stream.next
+      value = token.value
+      if value.starts_with("0") && value.split(".").first.length > 1
+        raise JSONPathSyntaxError.new("invalid float literal", token)
+      end
+
+      FloatLiteral.new(token, value.to_f)
+    end
+
+    def parse_function_expression(stream) # rubocop:disable Metrics/AbcSize, Metrics/MethodLength, Metrics/CyclomaticComplexity
+      token = stream.next
+      args = []
+
+      while stream.peek.type != Token::RPAREN
+        expr = case stream.peek.type
+               when Token::DOUBLE_QUOTE_STRING
+                 token = stream.next
+                 StringLiteral.new(token, decode_string_literal(token))
+               when Token::FALSE
+                 BooleanLiteral.new(stream.next, false)
+               when Token::TRUE
+                 BooleanLiteral.new(stream.next, true)
+               when Token::FLOAT
+                 parse_float_literal(stream)
+               when Token::FUNCTION
+                 parse_function_expression(stream)
+               when Token::INT
+                 token = stream.next
+                 IntegerLiteral.new(token, parse_i_json_int(token))
+               when Token::ROOT
+                 parse_root_query(stream)
+               when Token::CURRENT
+                 parse_relative_query(stream)
+               when Token::SINGLE_QUOTE_STRING
+                 token = stream.next
+                 StringLiteral.new(token, decode_string_literal(token))
+               else
+                 token = stream.next
+                 raise JSONPathSyntaxError.new("unexpected '#{stream.peek.value}'", stream.peek)
+               end
+
+        expr = parse_infix_expression(stream, expr) while BINARY_OPERATORS.key? stream.peek.type
+
+        args << expr
+
+        if stream.peek.type != Token::RPAREN
+          stream.expect(Token::COMMA)
+          stream.next
+        end
+      end
+
+      validate_function_extension_sugnature(token, args)
+      FunctionExpression.new(token, token.value, args)
+    end
+
+    def parse_grouped_expression(stream)
+      stream.next # discard "("
+      expr = parse_filter_expression(stream)
+
+      while stream.peek.type != Token::RPAREN
+        raise JSONPathSyntaxError.new("unbalanced parentheses", stream.peek) if stream.peek.type == Token::EOI
+
+        expr = parse_infix_expression(stream, expr)
+      end
+
+      steam.expect(Token::RPAREN)
+      stream.next
+      expr
+    end
+
+    def parse_prefix_expression(stream)
+      token = tream.next
+      LogicalNotExpression.new(token, parse_filter_expression(stream, Precedence::PREFIX))
+    end
+
+    def parse_root_query(stream)
+      token = stream.next
+      RootQueryExpression.new(token, JSONPath.new(@env, parse_query(stream))) # TODO: in filter
+    end
+
+    def parse_relative_query(stream)
+      token = stream.next
+      RelativeQueryExpression.new(token, JSONPath.new(@env, parse_query(stream))) # TODO: in filter
+    end
+
+    def parse_infix_expression(stream, left) # rubocop:disable Metrics/AbcSize, Metrics/MethodLength, Metrics/CyclomaticComplexity
+      token = stream.next
+      precedence = PRECEDENCES.fetch(token.type, Precedence::LOWEST)
+      right = parse_filter_expression(stream, precedence)
+
+      if COMPARISON_OPERATORS.key? token.value
+        raise_for_non_comparable_function(left)
+        raise_for_non_comparable_function(right)
+        case token.type
+        when Token::EQ
+          EqExpression.new(token, left, right)
+        when Token::GE
+          GeExpression.new(token, left, right)
+        when Token::GT
+          GtExpression.new(token, left, right)
+        when Token::LE
+          LeExpression.new(token, left, right)
+        when Token::LT
+          LtExpression.new(token, left, right)
+        when Token::NE
+          NeExpression.new(token, left, right)
+        end
+      else
+        raise_for_uncompared_literal(left)
+        raise_for_uncompared_literal(right)
+        case token.type
+        when Token::AND
+          LogicalAndExpression.new(token, left, right)
+        when Token::OR
+          LogicalOrExpression.new(token, left, right)
+        end
+      end
     end
 
     def parse_i_json_int(token)
       # TODO: int check range
+      # TODO: handle scientific notation
       if token.value.length > 1 && token.value.starts_with("0", "-0")
         raise JSONPathSyntaxError("invalid index '#{token.value}'", token)
       end
 
       token.value.to_i
     end
+
+    def decode_string_literal(token)
+      # TODO:
+      token.value
+    end
+
+    def raise_for_non_comparable_function(expression)
+      # TODO:
+      raise "not implemented"
+    end
+
+    def raise_for_uncompared_literal(expression)
+      # TODO:
+      raise "not implemented"
+    end
+
+    def validate_function_extension_sugnature(token, args)
+      # TODO:
+      raise "not implemented"
+    end
+
+    PRECEDENCES = {
+      Token::AND => Precedence::LOGICAL_AND,
+      Token::OR => Precedence::LOGICAL_OR,
+      TOKEN::NOT => Precedence::PREFIX,
+      Token::EQ => Precednece::RELATIONAL,
+      Token::GE => Precednece::RELATIONAL,
+      Token::GT => Precednece::RELATIONAL,
+      Token::LE => Precednece::RELATIONAL,
+      Token::LT => Precednece::RELATIONAL,
+      Token::NE => Precednece::RELATIONAL,
+      Token::RPAREN => Precedence::LOWEST
+    }.freeze
+
+    BINARY_OPERATORS = {
+      Token::AND => "&&",
+      Token::OR => "||",
+      Token::EQ => "==",
+      Token::GE => ">=",
+      Token::GT => ">",
+      Token::LE => "<=",
+      Token::LT => "<",
+      Token::NE => "!="
+    }.freeze
+
+    COMPARISON_OPERATORS = Set[
+      "==",
+      ">=",
+      ">",
+      "<=",
+      "<",
+      "!=",
+    ]
   end
 end
