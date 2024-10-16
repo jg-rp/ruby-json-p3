@@ -1,5 +1,7 @@
 # frozen_string_literal: true
 
+require_relative "function"
+
 module JsonpathRfc9535
   # Base class for all filter expression nodes.
   class Expression
@@ -18,13 +20,15 @@ module JsonpathRfc9535
 
   # An expression that evaluates to true or false.
   class FilterExpression < Expression
+    attr_reader :expression
+
     def initialize(token, expression)
       super(token)
       @expression = expression
     end
 
     def evaluate(context)
-      is_truthy(@expression.evaluate(context))
+      truthy? @expression.evaluate(context)
     end
 
     def to_s
@@ -46,6 +50,8 @@ module JsonpathRfc9535
 
   # Base class for expression literals.
   class FilterExpressionLiteral < Expression
+    attr_reader :value
+
     def initialize(token, value)
       super(token)
       @value = value
@@ -98,13 +104,15 @@ module JsonpathRfc9535
 
   # An expression prefixed with the logical not operator.
   class LogicalNotExpression < Expression
+    attr_reader :expression
+
     def initialize(token, expression)
       super(token)
       @expression = expression
     end
 
     def evaluate(_context)
-      !is_truthy(@expression.evaluate(context))
+      !truthy?(@expression.evaluate(context))
     end
 
     def to_s
@@ -126,6 +134,8 @@ module JsonpathRfc9535
 
   # Base class for expression with a left expression, operator and right expression.
   class InfixExpression < Expression
+    attr_reader :left, :right
+
     def initialize(token, left, right)
       super(token)
       @left = left
@@ -157,7 +167,7 @@ module JsonpathRfc9535
   # A logical `&&` expression.
   class LogicalAndExpression < InfixExpression
     def evaluate(context)
-      is_truthy(@left.evaluate(context)) && is_truthy(@right.evaluate(context))
+      truthy?(@left.evaluate(context)) && truthy?(@right.evaluate(context))
     end
 
     def to_s
@@ -168,7 +178,7 @@ module JsonpathRfc9535
   # A logical `||` expression.
   class LogicalOrExpression < InfixExpression
     def evaluate(context)
-      is_truthy(@left.evaluate(context)) || is_truthy(@right.evaluate(context))
+      truthy?(@left.evaluate(context)) || truthy?(@right.evaluate(context))
     end
 
     def to_s
@@ -248,6 +258,8 @@ module JsonpathRfc9535
 
   # Base class for all embedded filter queries
   class QueryExpression < Expression
+    attr_reader :query
+
     def initialize(token, query)
       super(token)
       @query = query
@@ -294,6 +306,8 @@ module JsonpathRfc9535
 
   # A filter function call.
   class FunctionExpression < Expression
+    attr_reader :name, :args
+
     # @param name [String]
     # @param args [Array<Expression>]
     def initialize(token, name, args)
@@ -328,12 +342,76 @@ module JsonpathRfc9535
     def hash
       @name.hash ^ @args.hash ^ @token.hash
     end
+
+    private
+
+    # @param func [Proc]
+    # @param args [Array<Object>]
+    # @return [Array<Object>]
+    def unpack_node_lists(func, args) # rubocop:disable Metrics/MethodLength
+      unpacked_args = []
+      args.each_with_index do |arg, i|
+        unless arg.is_a?(JSONPathNodeList) && func.ARG_TYPES[i] != ExpressionType::NODES
+          unpacked_args << arg
+          next
+        end
+
+        unpacked_args << case arg.length
+                         when 0
+                           :nothing
+                         when 1
+                           arg.first.value
+                         else
+                           arg
+                         end
+      end
+      unpacked_args
+    end
   end
 
-  # TODO: private module function (without a class)
-  # TODO: is_truthy -> truthy?
-  # TODO: eq?
-  # TODO: lt?
-  # TODO: unpack_node_lists()
-  # TODO: FilterContext
+  private_class_method def self.truthy?(obj)
+    return false if obj.is_a?(JSONPathNodeList) && obj.empty?
+    return false if obj == :nothing
+
+    !(obj.is_a?(Boolean) && obj == false)
+  end
+
+  private_class_method def self.eq?(left, right) # rubocop:disable Metrics/MethodLength, Metrics/CyclomaticComplexity, Metrics/PerceivedComplexity, Metrics/AbcSize
+    right, left = left, right if right is_a? JSONPathNodeList
+
+    if left.is_a? JSONPathNodeList
+      return left == right if right.is_a? JSONPathNodeList
+      return right == :nothing if left.empty?
+      return left.first == right if left.length == 1
+
+      return false
+    end
+
+    return true if left == :nothing && right == :nothing
+
+    right, left = left, right if right.is_a? Boolean
+
+    return right.is_a?(Boolean) && left == right if left.is_a? Boolean
+
+    left == right
+  end
+
+  private_class_method def self.lt?(left, right)
+    return left < right if left.is_a?(String) && right.is_a?(String)
+    return left < right if (left.is_a?(Integer) || left.is_a?(Float)) &&
+                           (right.is_a?(Integer) || right.is_a?(Float))
+
+    false
+  end
+
+  # Contextural information and data used for evaluating a filter expression.
+  class FilterContext
+    attr_reader :env, :current, :root
+
+    def initialize(env, current, root)
+      @env = env
+      @current = current
+      @root = root
+    end
+  end
 end

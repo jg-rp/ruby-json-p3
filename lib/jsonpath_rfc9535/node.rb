@@ -33,4 +33,7 @@ module JsonpathRfc9535
       "JSONPathNode(#{value} at #{path})"
     end
   end
+
+  # An array of JSONPathNode instances.
+  class JSONPathNodeList < Array; end
 end

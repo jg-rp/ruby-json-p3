@@ -16,3 +16,5 @@ gem "steep", "~> 1.8"
 gem "simplecov", require: false, group: :test
 
 gem "yard", "~> 0.9.37"
+
+gem "iregexp", "~> 0.1.0"

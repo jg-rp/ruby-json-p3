@@ -20,7 +20,7 @@ module JsonpathRfc9535
     def find(root)
       nodes = [JSONPathNode.new(root, [], root)]
       @segments.each { |segment| nodes = segment.resolve(nodes) }
-      nodes
+      JSONPathNodeList.new(nodes)
     end
 
     alias apply find

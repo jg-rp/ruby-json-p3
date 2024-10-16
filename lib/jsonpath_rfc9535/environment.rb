@@ -16,14 +16,14 @@ module JsonpathRfc9535
     # @param query [String]
     # @return [JSONPath]
     def compile(query)
-      tokens = Lexer.tokenize(query)
+      tokens = JsonpathRfc9535.tokenize(query)
       JSONPath.new(self, @parser.parse(tokens))
     end
 
     # Apply JSONPath expression _query_ to _value_.
     # @param query [String]
     # @param value [JSON-like data]
-    # @return [JSONPath]
+    # @return [Array<JSONPath>]
     def find(query, value)
       compile(query).find(value)
     end

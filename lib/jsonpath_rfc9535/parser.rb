@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require_relative "errors"
+require_relative "function"
 require_relative "segment"
 require_relative "selector"
 require_relative "token"
