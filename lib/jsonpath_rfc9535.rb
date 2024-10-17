@@ -12,6 +12,6 @@ module JsonpathRfc9535
     puts path
     data = [{ "a" => "b", "d" => "e" }, { "b" => "c", "d" => "f" }]
     nodes = path.find(data)
-    puts "==", nodes.inspect, "=="
+    puts(nodes.map(&:value))
   end
 end

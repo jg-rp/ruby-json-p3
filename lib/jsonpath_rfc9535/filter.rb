@@ -378,7 +378,7 @@ module JsonpathRfc9535
   end
 
   def self.truthy?(obj)
-    return false if obj.is_a?(JSONPathNodeList) && obj.empty?
+    return !obj.empty? if obj.is_a?(JSONPathNodeList)
     return false if obj == :nothing
 
     obj == true
