@@ -2,7 +2,7 @@
 
 require_relative "../function"
 
-module JsonpathRfc9535
+module JSONPathRFC9535
   # The standard `count` function.
   class Value < FunctionExtension
     ARG_TYPES = [ExpressionType::NODES].freeze

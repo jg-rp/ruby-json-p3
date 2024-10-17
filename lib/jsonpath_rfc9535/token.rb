@@ -2,7 +2,7 @@
 
 require_relative "errors"
 
-module JsonpathRfc9535
+module JSONPathRFC9535
   # The start and end position of a token in a query string.
   class Span
     # @dynamic start, stop

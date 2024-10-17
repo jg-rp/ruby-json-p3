@@ -9,7 +9,7 @@ require_relative "segment"
 require_relative "selector"
 require_relative "token"
 
-module JsonpathRfc9535
+module JSONPathRFC9535
   # Step through tokens
   class Stream
     def initialize(tokens)

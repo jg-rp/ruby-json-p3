@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-module JsonpathRfc9535
+module JSONPathRFC9535
   # Base class for all JSONPath selectors
   class Selector
     # @dynamic token

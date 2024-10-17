@@ -4,7 +4,7 @@ require_relative "lib/jsonpath_rfc9535/version"
 
 Gem::Specification.new do |spec|
   spec.name = "jsonpath_rfc9535"
-  spec.version = JsonpathRfc9535::VERSION
+  spec.version = JSONPathRFC9535::VERSION
   spec.authors = ["James Prior"]
   spec.email = ["jamesgr.prior@gmail.com"]
 

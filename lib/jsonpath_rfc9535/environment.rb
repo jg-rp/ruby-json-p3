@@ -4,7 +4,7 @@ require_relative "lexer"
 require_relative "parser"
 require_relative "path"
 
-module JsonpathRfc9535
+module JSONPathRFC9535
   # JSONPath configuration
   class JSONPathEnvironment
     def initialize
@@ -16,7 +16,7 @@ module JsonpathRfc9535
     # @param query [String]
     # @return [JSONPath]
     def compile(query)
-      tokens = JsonpathRfc9535.tokenize(query)
+      tokens = JSONPathRFC9535.tokenize(query)
       JSONPath.new(self, @parser.parse(tokens))
     end
 

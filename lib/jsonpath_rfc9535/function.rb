@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-module JsonpathRfc9535
+module JSONPathRFC9535
   class ExpressionType
     VALUE = :value_expression
     LOGICAL = :logical_expression

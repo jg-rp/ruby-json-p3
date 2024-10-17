@@ -2,7 +2,7 @@
 
 require_relative "../function"
 
-module JsonpathRfc9535
+module JSONPathRFC9535
   # The standard `count` function.
   class Match < FunctionExtension
     ARG_TYPES = [ExpressionType::VALUE, ExpressionType::VALUE].freeze

@@ -1,4 +1,4 @@
-module JsonpathRfc9535
+module JSONPathRFC9535
   VERSION: String
   
   class JSONPathError < StandardError

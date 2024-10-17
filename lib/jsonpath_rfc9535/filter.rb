@@ -2,7 +2,7 @@
 
 require_relative "function"
 
-module JsonpathRfc9535
+module JSONPathRFC9535
   # Base class for all filter expression nodes.
   class Expression
     # @dynamic token
@@ -28,7 +28,7 @@ module JsonpathRfc9535
     end
 
     def evaluate(context)
-      JsonpathRfc9535.truthy?(@expression.evaluate(context))
+      JSONPathRFC9535.truthy?(@expression.evaluate(context))
     end
 
     def to_s
@@ -112,7 +112,7 @@ module JsonpathRfc9535
     end
 
     def evaluate(_context)
-      !JsonpathRfc9535.truthy?(@expression.evaluate(context))
+      !JSONPathRFC9535.truthy?(@expression.evaluate(context))
     end
 
     def to_s
@@ -167,7 +167,7 @@ module JsonpathRfc9535
   # A logical `&&` expression.
   class LogicalAndExpression < InfixExpression
     def evaluate(context)
-      JsonpathRfc9535.truthy?(@left.evaluate(context)) && JsonpathRfc9535.truthy?(@right.evaluate(context))
+      JSONPathRFC9535.truthy?(@left.evaluate(context)) && JSONPathRFC9535.truthy?(@right.evaluate(context))
     end
 
     def to_s
@@ -178,7 +178,7 @@ module JsonpathRfc9535
   # A logical `||` expression.
   class LogicalOrExpression < InfixExpression
     def evaluate(context)
-      JsonpathRfc9535.truthy?(@left.evaluate(context)) || JsonpathRfc9535.truthy?(@right.evaluate(context))
+      JSONPathRFC9535.truthy?(@left.evaluate(context)) || JSONPathRFC9535.truthy?(@right.evaluate(context))
     end
 
     def to_s
@@ -189,7 +189,7 @@ module JsonpathRfc9535
   # An `==` expression.
   class EqExpression < InfixExpression
     def evaluate(context)
-      JsonpathRfc9535.eq?(@left.evaluate(context), @right.evaluate(context))
+      JSONPathRFC9535.eq?(@left.evaluate(context), @right.evaluate(context))
     end
 
     def to_s
@@ -200,7 +200,7 @@ module JsonpathRfc9535
   # A `!=` expression.
   class NeExpression < InfixExpression
     def evaluate(context)
-      !JsonpathRfc9535.eq?(@left.evaluate(context), @right.evaluate(context))
+      !JSONPathRFC9535.eq?(@left.evaluate(context), @right.evaluate(context))
     end
 
     def to_s
@@ -213,7 +213,7 @@ module JsonpathRfc9535
     def evaluate(context)
       left = @left.evaluate(context)
       right = @right.evaluate(context)
-      JsonpathRfc9535.eq?(left, right) || JsonpathRfc9535.lt?(left, right)
+      JSONPathRFC9535.eq?(left, right) || JSONPathRFC9535.lt?(left, right)
     end
 
     def to_s
@@ -226,7 +226,7 @@ module JsonpathRfc9535
     def evaluate(context)
       left = @left.evaluate(context)
       right = @right.evaluate(context)
-      JsonpathRfc9535.eq?(left, right) || JsonpathRfc9535.lt?(right, left)
+      JSONPathRFC9535.eq?(left, right) || JSONPathRFC9535.lt?(right, left)
     end
 
     def to_s
@@ -237,7 +237,7 @@ module JsonpathRfc9535
   # A `<` expression.
   class LtExpression < InfixExpression
     def evaluate(context)
-      JsonpathRfc9535.lt?(@left.evaluate(context), @right.evaluate(context))
+      JSONPathRFC9535.lt?(@left.evaluate(context), @right.evaluate(context))
     end
 
     def to_s
@@ -248,7 +248,7 @@ module JsonpathRfc9535
   # A `>` expression.
   class GtExpression < InfixExpression
     def evaluate(context)
-      JsonpathRfc9535.lt?(@right.evaluate(context), @left.evaluate(context))
+      JSONPathRFC9535.lt?(@right.evaluate(context), @left.evaluate(context))
     end
 
     def to_s
