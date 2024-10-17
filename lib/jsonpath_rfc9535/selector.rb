@@ -142,7 +142,7 @@ module JSONPathRFC9535
       # TODO: cap start and stop? or does zip cover this?
       length = node.value.length
       indicies = stop.nil? ? (start || 0...length).step(step || 1) : (start || 0...stop).step(step || 1)
-      node.value[indicies].zip(indicies).map do |i, v|
+      node.value[indicies].zip(indicies).map do |v, i|
         node.new_child(v, i.negative? && length >= i.abs ? length + i : i)
       end
     end

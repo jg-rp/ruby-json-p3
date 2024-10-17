@@ -111,7 +111,7 @@ module JSONPathRFC9535
       @expression = expression
     end
 
-    def evaluate(_context)
+    def evaluate(context)
       !JSONPathRFC9535.truthy?(@expression.evaluate(context))
     end
 
@@ -290,7 +290,7 @@ module JSONPathRFC9535
   class RelativeQueryExpression < QueryExpression
     def evaluate(context)
       unless context.current.is_a?(Array) || context.current.is_a?(Hash)
-        return @query.empty? ? context.current : []
+        return @query.empty? ? context.current : JSONPathNodeList.new
       end
 
       @query.find(context.current)
@@ -327,7 +327,7 @@ module JSONPathRFC9535
     def evaluate(context)
       func = context.env.function_extensions.fetch(@name)
       args = @args.map { |arg| arg.evaluate(context) }
-      unpacked_args = unpack_node_lists(args)
+      unpacked_args = unpack_node_lists(func, args)
       func.call(*unpacked_args)
     rescue KeyError
       :nothing
@@ -359,7 +359,7 @@ module JSONPathRFC9535
     def unpack_node_lists(func, args) # rubocop:disable Metrics/MethodLength
       unpacked_args = []
       args.each_with_index do |arg, i|
-        unless arg.is_a?(JSONPathNodeList) && func.ARG_TYPES[i] != ExpressionType::NODES
+        unless arg.is_a?(JSONPathNodeList) && func.class::ARG_TYPES[i] != ExpressionType::NODES
           unpacked_args << arg
           next
         end
@@ -385,6 +385,9 @@ module JSONPathRFC9535
   end
 
   def self.eq?(left, right) # rubocop:disable Metrics/MethodLength, Metrics/CyclomaticComplexity, Metrics/PerceivedComplexity, Metrics/AbcSize
+    left = left.first.value if left.is_a?(JSONPathNodeList) && left.length == 1
+    right = right.first.value if right.is_a?(JSONPathNodeList) && right.length == 1
+
     right, left = left, right if right.is_a?(JSONPathNodeList)
 
     if left.is_a? JSONPathNodeList
@@ -396,10 +399,6 @@ module JSONPathRFC9535
     end
 
     return true if left == :nothing && right == :nothing
-
-    right, left = left, right if right.is_a?(Boolean)
-
-    return right.is_a?(Boolean) && left == right if left.is_a?(Boolean)
 
     left == right
   end

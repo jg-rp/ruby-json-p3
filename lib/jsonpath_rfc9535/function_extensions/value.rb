@@ -9,7 +9,7 @@ module JSONPathRFC9535
     RETURN_TYPE = ExpressionType::VALUE
 
     def call(node_list)
-      nodes.length == 1 ? node_list.first.value : :nothing
+      node_list.length == 1 ? node_list.first.value : :nothing
     end
   end
 end

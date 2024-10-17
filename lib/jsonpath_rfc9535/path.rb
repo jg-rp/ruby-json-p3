@@ -36,7 +36,7 @@ module JSONPathRFC9535
 
     # Return true if this JSONPath expression has no segments.
     def empty?
-      @segments.length.positive?
+      @segments.empty?
     end
   end
 end

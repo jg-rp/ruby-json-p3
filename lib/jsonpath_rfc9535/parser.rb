@@ -33,7 +33,7 @@ module JSONPathRFC9535
       return if peek.type == token_type
 
       token = self.next
-      raise JSONPathSyntaxError.new("expected #{token_type}, found #{token}", token)
+      raise JSONPathSyntaxError.new("expected #{token_type}, found #{token.type}", token)
     end
 
     def expect_not(token_type, message)
@@ -192,14 +192,14 @@ module JSONPathRFC9535
       step = nil
 
       case stream.peek.type
-      when Token::INT
+      when Token::INDEX
         stop = parse_i_json_int(stream.next)
       when Token::COLON
         stream.next # move past colon
       end
 
       case stream.peek.type
-      when Token::INT
+      when Token::INDEX
         step = parse_i_json_int(stream.next)
       else
         error_token = stream.next
@@ -209,15 +209,15 @@ module JSONPathRFC9535
       SliceSelector.new(@env, token, start, stop, step)
     end
 
-    def parse_filter_selector(stream) # rubocop:disable Metrics/AbcSize, Metrics/MethodLength
+    def parse_filter_selector(stream) # rubocop:disable Metrics/MethodLength
       token = stream.next
       expression = parse_filter_expression(stream)
 
       # Raise if expression must be compared.
       if expression.is_a? FunctionExpression
         func = @env.function_extensions[expression.name]
-        if !func.nil? && func.RETURN_TYPE == ExpressionType::VALUE
-          raise JSONPathTypeError.new("result of #{expresion.name}() must be compared", token)
+        if func.class::RETURN_TYPE == ExpressionType::VALUE
+          raise JSONPathTypeError.new("result of #{expression.name}() must be compared", expression.token)
         end
       end
 
@@ -243,12 +243,13 @@ module JSONPathRFC9535
              when Token::FUNCTION
                parse_function_expression(stream)
              when Token::INT
-               token = stream.next
-               IntegerLiteral.new(token, parse_i_json_int(token))
+               parse_integer_literal(stream)
              when Token::LPAREN
                parse_grouped_expression(stream)
              when Token::NOT
                parse_prefix_expression(stream)
+             when Token::NULL
+               NullLiteral.new(stream.next, nil)
              when Token::ROOT
                parse_root_query(stream)
              when Token::CURRENT
@@ -277,10 +278,18 @@ module JSONPathRFC9535
       left
     end
 
+    def parse_integer_literal(stream)
+      token = stream.next
+      value = token.value
+      raise JSONPathSyntaxError.new("invalid integer literal", token) if value.start_with?("0") && value.length > 1
+
+      IntegerLiteral.new(token, token.value.to_f.to_i)
+    end
+
     def parse_float_literal(stream)
       token = stream.next
       value = token.value
-      if value.starts_with("0") && value.split(".").first.length > 1
+      if value.start_with?("0") && value.split(".").first.length > 1
         raise JSONPathSyntaxError.new("invalid float literal", token)
       end
 
@@ -305,8 +314,9 @@ module JSONPathRFC9535
                when Token::FUNCTION
                  parse_function_expression(stream)
                when Token::INT
-                 token = stream.next
-                 IntegerLiteral.new(token, parse_i_json_int(token))
+                 parse_integer_literal(stream)
+               when Token::NULL
+                 NullLiteral.new(stream.next, nil)
                when Token::ROOT
                  parse_root_query(stream)
                when Token::CURRENT
@@ -329,6 +339,9 @@ module JSONPathRFC9535
         end
       end
 
+      stream.expect(Token::RPAREN)
+      stream.next
+
       validate_function_extension_sugnature(token, args)
       FunctionExpression.new(token, token.value, args)
     end
@@ -343,13 +356,13 @@ module JSONPathRFC9535
         expr = parse_infix_expression(stream, expr)
       end
 
-      steam.expect(Token::RPAREN)
+      stream.expect(Token::RPAREN)
       stream.next
       expr
     end
 
     def parse_prefix_expression(stream)
-      token = tream.next
+      token = stream.next
       LogicalNotExpression.new(token, parse_filter_expression(stream, Precedence::PREFIX))
     end
 
@@ -400,10 +413,11 @@ module JSONPathRFC9535
     def parse_i_json_int(token)
       # TODO: int check range
       # TODO: handle scientific notation
-      if token.value.length > 1 && token.value.starts_with("0", "-0")
+      if token.value.length > 1 && token.value.start_with?("0", "-0")
         raise JSONPathSyntaxError.new("invalid index '#{token.value}'", token)
       end
 
+      # Convert to float first to handle scientific notation/
       token.value.to_i
     end
 
@@ -412,7 +426,7 @@ module JSONPathRFC9535
       token.value
     end
 
-    def raise_for_non_comparable_function(expression) # rubocop:disable Metrics/AbcSize
+    def raise_for_non_comparable_function(expression)
       if expression.is_a?(QueryExpression) && !expression.query.singular?
         raise JSONPathSyntaxError.new("non-singular query is not comparable", expression.token)
       end
@@ -420,13 +434,13 @@ module JSONPathRFC9535
       return unless expression.is_a?(FunctionExpression)
 
       func = @env.function_extensions[expression.name]
-      return unless func.RETURN_TYPE != ExpressionType::VALUE
+      return unless func.class::RETURN_TYPE != ExpressionType::VALUE
 
       raise JSONPathTypeError.new("result of #{expression.name}() is not comparable", expresion.token)
     end
 
     def raise_for_uncompared_literal(expression)
-      return unless expreession.is_a? FilterExpressionLiteral
+      return unless expression.is_a? FilterExpressionLiteral
 
       raise JSONPathSyntaxError.new("expression literals must be compared",
                                     expression.token)
@@ -435,25 +449,25 @@ module JSONPathRFC9535
     def validate_function_extension_sugnature(token, args) # rubocop:disable Metrics/AbcSize, Metrics/MethodLength, Metrics/CyclomaticComplexity, Metrics/PerceivedComplexity
       func = @env.function_extensions.fetch(token.value)
 
-      unless args.length == func.ARG_TYPES.length
-        raise JSONPathTypeError.new("#{token.value}() takes #{func.ARG_TYPES.length} arguments (#{args.length} given)",
+      unless args.length == func.class::ARG_TYPES.length
+        raise JSONPathTypeError.new("#{token.value}() takes #{func.class::ARG_TYPES.length} arguments (#{args.length} given)",
                                     token)
       end
 
-      func.ARG_TYPES.each_with_index do |t, i|
+      func.class::ARG_TYPES.each_with_index do |t, i|
         arg = args[i]
         case t
-        when ExpressionType.VALUE
+        when ExpressionType::VALUE
           unless arg.is_a?(FilterExpressionLiteral) ||
                  (arg.is_a?(QueryExpression) && arg.query.singular?) ||
                  (function_return_type(arg) == ExpressionType::VALUE)
             raise JSONPathTypeError.new("#{token.value}() argument #{i} must be of ValueType", arg.token)
           end
-        when ExpressionType.LOGICAL
+        when ExpressionType::LOGICAL
           unless arg.is_a?(QueryExpression) || arg.is_a?(InfixExpression)
             raise JSONPathTypeError.new("#{token.value}() argument #{i} must be of LogicalType", arg.token)
           end
-        when ExpressionType.NODES
+        when ExpressionType::NODES
           unless arg.is_a?(QueryExpression) || function_return_type(arg) == ExpressionType.NODES
             raise JSONPathTypeError.new("#{token.value}() argument #{i} must be of NodesType", arg.token)
           end
