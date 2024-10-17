@@ -42,6 +42,10 @@ module JSONPathRFC9535
       token = self.next
       raise JSONPathSyntaxError.new(message, token)
     end
+
+    def to_s
+      "JSONPathRFC9535::stream(head=#{peek.inspect})"
+    end
   end
 
   class Precedence
@@ -144,7 +148,7 @@ module JSONPathRFC9535
         end
       end
 
-      raise JSONPathSyntaxError("empty segment", segment_token) if selectors.empty?
+      raise JSONPathSyntaxError.new("empty segment", segment_token) if selectors.empty?
 
       selectors
     end
@@ -160,18 +164,20 @@ module JSONPathRFC9535
       step = nil
 
       case stream.peek.type
-      when Token::INT
+      when Token::INDEX
         stop = parse_i_json_int(stream.next)
       when Token::COLON
         stream.next # move past colon
       end
 
       case stream.peek.type
-      when Token::INT
+      when Token::INDEX
         step = parse_i_json_int(stream.next)
+      when Token::RBRACKET
+        nil
       else
         error_token = stream.next
-        raise JSONPathSyntaxError("expected a slice, found '#{token.value}'", error_token)
+        raise JSONPathSyntaxError.new("expected a slice, found '#{error_token.value}'", error_token)
       end
 
       SliceSelector.new(@env, token, index, stop, step)
@@ -197,7 +203,7 @@ module JSONPathRFC9535
         step = parse_i_json_int(stream.next)
       else
         error_token = stream.next
-        raise JSONPathSyntaxError("expected a slice, found '#{token.value}'", error_token)
+        raise JSONPathSyntaxError.new("expected a slice, found '#{token.value}'", error_token)
       end
 
       SliceSelector.new(@env, token, start, stop, step)
@@ -259,7 +265,7 @@ module JSONPathRFC9535
         peeked = stream.peek
         if peeked.type == Token::EOI ||
            peeked.type == Token::RBRACKET ||
-           PRECEDENCES.fetch(peek.type, Precedence::LOWEST) < precedence
+           PRECEDENCES.fetch(peeked.type, Precedence::LOWEST) < precedence
           break
         end
 
@@ -362,7 +368,7 @@ module JSONPathRFC9535
       precedence = PRECEDENCES.fetch(token.type, Precedence::LOWEST)
       right = parse_filter_expression(stream, precedence)
 
-      if COMPARISON_OPERATORS.key? token.value
+      if COMPARISON_OPERATORS.member? token.value
         raise_for_non_comparable_function(left)
         raise_for_non_comparable_function(right)
         case token.type
@@ -395,7 +401,7 @@ module JSONPathRFC9535
       # TODO: int check range
       # TODO: handle scientific notation
       if token.value.length > 1 && token.value.starts_with("0", "-0")
-        raise JSONPathSyntaxError("invalid index '#{token.value}'", token)
+        raise JSONPathSyntaxError.new("invalid index '#{token.value}'", token)
       end
 
       token.value.to_i
@@ -407,7 +413,7 @@ module JSONPathRFC9535
     end
 
     def raise_for_non_comparable_function(expression) # rubocop:disable Metrics/AbcSize
-      if expresion.is_a?(QueryExpression) && !expression.query.singular?
+      if expression.is_a?(QueryExpression) && !expression.query.singular?
         raise JSONPathSyntaxError.new("non-singular query is not comparable", expression.token)
       end
 

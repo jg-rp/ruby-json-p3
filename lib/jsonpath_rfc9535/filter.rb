@@ -385,7 +385,7 @@ module JSONPathRFC9535
   end
 
   def self.eq?(left, right) # rubocop:disable Metrics/MethodLength, Metrics/CyclomaticComplexity, Metrics/PerceivedComplexity, Metrics/AbcSize
-    right, left = left, right if right is_a? JSONPathNodeList
+    right, left = left, right if right.is_a?(JSONPathNodeList)
 
     if left.is_a? JSONPathNodeList
       return left == right if right.is_a? JSONPathNodeList
@@ -397,14 +397,16 @@ module JSONPathRFC9535
 
     return true if left == :nothing && right == :nothing
 
-    right, left = left, right if right.is_a? Boolean
+    right, left = left, right if right.is_a?(Boolean)
 
-    return right.is_a?(Boolean) && left == right if left.is_a? Boolean
+    return right.is_a?(Boolean) && left == right if left.is_a?(Boolean)
 
     left == right
   end
 
-  def self.lt?(left, right)
+  def self.lt?(left, right) # rubocop:disable Metrics/CyclomaticComplexity, Metrics/AbcSize, Metrics/PerceivedComplexity
+    left = left.first.value if left.is_a?(JSONPathNodeList) && left.length == 1
+    right = right.first.value if right.is_a?(JSONPathNodeList) && right.length == 1
     return left < right if left.is_a?(String) && right.is_a?(String)
     return left < right if (left.is_a?(Integer) || left.is_a?(Float)) &&
                            (right.is_a?(Integer) || right.is_a?(Float))

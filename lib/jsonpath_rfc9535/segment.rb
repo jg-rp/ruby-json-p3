@@ -61,28 +61,6 @@ module JSONPathRFC9535
       rv
     end
 
-    protected
-
-    def visit(node, depth = 1) # rubocop:disable Metrics/AbcSize, Metrics/MethodLength
-      # TODO: respect depth
-      rv = []
-
-      if node.value.is_a? Array
-        node.value.each_with_index do |value, i|
-          child = JSONPathNode.new(value, node.location + [i], node.root)
-          rv << child
-          rv.concat visit(child, depth + 1)
-        end
-      elsif node.value.is_a? Hash
-        node.value.each do |key, value|
-          child = JSONPathNode.new(value, node.location + [key], node.root)
-          rv << child
-          rv.concat visit(child, depth + 1)
-        end
-      end
-      rv
-    end
-
     def to_s
       "..[#{@selectors.map(&:to_s).join(", ")}]"
     end
@@ -97,6 +75,27 @@ module JSONPathRFC9535
 
     def hash
       "..".hash ^ @selectors.hash ^ @token.hash
+    end
+
+    protected
+
+    def visit(node, depth = 1) # rubocop:disable Metrics/AbcSize, Metrics/MethodLength
+      # TODO: respect depth
+      rv = [node]
+
+      if node.value.is_a? Array
+        node.value.each_with_index do |value, i|
+          child = JSONPathNode.new(value, node.location + [i], node.root)
+          rv.concat visit(child, depth + 1)
+        end
+      elsif node.value.is_a? Hash
+        node.value.each do |key, value|
+          child = JSONPathNode.new(value, node.location + [key], node.root)
+          rv.concat visit(child, depth + 1)
+        end
+      end
+
+      rv
     end
   end
 end

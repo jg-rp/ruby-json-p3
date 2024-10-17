@@ -18,3 +18,5 @@ gem "simplecov", require: false, group: :test
 gem "yard", "~> 0.9.37"
 
 gem "iregexp", "~> 0.1.0"
+
+gem "minitest-fail-fast", "~> 0.1.0"

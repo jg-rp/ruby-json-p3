@@ -7,11 +7,11 @@ require_relative "jsonpath_rfc9535/environment"
 module JSONPathRFC9535
   DefaultEnvironment = JSONPathEnvironment.new
 
-  def self.main
-    path = DefaultEnvironment.compile("$[?@.a]")
-    puts path
-    data = [{ "a" => "b", "d" => "e" }, { "b" => "c", "d" => "f" }]
-    nodes = path.find(data)
-    puts(nodes.map(&:value))
+  def self.find(path, data)
+    DefaultEnvironment.find(path, data)
+  end
+
+  def self.compile(path)
+    DefaultEnvironment.compile(path)
   end
 end

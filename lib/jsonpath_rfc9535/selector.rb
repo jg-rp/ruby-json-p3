@@ -35,9 +35,7 @@ module JSONPathRFC9535
 
     def resolve(node)
       [node.new_child(node.value.fetch(@name), @name)]
-    rescue KeyError
-      []
-    rescue IndexError
+    rescue IndexError, TypeError, NoMethodError
       []
     end
 
@@ -74,7 +72,7 @@ module JSONPathRFC9535
 
     def resolve(node)
       [node.new_child(node.value.fetch(@index), @index)]
-    rescue StandardError
+    rescue IndexError, TypeError, NoMethodError
       []
     end
 
