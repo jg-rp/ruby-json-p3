@@ -8,6 +8,7 @@ require_relative "function"
 require_relative "segment"
 require_relative "selector"
 require_relative "token"
+require_relative "unescape"
 
 module JSONPathRFC9535
   # Step through tokens
@@ -170,6 +171,8 @@ module JSONPathRFC9535
         stream.next # move past colon
       end
 
+      stream.next if stream.peek.type == Token::COLON
+
       case stream.peek.type
       when Token::INDEX
         step = parse_i_json_int(stream.next)
@@ -201,6 +204,8 @@ module JSONPathRFC9535
       case stream.peek.type
       when Token::INDEX
         step = parse_i_json_int(stream.next)
+      when Token::RBRACKET
+        nil
       else
         error_token = stream.next
         raise JSONPathSyntaxError.new("expected a slice, found '#{token.value}'", error_token)
@@ -368,12 +373,12 @@ module JSONPathRFC9535
 
     def parse_root_query(stream)
       token = stream.next
-      RootQueryExpression.new(token, JSONPath.new(@env, parse_query(stream))) # TODO: in filter?
+      RootQueryExpression.new(token, JSONPath.new(@env, parse_query(stream)))
     end
 
     def parse_relative_query(stream)
       token = stream.next
-      RelativeQueryExpression.new(token, JSONPath.new(@env, parse_query(stream))) # TODO: in filter?
+      RelativeQueryExpression.new(token, JSONPath.new(@env, parse_query(stream)))
     end
 
     def parse_infix_expression(stream, left) # rubocop:disable Metrics/AbcSize, Metrics/MethodLength, Metrics/CyclomaticComplexity
@@ -422,11 +427,14 @@ module JSONPathRFC9535
     end
 
     def decode_string_literal(token)
-      # TODO:
-      token.value
+      if token.type == Token::SINGLE_QUOTE_STRING
+        JSONPathRFC9535.unescape_string(token.value.gsub('"', '\\"').gsub("\\'", "'"), token)
+      else
+        JSONPathRFC9535.unescape_string(token.value, token)
+      end
     end
 
-    def raise_for_non_comparable_function(expression)
+    def raise_for_non_comparable_function(expression) # rubocop:disable Metrics/AbcSize
       if expression.is_a?(QueryExpression) && !expression.query.singular?
         raise JSONPathSyntaxError.new("non-singular query is not comparable", expression.token)
       end

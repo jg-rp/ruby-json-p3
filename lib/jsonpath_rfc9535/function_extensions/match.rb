@@ -1,8 +1,6 @@
 # frozen_string_literal: true
 
-require "iregexp"
-gem_dir = Gem::Specification.find_by_name("iregexp").gem_dir
-require "#{gem_dir}/lib/writer/iregexp-writer.rb" # XXX
+# require "iregexp"
 
 require_relative "../function"
 
@@ -15,9 +13,9 @@ module JSONPathRFC9535
     def call(string, pattern)
       return false unless pattern.is_a? String
 
-      ire = IREGEXP.from_iregexp(pattern)
-      pcre = Regex.new(ire.to_pcre)
-      pcre.match?(string)
+      # ire = IREGEXP.from_iregexp(pattern)
+      # TODO
+      raise "not implemented"
     rescue IREGEXP.ParserError
       false
     end

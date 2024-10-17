@@ -370,8 +370,9 @@ module JSONPathRFC9535
     class << self
       def lex_string_factory(quote, state) # rubocop:disable Metrics/MethodLength, Metrics/AbcSize, Metrics/CyclomaticComplexity
         token = quote == "'" ? Token::SINGLE_QUOTE_STRING : Token::DOUBLE_QUOTE_STRING
+        escaped_quote = "\\#{quote}"
 
-        proc  { # rubocop:disable Metrics/BlockLength
+        proc { # rubocop:disable Metrics/BlockLength
           # @type self: Lexer
           ignore # move past openning quote
 
@@ -384,10 +385,10 @@ module JSONPathRFC9535
           end
 
           loop do
-            head = @query[@os...@pos + 2] or raise
+            head = @query[@pos...@pos + 2] or raise
             c = self.next
 
-            if ["\\\\", "\\#{quote}"].include?(head)
+            if ["\\\\", escaped_quote].include?(head)
               self.next
               next
             end

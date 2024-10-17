@@ -9,9 +9,9 @@ module JSONPathRFC9535
     RETURN_TYPE = ExpressionType::VALUE
 
     def call(obj)
+      return :nothing unless obj.is_a?(Array) || obj.is_a?(Hash) || obj.is_a?(String)
+
       obj.length
-    rescue StandardError
-      :nothing
     end
   end
 end

@@ -3,23 +3,15 @@
 require "json"
 require "jsonpath_rfc9535"
 
-query = "$.values[?length(@.a) == value($..c)]"
+query = "$[::-1]"
 
 document = <<~JSON
-  {
-        "c": "cd",
-        "values": [
-          {
-            "a": "ab"
-          },
-          {
-            "c": "d"
-          },
-          {
-            "a": null
-          }
-        ]
-      }
+  [
+        0,
+        1,
+        2,
+        3
+      ]
 JSON
 
 data = JSON.parse(document)
