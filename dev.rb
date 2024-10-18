@@ -3,13 +3,17 @@
 require "json"
 require "jsonpath_rfc9535"
 
-query = "$[?match(@.a, 'a.*')]"
+query = "$[?search(@, '\\\\p{Lu}')]"
 
 document = <<~JSON
   [
-        {
-          "a": "ab"
-        }
+        "ж",
+        "Ж",
+        "1",
+        "жЖ",
+        true,
+        [],
+        {}
       ]
 JSON
 
