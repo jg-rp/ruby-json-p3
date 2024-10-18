@@ -17,7 +17,7 @@ module JSONPathRFC9535
 
       # TODO: cache pattern as regex
       # TODO: check for I-Regexp compliance
-      re = Regexp.new(pattern)
+      re = Regexp.new(JSONPathRFC9535.map_iregexp(pattern))
       re.match?(value)
     rescue RegexpError, TypeError
       # TODO: option to raise for debugging

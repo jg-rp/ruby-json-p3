@@ -7,7 +7,7 @@ module JSONPathRFC9535
   def self.map_iregexp(pattern) # rubocop:disable Metrics/MethodLength
     escaped = false
     char_class = false
-    mapped = String.new
+    mapped = String.new(encoding: "UTF-8")
 
     pattern.each_char do |c|
       if escaped

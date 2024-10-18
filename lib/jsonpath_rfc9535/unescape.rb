@@ -6,7 +6,7 @@ module JSONPathRFC9535
   # @param token [Token]
   # @return [String] A new string without escape seqeuences.
   def self.unescape_string(value, token) # rubocop:disable Metrics/MethodLength, Metrics/AbcSize, Metrics/CyclomaticComplexity
-    unescaped = String.new
+    unescaped = String.new(encoding: "UTF-8")
     index = 0
     length = value.length
 
