@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-# require "iregexp"
+require "iregexp"
 
 require_relative "../function"
 
@@ -13,11 +13,11 @@ module JSONPathRFC9535
     def call(string, pattern)
       return false unless pattern.is_a? String
 
-      # ire = IREGEXP.from_iregexp(pattern)
+      ire = IREGEXP.from_iregexp(pattern)
       # TODO
       raise "not implemented"
-    rescue IREGEXP.ParserError
-      false
+      # rescue StandardError
+      #   false
     end
   end
 end

@@ -3,20 +3,19 @@
 require "json"
 require "jsonpath_rfc9535"
 
-query = "$[::-1]"
+query = "$[?match(@.a, 'a.*')]"
 
 document = <<~JSON
   [
-        0,
-        1,
-        2,
-        3
+        {
+          "a": "ab"
+        }
       ]
 JSON
 
 data = JSON.parse(document)
 
-# pp JSONPathRFC9535.tokenize(query)
+pp JSONPathRFC9535.tokenize(query)
 
 path = JSONPathRFC9535::DefaultEnvironment.compile(query)
 puts path

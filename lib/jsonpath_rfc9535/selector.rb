@@ -136,14 +136,41 @@ module JSONPathRFC9535
       @step = step
     end
 
-    def resolve(node)
-      return [] unless node.value.is_a?(Array) || @step == 0 # rubocop:disable Style/NumericPredicate
+    def resolve(node) # rubocop:disable Metrics/MethodLength, Metrics/AbcSize, Metrics/CyclomaticComplexity, Metrics/PerceivedComplexity
+      return [] unless node.value.is_a?(Array)
 
-      # TODO: cap start and stop? or does zip cover this?
       length = node.value.length
-      indicies = stop.nil? ? (start || 0...length).step(step || 1) : (start || 0...stop).step(step || 1)
-      node.value[indicies].zip(indicies).map do |v, i|
-        node.new_child(v, i.negative? && length >= i.abs ? length + i : i)
+      step = @step || 1
+      return [] if length.zero? || step.zero?
+
+      start = if @start.nil?
+                step.negative? ? length - 1 : 0
+              elsif @start.negative?
+                [length + @start, 0].max
+              else
+                [@start, length - 1].min
+              end
+
+      stop = if @stop.nil?
+               step.negative? ? -1 : length
+             elsif @stop.negative?
+               [length + @stop, -1].max
+             else
+               [@stop, length].min
+             end
+
+      if step.positive?
+        node.value[(start...stop).step(step)].map.with_index do |e, i|
+          node.new_child(e, i)
+        end
+      else
+        nodes = []
+        i = start
+        while i > stop
+          nodes << node.new_child(node.value[i], i)
+          i += step
+        end
+        nodes
       end
     end
 
@@ -166,6 +193,12 @@ module JSONPathRFC9535
 
     def hash
       @start.hash ^ @stop.hash ^ @step.hash ^ @token.hash
+    end
+
+    private
+
+    def normalized_index(index, length)
+      index.negative? && length >= index.abs ? length + index : index
     end
   end
 

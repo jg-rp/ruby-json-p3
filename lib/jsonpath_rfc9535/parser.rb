@@ -149,6 +149,9 @@ module JSONPathRFC9535
         end
       end
 
+      stream.expect(Token::RBRACKET)
+      stream.next
+
       raise JSONPathSyntaxError.new("empty segment", segment_token) if selectors.empty?
 
       selectors
@@ -200,6 +203,8 @@ module JSONPathRFC9535
       when Token::COLON
         stream.next # move past colon
       end
+
+      stream.next if stream.peek.type == Token::COLON
 
       case stream.peek.type
       when Token::INDEX
@@ -308,8 +313,8 @@ module JSONPathRFC9535
       while stream.peek.type != Token::RPAREN
         expr = case stream.peek.type
                when Token::DOUBLE_QUOTE_STRING
-                 token = stream.next
-                 StringLiteral.new(token, decode_string_literal(token))
+                 arg_token = stream.next
+                 StringLiteral.new(arg_token, decode_string_literal(arg_token))
                when Token::FALSE
                  BooleanLiteral.new(stream.next, false)
                when Token::TRUE
@@ -327,11 +332,11 @@ module JSONPathRFC9535
                when Token::CURRENT
                  parse_relative_query(stream)
                when Token::SINGLE_QUOTE_STRING
-                 token = stream.next
-                 StringLiteral.new(token, decode_string_literal(token))
+                 arg_token = stream.next
+                 StringLiteral.new(arg_token, decode_string_literal(arg_token))
                else
-                 token = stream.next
-                 raise JSONPathSyntaxError.new("unexpected '#{stream.peek.value}'", stream.peek)
+                 arg_token = stream.next
+                 raise JSONPathSyntaxError.new("unexpected '#{arg_token.value}'", arg_token)
                end
 
         expr = parse_infix_expression(stream, expr) while BINARY_OPERATORS.key? stream.peek.type
@@ -488,7 +493,7 @@ module JSONPathRFC9535
     def function_return_type(expression)
       return nil unless expression.is_a? FunctionExpression
 
-      @env.function_extensions[expression.name].RETURN_TYPE
+      @env.function_extensions[expression.name].class::RETURN_TYPE
     end
 
     PRECEDENCES = {
