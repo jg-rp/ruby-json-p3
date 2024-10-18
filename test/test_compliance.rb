@@ -15,9 +15,14 @@ class TestCompliance < Minitest::Spec
         if test_case.key? "result"
           nodes = JSONPathRFC9535.find(test_case["selector"], test_case["document"])
           _(nodes.map(&:value)).must_equal(test_case["result"])
+        elsif test_case.key? "results"
+          nodes = JSONPathRFC9535.find(test_case["selector"], test_case["document"])
+          _(test_case["results"]).must_include(nodes.map(&:value))
+        elsif test_case.key? "invalid"
+          assert_raises JSONPathRFC9535::JSONPathError do
+            JSONPathRFC9535.compile(test_case["selector"])
+          end
         end
-        # TODO: results
-        # TODO: invalid
       end
     end
   end

@@ -3,18 +3,13 @@
 require "json"
 require "jsonpath_rfc9535"
 
-query = "$[?search(@, '\\\\p{Lu}')]"
+query = "$[?@]"
 
 document = <<~JSON
-  [
-        "ж",
-        "Ж",
-        "1",
-        "жЖ",
-        true,
-        [],
-        {}
-      ]
+  {
+        "a": 1,
+        "b": null
+      }
 JSON
 
 data = JSON.parse(document)
