@@ -39,7 +39,7 @@ module JSONPathRFC9535
       parts << "\\A(?:" if !explicit_caret && !explicit_dollar
       parts << JSONPathRFC9535.map_iregexp(pattern)
       parts << ")\\z" if !explicit_caret && !explicit_dollar
-      parts.join("")
+      parts.join
     end
   end
 end

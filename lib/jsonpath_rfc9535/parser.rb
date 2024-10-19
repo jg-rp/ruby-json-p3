@@ -14,19 +14,22 @@ module JSONPathRFC9535
   # Step through tokens
   class Stream
     def initialize(tokens)
-      @it = tokens.to_enum
+      @tokens = tokens
+      @index = 0
       @eoi = tokens.last
     end
 
     def next
-      @it.next
-    rescue StopIteration
+      token = @tokens.fetch(@index)
+      @index += 1
+      token
+    rescue IndexError
       @eor
     end
 
     def peek
-      @it.peek
-    rescue StopIteration
+      @tokens.fetch(@index)
+    rescue IndexError
       @eor
     end
 
@@ -241,7 +244,7 @@ module JSONPathRFC9535
 
     def parse_filter_expression(stream, precedence = Precedence::LOWEST) # rubocop:disable Metrics/AbcSize, Metrics/MethodLength, Metrics/CyclomaticComplexity
       left = case stream.peek.type
-             when Token::DOUBLE_QUOTE_STRING
+             when Token::DOUBLE_QUOTE_STRING, Token::SINGLE_QUOTE_STRING
                token = stream.next
                StringLiteral.new(token, decode_string_literal(token))
              when Token::FALSE
@@ -264,9 +267,6 @@ module JSONPathRFC9535
                parse_root_query(stream)
              when Token::CURRENT
                parse_relative_query(stream)
-             when Token::SINGLE_QUOTE_STRING
-               token = stream.next
-               StringLiteral.new(token, decode_string_literal(token))
              else
                token = stream.next
                raise JSONPathSyntaxError.new("unexpected '#{token.value}'", token)
@@ -316,7 +316,7 @@ module JSONPathRFC9535
 
       while stream.peek.type != Token::RPAREN
         expr = case stream.peek.type
-               when Token::DOUBLE_QUOTE_STRING
+               when Token::DOUBLE_QUOTE_STRING, Token::SINGLE_QUOTE_STRING
                  arg_token = stream.next
                  StringLiteral.new(arg_token, decode_string_literal(arg_token))
                when Token::FALSE
@@ -335,9 +335,6 @@ module JSONPathRFC9535
                  parse_root_query(stream)
                when Token::CURRENT
                  parse_relative_query(stream)
-               when Token::SINGLE_QUOTE_STRING
-                 arg_token = stream.next
-                 StringLiteral.new(arg_token, decode_string_literal(arg_token))
                else
                  arg_token = stream.next
                  raise JSONPathSyntaxError.new("unexpected '#{arg_token.value}'", arg_token)

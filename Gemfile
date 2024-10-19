@@ -20,3 +20,7 @@ gem "yard", "~> 0.9.37"
 gem "minitest-fail-fast", "~> 0.1.0"
 
 gem "stackprof", "~> 0.2.26"
+
+gem "rubocop-minitest", "~> 0.36.0"
+
+gem "rubocop-rake", "~> 0.6.0"

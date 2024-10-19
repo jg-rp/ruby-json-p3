@@ -56,7 +56,7 @@ module JSONPathRFC9535
     alias eql? ==
 
     def hash
-      @name.hash ^ @token.hash
+      [@name, @token].hash
     end
   end
 
@@ -93,7 +93,7 @@ module JSONPathRFC9535
     alias eql? ==
 
     def hash
-      @index.hash ^ @token.hash
+      [@index, @token].hash
     end
 
     private
@@ -198,7 +198,7 @@ module JSONPathRFC9535
     alias eql? ==
 
     def hash
-      @start.hash ^ @stop.hash ^ @step.hash ^ @token.hash
+      [@start, @stop, @step, @token].hash
     end
 
     private
@@ -249,7 +249,7 @@ module JSONPathRFC9535
     alias eql? ==
 
     def hash
-      @expression.hash ^ @token.hash
+      [@expression, @token].hash
     end
   end
 end

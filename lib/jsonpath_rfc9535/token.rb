@@ -25,7 +25,7 @@ module JSONPathRFC9535
     alias eql? ==
 
     def hash
-      @start.hash ^ @stop.hash
+      [@start, @stop].hash
     end
 
     def deconstruct
@@ -100,7 +100,7 @@ module JSONPathRFC9535
     alias eql? ==
 
     def hash
-      @type.hash ^ @value.hash
+      [@type, @value].hash
     end
 
     def deconstruct

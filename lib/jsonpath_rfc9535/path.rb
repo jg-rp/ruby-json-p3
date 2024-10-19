@@ -11,7 +11,7 @@ module JSONPathRFC9535
     end
 
     def to_s
-      "$#{@segments.map(&:to_s).join("")}"
+      "$#{@segments.map(&:to_s).join}"
     end
 
     # Apply this JSONPath expression to JSON-like value _root_.

@@ -45,7 +45,7 @@ module JSONPathRFC9535 # rubocop:disable Style/Documentation
     alias eql? ==
 
     def hash
-      @expression.hash ^ @token.hash
+      [@expression, @token].hash
     end
   end
 
@@ -75,7 +75,7 @@ module JSONPathRFC9535 # rubocop:disable Style/Documentation
     alias eql? ==
 
     def hash
-      @value.hash ^ @token.hash
+      [@value, @token].hash
     end
   end
 
@@ -128,7 +128,7 @@ module JSONPathRFC9535 # rubocop:disable Style/Documentation
     alias eql? ==
 
     def hash
-      @expression.hash ^ @token.hash
+      [@expression, @token].hash
     end
   end
 
@@ -160,7 +160,7 @@ module JSONPathRFC9535 # rubocop:disable Style/Documentation
     alias eql? ==
 
     def hash
-      @left.hash ^ @right.hash ^ @token.hash
+      [@left, @right, @token].hash
     end
   end
 
@@ -282,7 +282,7 @@ module JSONPathRFC9535 # rubocop:disable Style/Documentation
     alias eql? ==
 
     def hash
-      @query.hash ^ @token.hash
+      [@query, @token].hash
     end
   end
 
@@ -348,7 +348,7 @@ module JSONPathRFC9535 # rubocop:disable Style/Documentation
     alias eql? ==
 
     def hash
-      @name.hash ^ @args.hash ^ @token.hash
+      [@name, @args, @token].hash
     end
 
     private

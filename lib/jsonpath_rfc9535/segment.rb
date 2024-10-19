@@ -43,7 +43,7 @@ module JSONPathRFC9535
     alias eql? ==
 
     def hash
-      @selectors.hash ^ @token.hash
+      [@selectors, @token].hash
     end
   end
 
@@ -74,7 +74,7 @@ module JSONPathRFC9535
     alias eql? ==
 
     def hash
-      "..".hash ^ @selectors.hash ^ @token.hash
+      ["..", @selectors, @token].hash
     end
 
     protected

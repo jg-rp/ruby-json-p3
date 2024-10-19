@@ -19,7 +19,7 @@ module JSONPathRFC9535
     # @return [String] the normalized path.
     def path
       segments = @location.map { |i| i.is_a?(String) ? "['#{i}']" : "[#{i}]" }
-      "$#{segments.join("")}"
+      "$#{segments.join}"
     end
 
     # Return a new node that is a child of this node.

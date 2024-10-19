@@ -48,7 +48,7 @@ module JSONPathRFC9535 # rubocop:disable Style/Documentation
     protected
 
     def emit(token_type)
-      @tokens << Token.new(token_type, @chars[@start...@pos].join(""), Span.new(@start, @pos), @query)
+      @tokens << Token.new(token_type, @chars[@start...@pos].join, Span.new(@start, @pos), @query)
       @start = @pos
     end
 
