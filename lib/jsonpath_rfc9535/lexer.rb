@@ -11,7 +11,11 @@ module JSONPathRFC9535
   def self.tokenize(query)
     lexer = Lexer.new(query)
     lexer.run
-    lexer.tokens
+    tokens = lexer.tokens
+
+    raise JSONPathSyntaxError.new(tokens.last.value, tokens.last) if !tokens.empty? && tokens.last.type == Token::ERROR
+
+    tokens
   end
 
   # JSONPath query expreession lexical scanner.
@@ -385,6 +389,7 @@ module JSONPathRFC9535
           end
 
           loop do
+            # TODO: I think String#start_with can take a pattern
             head = @query[@pos...@pos + 2] or raise
             c = self.next
 

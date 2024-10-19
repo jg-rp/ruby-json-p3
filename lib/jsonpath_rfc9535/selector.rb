@@ -44,7 +44,7 @@ module JSONPathRFC9535
     end
 
     def to_s
-      "'#{@name}'"
+      @name.inspect
     end
 
     def ==(other)
@@ -71,7 +71,7 @@ module JSONPathRFC9535
     end
 
     def resolve(node)
-      [node.new_child(node.value.fetch(@index), @index)]
+      [node.new_child(node.value.fetch(@index), normalize(@index, node.value.length))]
     rescue IndexError, TypeError, NoMethodError
       []
     end
@@ -94,6 +94,12 @@ module JSONPathRFC9535
 
     def hash
       @index.hash ^ @token.hash
+    end
+
+    private
+
+    def normalize(index, length)
+      index.negative? && length >= index.abs ? length + index : index
     end
   end
 

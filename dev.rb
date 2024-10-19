@@ -3,7 +3,7 @@
 require "json"
 require "jsonpath_rfc9535"
 
-query = "$[?@]"
+query = "$['\\\"']"
 
 document = <<~JSON
   {

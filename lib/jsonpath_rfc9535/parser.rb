@@ -293,7 +293,7 @@ module JSONPathRFC9535
       value = token.value
       raise JSONPathSyntaxError.new("invalid integer literal", token) if value.start_with?("0") && value.length > 1
 
-      IntegerLiteral.new(token, token.value.to_f.to_i)
+      IntegerLiteral.new(token, Integer(Float(token.value)))
     end
 
     def parse_float_literal(stream)
@@ -303,7 +303,11 @@ module JSONPathRFC9535
         raise JSONPathSyntaxError.new("invalid float literal", token)
       end
 
-      FloatLiteral.new(token, value.to_f)
+      begin
+        FloatLiteral.new(token, Float(value))
+      rescue ArgumentError
+        raise JSONPathSyntaxError.new("invalid float literal", token)
+      end
     end
 
     def parse_function_expression(stream) # rubocop:disable Metrics/AbcSize, Metrics/MethodLength, Metrics/CyclomaticComplexity
@@ -420,26 +424,40 @@ module JSONPathRFC9535
       end
     end
 
-    def parse_i_json_int(token)
-      # TODO: int check range
-      # TODO: handle scientific notation
-      if token.value.length > 1 && token.value.start_with?("0", "-0")
-        raise JSONPathSyntaxError.new("invalid index '#{token.value}'", token)
+    def parse_i_json_int(token) # rubocop:disable Metrics/AbcSize, Metrics/MethodLength
+      value = token.value
+
+      if value.length > 1 && value.start_with?("0", "-0")
+        raise JSONPathSyntaxError.new("invalid index '#{value}'", token)
       end
 
-      # Convert to float first to handle scientific notation/
-      token.value.to_i
+      begin
+        int = Integer(value)
+      rescue ArgumentError
+        raise JSONPathSyntaxError.new("invalid I-JSON integer", token)
+      end
+
+      raise JSONPathSyntaxError.new("index out of range", token) if int < -(2**53) + 1 || int > (2**53) - 1
+
+      int
     end
 
-    def decode_string_literal(token)
+    def decode_string_literal(token) # rubocop:disable Metrics/MethodLength
       if token.type == Token::SINGLE_QUOTE_STRING
+        if token.value =~ /\\"/
+          raise JSONPathSyntaxError.new(
+            "invalid escaped double quote in single quoted string",
+            token
+          )
+        end
+
         JSONPathRFC9535.unescape_string(token.value.gsub('"', '\\"').gsub("\\'", "'"), token)
       else
         JSONPathRFC9535.unescape_string(token.value, token)
       end
     end
 
-    def raise_for_non_comparable_function(expression) # rubocop:disable Metrics/AbcSize
+    def raise_for_non_comparable_function(expression)
       if expression.is_a?(QueryExpression) && !expression.query.singular?
         raise JSONPathSyntaxError.new("non-singular query is not comparable", expression.token)
       end
@@ -449,7 +467,7 @@ module JSONPathRFC9535
       func = @env.function_extensions[expression.name]
       return unless func.class::RETURN_TYPE != ExpressionType::VALUE
 
-      raise JSONPathTypeError.new("result of #{expression.name}() is not comparable", expresion.token)
+      raise JSONPathTypeError.new("result of #{expression.name}() is not comparable", expression.token)
     end
 
     def raise_for_uncompared_literal(expression)
@@ -481,7 +499,7 @@ module JSONPathRFC9535
             raise JSONPathTypeError.new("#{token.value}() argument #{i} must be of LogicalType", arg.token)
           end
         when ExpressionType::NODES
-          unless arg.is_a?(QueryExpression) || function_return_type(arg) == ExpressionType.NODES
+          unless arg.is_a?(QueryExpression) || function_return_type(arg) == ExpressionType::NODES
             raise JSONPathTypeError.new("#{token.value}() argument #{i} must be of NodesType", arg.token)
           end
         end

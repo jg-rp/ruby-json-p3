@@ -1,5 +1,6 @@
 # frozen_string_literal: true
 
+require "json"
 require_relative "function"
 
 module JSONPathRFC9535
@@ -84,8 +85,7 @@ module JSONPathRFC9535
   # A double or single quoted string literal.
   class StringLiteral < FilterExpressionLiteral
     def to_s
-      # TODO: escape double quotes?
-      "\"#{@value}\""
+      json.generate(@value)
     end
   end
 
@@ -381,7 +381,7 @@ module JSONPathRFC9535
     return !obj.empty? if obj.is_a?(JSONPathNodeList)
     return false if obj == :nothing
 
-    obj == true
+    obj != false
   end
 
   def self.eq?(left, right) # rubocop:disable Metrics/MethodLength, Metrics/CyclomaticComplexity, Metrics/PerceivedComplexity, Metrics/AbcSize
