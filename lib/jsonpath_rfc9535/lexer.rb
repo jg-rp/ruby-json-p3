@@ -3,15 +3,19 @@
 require_relative "errors"
 require_relative "token"
 
-module JsonpathRfc9535
+module JSONPathRFC9535 # rubocop:disable Style/Documentation
   # Return an array of tokens for the JSONPath expression _query_.
   #
   # @param query [String] the JSONPath expression to tokenize.
   # @return [Array<Token>]
-  def tokenize(query)
+  def self.tokenize(query)
     lexer = Lexer.new(query)
     lexer.run
-    lexer.tokens
+    tokens = lexer.tokens
+
+    raise JSONPathSyntaxError.new(tokens.last.value, tokens.last) if !tokens.empty? && tokens.last.type == Token::ERROR
+
+    tokens
   end
 
   # JSONPath query expreession lexical scanner.
@@ -44,7 +48,7 @@ module JsonpathRfc9535
     protected
 
     def emit(token_type)
-      @tokens << Token.new(token_type, @chars[@start...@pos].join(""), Span.new(@start, @pos), @query)
+      @tokens << Token.new(token_type, @chars[@start...@pos].join, Span.new(@start, @pos), @query)
       @start = @pos
     end
 
@@ -370,8 +374,9 @@ module JsonpathRfc9535
     class << self
       def lex_string_factory(quote, state) # rubocop:disable Metrics/MethodLength, Metrics/AbcSize, Metrics/CyclomaticComplexity
         token = quote == "'" ? Token::SINGLE_QUOTE_STRING : Token::DOUBLE_QUOTE_STRING
+        escaped_quote = "\\#{quote}"
 
-        proc  { # rubocop:disable Metrics/BlockLength
+        proc { # rubocop:disable Metrics/BlockLength
           # @type self: Lexer
           ignore # move past openning quote
 
@@ -384,10 +389,11 @@ module JsonpathRfc9535
           end
 
           loop do
-            head = @query[@os...@pos + 2] or raise
+            # TODO: I think String#start_with can take a pattern
+            head = @query[@pos...@pos + 2] or raise
             c = self.next
 
-            if ["\\\\", "\\#{quote}"].include?(head)
+            if ["\\\\", escaped_quote].include?(head)
               self.next
               next
             end

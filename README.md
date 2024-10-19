@@ -1,4 +1,4 @@
-# JsonpathRfc9535
+# JSONPathRFC9535
 
 TODO: Delete this and the text below, and describe your gem
 

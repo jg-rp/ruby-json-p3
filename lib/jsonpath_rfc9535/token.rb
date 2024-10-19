@@ -2,12 +2,15 @@
 
 require_relative "errors"
 
-module JsonpathRfc9535
+module JSONPathRFC9535
+  # The start and end position of a token in a query string.
   class Span
     # @dynamic start, stop
     attr_reader :start
     attr_reader :stop
 
+    # @param start [Integer] the index of the character at the start of the token.
+    # @param stop [Integer] one past te index of the character at the end of the token.
     def initialize(start, stop)
       @start = start
       @stop = stop
@@ -22,7 +25,7 @@ module JsonpathRfc9535
     alias eql? ==
 
     def hash
-      @start.hash ^ @stop.hash
+      [@start, @stop].hash
     end
 
     def deconstruct
@@ -34,6 +37,9 @@ module JsonpathRfc9535
     end
   end
 
+  # Tokens are produced by the lexer and consumed by the parser. Each token contains sub
+  # string from a JSONPath expression, its location within the JSONPath expression and a
+  # symbol indicating what type of token it is.
   class Token
     EOI = :token_eoi
     ERROR = :token_error
@@ -94,7 +100,7 @@ module JsonpathRfc9535
     alias eql? ==
 
     def hash
-      @type.hash ^ @value.hash
+      [@type, @value].hash
     end
 
     def deconstruct

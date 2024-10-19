@@ -4,7 +4,7 @@ require_relative "lib/jsonpath_rfc9535/version"
 
 Gem::Specification.new do |spec|
   spec.name = "jsonpath_rfc9535"
-  spec.version = JsonpathRfc9535::VERSION
+  spec.version = JSONPathRFC9535::VERSION
   spec.authors = ["James Prior"]
   spec.email = ["jamesgr.prior@gmail.com"]
 
@@ -13,7 +13,8 @@ Gem::Specification.new do |spec|
   spec.homepage = "https://github.com/jg-rp/ruby-jsonpath-rfc9535"
   spec.required_ruby_version = ">= 3.0.0"
 
-  spec.metadata["allowed_push_host"] = "TODO: Set to your gem server 'https://example.com'"
+  # spec.metadata["allowed_push_host"] = "TODO: Set to your gem server 'https://example.com'"
+  spec.metadata["rubygems_mfa_required"]
 
   spec.metadata["homepage_uri"] = spec.homepage
   spec.metadata["source_code_uri"] = "https://github.com/jg-rp/ruby-jsonpath-rfc9535"
@@ -37,4 +38,5 @@ Gem::Specification.new do |spec|
 
   # For more information and examples about making a new gem, check out our
   # guide at: https://bundler.io/guides/creating_gem.html
+  spec.metadata["rubygems_mfa_required"] = "true"
 end

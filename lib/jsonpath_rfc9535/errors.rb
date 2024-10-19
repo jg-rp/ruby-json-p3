@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
-module JsonpathRfc9535
+module JSONPathRFC9535
+  # Base class for all JSONPath exceptions
   class JSONPathError < StandardError
     def initialize(msg, token)
       super(msg)
@@ -9,4 +10,6 @@ module JsonpathRfc9535
   end
 
   class JSONPathSyntaxError < JSONPathError; end
+  class JSONPathTypeError < JSONPathError; end
+  class JSONPathNameError < JSONPathError; end
 end
