@@ -3,7 +3,7 @@
 require "json"
 require_relative "function"
 
-module JSONPathRFC9535
+module JSONPathRFC9535 # rubocop:disable Style/Documentation
   # Base class for all filter expression nodes.
   class Expression
     # @dynamic token

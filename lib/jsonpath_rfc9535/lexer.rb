@@ -3,7 +3,7 @@
 require_relative "errors"
 require_relative "token"
 
-module JSONPathRFC9535
+module JSONPathRFC9535 # rubocop:disable Style/Documentation
   # Return an array of tokens for the JSONPath expression _query_.
   #
   # @param query [String] the JSONPath expression to tokenize.

@@ -219,7 +219,7 @@ module JSONPathRFC9535
       SliceSelector.new(@env, token, start, stop, step)
     end
 
-    def parse_filter_selector(stream) # rubocop:disable Metrics/MethodLength
+    def parse_filter_selector(stream) # rubocop:disable Metrics/MethodLength, Metrics/AbcSize
       token = stream.next
       expression = parse_filter_expression(stream)
 
@@ -481,8 +481,10 @@ module JSONPathRFC9535
       func = @env.function_extensions.fetch(token.value)
 
       unless args.length == func.class::ARG_TYPES.length
-        raise JSONPathTypeError.new("#{token.value}() takes #{func.class::ARG_TYPES.length} arguments (#{args.length} given)",
-                                    token)
+        raise JSONPathTypeError.new(
+          "#{token.value}() takes #{func.class::ARG_TYPES.length} arguments (#{args.length} given)",
+          token
+        )
       end
 
       func.class::ARG_TYPES.each_with_index do |t, i|

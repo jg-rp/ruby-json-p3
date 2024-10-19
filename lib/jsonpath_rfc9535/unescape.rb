@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-module JSONPathRFC9535
+module JSONPathRFC9535 # rubocop:disable Style/Documentation
   # Replace escape sequences with their equivalent Unicode code point.
   # @param value [String]
   # @param token [Token]
