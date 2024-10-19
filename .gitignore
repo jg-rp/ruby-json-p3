@@ -9,3 +9,5 @@
 
 .vscode
 .stackprof*
+flamegraph*
+dev.rb
