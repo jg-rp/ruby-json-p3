@@ -37,3 +37,7 @@ Dump profile data with `bundle exec ruby profile.rb`, then generate an HTML flam
 ```
 bundle exec stackprof --d3-flamegraph .stackprof-cpu-just-compile.dump > flamegraph-cpu-just-compile.html
 ```
+
+### TruffleRuby
+
+On macOS Sonoma using MacPorts and `rbenv`, `LIBYAML_PREFIX=/opt/local/lib` is needed to install TruffleRuby and when executing any `bundle` commands.

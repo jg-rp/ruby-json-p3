@@ -72,7 +72,8 @@ module JSONPathRFC9535
 
     def resolve(node)
       [node.new_child(node.value.fetch(@index), normalize(@index, node.value.length))]
-    rescue IndexError, TypeError, NoMethodError
+    rescue IndexError, TypeError, NoMethodError, RangeError
+      # NOTE: RangeError has only occured when testing with truffleruby
       []
     end
 

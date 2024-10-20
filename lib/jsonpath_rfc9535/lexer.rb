@@ -135,6 +135,8 @@ module JSONPathRFC9535 # rubocop:disable Style/Documentation
       end
     end
 
+    # TODO: accept_name? to replace accept_match?(RE_NAME)
+
     def accept_match?(pattern)
       match = @query[@pos..].match(pattern)
       return false if match.nil?
