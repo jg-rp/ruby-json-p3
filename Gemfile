@@ -26,3 +26,5 @@ gem "rubocop-rake", "~> 0.6.0"
 gem "rubocop-performance", "~> 1.22"
 
 gem "memory_profiler", "~> 1.1"
+
+gem "benchmark-ips", "~> 2.14"

@@ -32,12 +32,20 @@ To install this gem onto your local machine, run `bundle exec rake install`. To 
 
 #### CPU profile
 
-Dump profile data with `bundle exec ruby profile.rb`, then generate an HTML flame graph with
+Dump profile data with `bundle exec ruby performance/profile.rb`, then generate an HTML flame graph with
 
 ```
 bundle exec stackprof --d3-flamegraph .stackprof-cpu-just-compile.dump > flamegraph-cpu-just-compile.html
 ```
 
+#### Memory profile
+
+Print memory usage to the terminal.
+
+```
+bundle exec ruby performance/memory_profile.rb
+```
+
 ### TruffleRuby
 
-On macOS Sonoma using MacPorts and `rbenv`, `LIBYAML_PREFIX=/opt/local/lib` is needed to install TruffleRuby and when executing any `bundle` commands.
+On macOS Sonoma using MacPorts and `rbenv`, `LIBYAML_PREFIX=/opt/local/lib` is needed to install TruffleRuby and when executing any `bundle` command.
