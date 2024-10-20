@@ -51,7 +51,7 @@ module JSONPathRFC9535 # rubocop:disable Style/Documentation
     protected
 
     def emit(token_type)
-      @tokens << Token.new(token_type, @query[@start...@pos], Span.new(@start, @pos), @query)
+      @tokens << Token.new(token_type, @query[@start...@pos], @start, @pos, @query)
       @start = @pos
     end
 
@@ -70,7 +70,7 @@ module JSONPathRFC9535 # rubocop:disable Style/Documentation
     def backup
       if @pos <= @start
         msg = "unexpected end of expression"
-        raise JSONPathSyntaxError.new(msg, Token.new(Token::ERROR, msg, Span.new(@start, @pos), @query))
+        raise JSONPathSyntaxError.new(msg, Token.new(Token::ERROR, msg, @start, @pos, @query))
       end
 
       @pos -= 1
@@ -94,7 +94,7 @@ module JSONPathRFC9535 # rubocop:disable Style/Documentation
       end
     end
 
-    # Advance the lexer as long as the next character is in _valid_.
+    # Advance the lexer for as long as the next character is in _valid_.
     # @param valid [Set<String>]
     # @return [Boolean]
     def accept_run?(valid)
@@ -147,7 +147,7 @@ module JSONPathRFC9535 # rubocop:disable Style/Documentation
     def ignore_whitespace?
       unless @pos == @start
         msg = "you must emit or ignore before consuming whitespace (#{@query[@start...@pos]})"
-        raise JSONPathError.new(msg, Token.new(Token::ERROR, msg, Span.new(@start, @pos), @query))
+        raise JSONPathError.new(msg, Token.new(Token::ERROR, msg, @start, @pos, @query))
       end
 
       if accept_run?(S_WHITESPACE)
@@ -159,7 +159,7 @@ module JSONPathRFC9535 # rubocop:disable Style/Documentation
     end
 
     def error(message)
-      @tokens << Token.new(Token::ERROR, message, Span.new(@start, @pos), @query)
+      @tokens << Token.new(Token::ERROR, message, @start, @pos, @query)
     end
 
     def lex_root

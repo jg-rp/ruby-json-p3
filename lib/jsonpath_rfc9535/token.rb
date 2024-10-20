@@ -3,40 +3,6 @@
 require_relative "errors"
 
 module JSONPathRFC9535
-  # The start and end position of a token in a query string.
-  class Span
-    # @dynamic start, stop
-    attr_reader :start
-    attr_reader :stop
-
-    # @param start [Integer] the index of the character at the start of the token.
-    # @param stop [Integer] one past te index of the character at the end of the token.
-    def initialize(start, stop)
-      @start = start
-      @stop = stop
-    end
-
-    def ==(other)
-      self.class == other.class &&
-        @start == other.start &&
-        @stop == other.stop
-    end
-
-    alias eql? ==
-
-    def hash
-      [@start, @stop].hash
-    end
-
-    def deconstruct
-      [@start, @stop]
-    end
-
-    def deconstruct_keys(_)
-      { start: @start, stop: @stop }
-    end
-  end
-
   # Tokens are produced by the lexer and consumed by the parser. Each token contains sub
   # string from a JSONPath expression, its location within the JSONPath expression and a
   # symbol indicating what type of token it is.
@@ -79,13 +45,14 @@ module JSONPathRFC9535
     SINGLE_QUOTE_STRING = :token_single_quote_string
     TRUE = :token_true
 
-    # @dynamic type, value, span, query
-    attr_reader :type, :value, :span, :query
+    # @dynamic type, value, start, stop, query
+    attr_reader :type, :value, :start, :stop, :query
 
-    def initialize(type, value, span, query)
+    def initialize(type, value, start, stop, query)
       @type = type
       @value = value
-      @span = span
+      @start = start
+      @stop = stop
       @query = query
     end
 
@@ -93,7 +60,8 @@ module JSONPathRFC9535
       self.class == other.class &&
         @type == other.type &&
         @value == other.value &&
-        @span == other.span &&
+        @start == other.start &&
+        @stop == other.stop &&
         @query == other.query
     end
 
@@ -109,12 +77,6 @@ module JSONPathRFC9535
 
     def deconstruct_keys(_)
       { type: @type, value: @value }
-    end
-
-    def expect(token_type)
-      return if token_type == @type
-
-      raise JSONPathSyntaxError.new("expected #{token_type}, found #{@type}", self)
     end
   end
 end
