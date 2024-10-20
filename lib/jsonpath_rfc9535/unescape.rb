@@ -3,9 +3,10 @@
 module JSONPathRFC9535 # rubocop:disable Style/Documentation
   # Replace escape sequences with their equivalent Unicode code point.
   # @param value [String]
+  # @param quote [String] one of '"' or "'".
   # @param token [Token]
   # @return [String] A new string without escape seqeuences.
-  def self.unescape_string(value, token) # rubocop:disable Metrics/MethodLength, Metrics/AbcSize, Metrics/CyclomaticComplexity
+  def self.unescape_string(value, quote, token) # rubocop:disable Metrics/MethodLength, Metrics/AbcSize, Metrics/CyclomaticComplexity
     unescaped = String.new(encoding: "UTF-8")
     index = 0
     length = value.length
@@ -15,8 +16,8 @@ module JSONPathRFC9535 # rubocop:disable Style/Documentation
       if ch == "\\"
         index += 1
         case value[index]
-        when '"'
-          unescaped << '"'
+        when quote
+          unescaped << quote
         when "\\"
           unescaped << "\\"
         when "/"
@@ -47,7 +48,6 @@ module JSONPathRFC9535 # rubocop:disable Style/Documentation
 
     end
 
-    unescaped.freeze
     unescaped
   end
 

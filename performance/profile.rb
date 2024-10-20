@@ -22,3 +22,9 @@ StackProf.run(mode: :cpu, raw: true, out: ".stackprof-cpu-just-compile.dump") do
     VALID_QUERIES.map { |t| JSONPathRFC9535.compile(t["selector"]) }
   end
 end
+
+StackProf.run(mode: :cpu, raw: true, out: ".stackprof-cpu-just-find.dump") do
+  n.times do
+    COMPILED_QUERIES.map { |p, d| p.find(d) }
+  end
+end
