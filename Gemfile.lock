@@ -35,6 +35,7 @@ GEM
       rb-fsevent (~> 0.10, >= 0.10.3)
       rb-inotify (~> 0.9, >= 0.9.10)
     logger (1.6.1)
+    memory_profiler (1.1.0)
     minitest (5.25.1)
     minitest-fail-fast (0.1.0)
       minitest (~> 5)
@@ -65,6 +66,9 @@ GEM
       parser (>= 3.3.1.0)
     rubocop-minitest (0.36.0)
       rubocop (>= 1.61, < 2.0)
+      rubocop-ast (>= 1.31.1, < 2.0)
+    rubocop-performance (1.22.1)
+      rubocop (>= 1.48.1, < 2.0)
       rubocop-ast (>= 1.31.1, < 2.0)
     rubocop-rake (0.6.0)
       rubocop (~> 1.0)
@@ -100,11 +104,13 @@ PLATFORMS
 
 DEPENDENCIES
   jsonpath_rfc9535!
+  memory_profiler (~> 1.1)
   minitest (~> 5.16)
   minitest-fail-fast (~> 0.1.0)
   rake (~> 13.0)
   rubocop (~> 1.21)
   rubocop-minitest (~> 0.36.0)
+  rubocop-performance (~> 1.22)
   rubocop-rake (~> 0.6.0)
   stackprof (~> 0.2.26)
   steep (~> 1.8)

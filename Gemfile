@@ -22,3 +22,7 @@ gem "stackprof", "~> 0.2.26"
 gem "rubocop-minitest", "~> 0.36.0"
 
 gem "rubocop-rake", "~> 0.6.0"
+
+gem "rubocop-performance", "~> 1.22"
+
+gem "memory_profiler", "~> 1.1"

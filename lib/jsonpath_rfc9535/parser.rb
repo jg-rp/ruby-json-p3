@@ -441,7 +441,7 @@ module JSONPathRFC9535
 
     def decode_string_literal(token) # rubocop:disable Metrics/MethodLength
       if token.type == Token::SINGLE_QUOTE_STRING
-        if token.value =~ /\\"/
+        if token.value.include?("\\\"")
           raise JSONPathSyntaxError.new(
             "invalid escaped double quote in single quoted string",
             token

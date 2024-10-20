@@ -28,4 +28,12 @@ To install this gem onto your local machine, run `bundle exec rake install`. To 
 
 ## Contributing
 
-Bug reports and pull requests are welcome on GitHub at https://github.com/[USERNAME]/jsonpath_rfc9535.
+### Profiling
+
+#### CPU profile
+
+Dump profile data with `bundle exec ruby profile.rb`, then generate an HTML flame graph with
+
+```
+bundle exec stackprof --d3-flamegraph .stackprof-cpu-just-compile.dump > flamegraph-cpu-just-compile.html
+```
