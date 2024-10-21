@@ -34,9 +34,11 @@ module JSONPathRFC9535
     end
 
     def resolve(node)
-      [node.new_child(node.value.fetch(@name), @name)]
-    rescue IndexError, TypeError, NoMethodError
-      []
+      if node.value.is_a?(Hash) && node.value.key?(@name)
+        [node.new_child(node.value[@name], @name)]
+      else
+        []
+      end
     end
 
     def singular?
@@ -71,10 +73,12 @@ module JSONPathRFC9535
     end
 
     def resolve(node)
-      [node.new_child(node.value.fetch(@index), normalize(@index, node.value.length))]
-    rescue IndexError, TypeError, NoMethodError, RangeError
-      # NOTE: RangeError has only occured when testing with truffleruby
-      []
+      if node.value.is_a?(Array)
+        value = node.value[@index]
+        value ? [node.new_child(value, normalize(@index, node.value.length))] : []
+      else
+        []
+      end
     end
 
     def singular?

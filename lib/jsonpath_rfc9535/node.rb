@@ -7,7 +7,8 @@ module JSONPathRFC9535
     attr_reader :value, :location, :root
 
     # @param value [JSON-like] the value at this node.
-    # @param location [Array<String | Integer>] the sequence of names and/or indicies leading to _value_ in _root_.
+    # @param location [Array<String | Integer | Array<String | Integer>>] the sequence of
+    #   names and/or indicies leading to _value_ in _root_.
     # @param root [JSON-like] the root value containing _value_ at _location_.
     def initialize(value, location, root)
       @value = value
@@ -18,7 +19,7 @@ module JSONPathRFC9535
     # Return the normalized path to this node.
     # @return [String] the normalized path.
     def path
-      segments = @location.map { |i| i.is_a?(String) ? "['#{i}']" : "[#{i}]" }
+      segments = @location.flatten.map { |i| i.is_a?(String) ? "['#{i}']" : "[#{i}]" }
       "$#{segments.join}"
     end
 
@@ -26,7 +27,7 @@ module JSONPathRFC9535
     # @param value the JSON-like value at the new node.
     # @param key [Integer, String] the array index or hash key assiciated with _value_.
     def new_child(value, key)
-      JSONPathNode.new(value, @location + [key], @root)
+      JSONPathNode.new(value, [@location, key], @root)
     end
 
     def to_s

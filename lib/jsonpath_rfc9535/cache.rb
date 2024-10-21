@@ -12,12 +12,12 @@ module JSONPathRFC9535
 
     # Return the cached value or nil if _key_ does not exist.
     def [](key)
-      val = @data.fetch(key)
+      val = @data[key]
+      return nil if val.nil?
+
       @data.delete(key)
       @data[key] = val
       val
-    rescue KeyError
-      nil
     end
 
     def []=(key, value)

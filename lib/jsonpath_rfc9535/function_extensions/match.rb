@@ -13,7 +13,7 @@ module JSONPathRFC9535
     # @param cache_size [Integer] the maximum size of the regexp cache. Set it to
     #   zero or negative to disable the cache.
     # @param raise_errors [Boolean] if _false_ (the default), return _false_ when this
-    #   function causes a RegexpError or TypeError instead of raising the exception.
+    #   function causes a RegexpError instead of raising the exception.
     def initialize(cache_size = 128, raise_errors: false)
       super()
       @cache_size = cache_size
@@ -25,7 +25,7 @@ module JSONPathRFC9535
     # @param pattern [String]
     # @return Boolean
     def call(value, pattern) # rubocop:disable Metrics/MethodLength
-      return false unless pattern.is_a? String
+      return false unless pattern.is_a?(String) && value.is_a?(String)
 
       if @cache_size.positive?
         re = @cache[pattern] || Regexp.new(full_match(pattern))
@@ -35,7 +35,7 @@ module JSONPathRFC9535
       end
 
       re.match?(value)
-    rescue RegexpError, TypeError
+    rescue RegexpError
       raise if @raise_errors
 
       false
