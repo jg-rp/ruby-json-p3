@@ -1,93 +1,1006 @@
+# RFC 9535 JSONPath query expressions for JSON.
 module JSONPathRFC9535
-  VERSION: String
-  
+  DefaultEnvironment: JSONPathEnvironment
+
+  def self.find: (String path, untyped data) -> JSONPathNodeList
+
+  def self.compile: (String path) -> JSONPath
+end
+
+module JSONPathRFC9535
+  # A least recently used cache relying on Ruby hash insertion order.
+  class LRUCache
+    @data: untyped
+
+    @max_size: Integer
+
+    attr_reader max_size: Integer
+
+    def initialize: (Integer max_size) -> void
+
+    # Return the cached value or nil if _key_ does not exist.
+    def []: (untyped key) -> (nil | untyped)
+
+    def []=: (untyped key, untyped value) -> untyped
+
+    def length: () -> Integer
+
+    def keys: () -> Array[untyped]
+  end
+end
+
+module JSONPathRFC9535
+  # JSONPath configuration
+  class JSONPathEnvironment
+    @parser: Parser
+
+    @function_extensions: Hash[String, FunctionExtension]
+
+    attr_reader function_extensions: Hash[String, FunctionExtension]
+
+    def initialize: () -> void
+
+    # Prepare JSONPath expression _query_ for repeated application.
+    # @param query [String]
+    # @return [JSONPath]
+    def compile: (String query) -> JSONPath
+
+    # Apply JSONPath expression _query_ to _value_.
+    # @param query [String]
+    # @param value [JSON-like data]
+    # @return [Array<JSONPath>]
+    def find: (String query, untyped value) -> JSONPathNodeList
+
+    def setup_function_extensions: () -> void
+  end
+end
+
+module JSONPathRFC9535
+  # Base class for all JSONPath exceptions
   class JSONPathError < StandardError
-    def initialize: (String, Token) -> void
+    @token: Token
+
+    def initialize: (String msg, Token token) -> void
   end
 
-  class JSONPathSyntaxError < JSONPathError end
-
-  class Span 
-    attr_reader start: Integer
-    attr_reader stop: Integer
-
-    def initialize: (Integer, Integer) -> void
+  class JSONPathSyntaxError < JSONPathError
   end
 
+  class JSONPathTypeError < JSONPathError
+  end
+
+  class JSONPathNameError < JSONPathError
+  end
+end
+
+module JSONPathRFC9535
+  # Base class for all filter expression nodes.
+  class Expression
+    @token: Token
+
+    # @dynamic token
+    attr_reader token: Token
+
+    def initialize: (Token token) -> void
+
+    # Evaluate the filter expressin in the given context.
+    def evaluate: (FilterContext _context) -> untyped
+  end
+
+  # An expression that evaluates to true or false.
+  class FilterExpression < Expression
+    @expression: Expression
+
+    attr_reader expression: Expression
+
+    def initialize: (Token token, Expression expression) -> void
+
+    def evaluate: (FilterContext context) -> untyped
+
+    def to_s: () -> String
+
+    def ==: (untyped other) -> bool
+
+    alias eql? ==
+
+    def hash: () -> Integer
+  end
+
+  # Base class for expression literals.
+  class FilterExpressionLiteral < Expression
+    @value: untyped
+
+    attr_reader value: untyped
+
+    def initialize: (Token token, untyped value) -> void
+
+    def evaluate: (FilterContext _context) -> untyped
+
+    def to_s: () -> String
+
+    def ==: (untyped other) -> bool
+
+    alias eql? ==
+
+    def hash: () -> Integer
+  end
+
+  # Literal true or false.
+  class BooleanLiteral < FilterExpressionLiteral
+  end
+
+  # A double or single quoted string literal.
+  class StringLiteral < FilterExpressionLiteral
+    def to_s: () -> String
+  end
+
+  # A literal integer.
+  class IntegerLiteral < FilterExpressionLiteral
+  end
+
+  # A literal float
+  class FloatLiteral < FilterExpressionLiteral
+  end
+
+  # A literal null
+  class NullLiteral < FilterExpressionLiteral
+    def to_s: () -> "null"
+  end
+
+  # An expression prefixed with the logical not operator.
+  class LogicalNotExpression < Expression
+    @expression: Expression
+
+    attr_reader expression: Expression
+
+    def initialize: (Token token, Expression expression) -> void
+
+    def evaluate: (FilterContext context) -> untyped
+
+    def to_s: () -> ::String
+
+    def ==: (untyped other) -> bool
+
+    alias eql? ==
+
+    def hash: () -> Integer
+  end
+
+  # Base class for expression with a left expression, operator and right expression.
+  class InfixExpression < Expression
+    @left: Expression
+
+    @right: Expression
+
+    attr_reader left: Expression
+
+    attr_reader right: Expression
+
+    def initialize: (Token token, Expression left, Expression right) -> void
+
+    def evaluate: (FilterContext _context) -> untyped
+
+    def to_s: () -> String
+
+    def ==: (untyped other) -> bool
+
+    alias eql? ==
+
+    def hash: () -> Integer
+  end
+
+  # A logical `&&` expression.
+  class LogicalAndExpression < InfixExpression
+    def evaluate: (FilterContext context) -> untyped
+
+    def to_s: () -> ::String
+  end
+
+  # A logical `||` expression.
+  class LogicalOrExpression < InfixExpression
+    def evaluate: (FilterContext context) -> untyped
+
+    def to_s: () -> ::String
+  end
+
+  # An `==` expression.
+  class EqExpression < InfixExpression
+    def evaluate: (FilterContext context) -> untyped
+
+    def to_s: () -> ::String
+  end
+
+  # A `!=` expression.
+  class NeExpression < InfixExpression
+    def evaluate: (FilterContext context) -> untyped
+
+    def to_s: () -> ::String
+  end
+
+  # A `<=` expression.
+  class LeExpression < InfixExpression
+    def evaluate: (FilterContext context) -> untyped
+
+    def to_s: () -> ::String
+  end
+
+  # A `>=` expression.
+  class GeExpression < InfixExpression
+    def evaluate: (FilterContext context) -> untyped
+
+    def to_s: () -> ::String
+  end
+
+  # A `<` expression.
+  class LtExpression < InfixExpression
+    def evaluate: (FilterContext context) -> untyped
+
+    def to_s: () -> ::String
+  end
+
+  # A `>` expression.
+  class GtExpression < InfixExpression
+    def evaluate: (FilterContext context) -> untyped
+
+    def to_s: () -> ::String
+  end
+
+  # Base class for all embedded filter queries
+  class QueryExpression < Expression
+    @query: JSONPath
+
+    attr_reader query: JSONPath
+
+    def initialize: (Token token, JSONPath query) -> void
+
+    def evaluate: (FilterContext _context) -> untyped
+
+    def to_s: () -> String
+
+    def ==: (untyped other) -> bool
+
+    alias eql? ==
+
+    def hash: () -> Integer
+  end
+
+  # An embedded query starting at the current node.
+  class RelativeQueryExpression < QueryExpression
+    def evaluate: (FilterContext context) -> untyped
+
+    def to_s: () -> ::String
+  end
+
+  # An embedded query starting at the root node.
+  class RootQueryExpression < QueryExpression
+    def evaluate: (FilterContext context) -> untyped
+
+    def to_s: () -> String
+  end
+
+  # A filter function call.
+  class FunctionExpression < Expression
+    @name: String
+
+    @args: Array[Expression]
+
+    attr_reader name: String
+
+    attr_reader args: Array[Expression]
+
+    # @param name [String]
+    # @param args [Array<Expression>]
+    def initialize: (Token token, String name, Array[Expression] args) -> void
+
+    def evaluate: (FilterContext context) -> untyped
+
+    def to_s: () -> ::String
+
+    def ==: (untyped other) -> bool
+
+    alias eql? ==
+
+    def hash: () -> Integer
+
+    private
+
+    def unpack_node_lists: (FunctionExtension func, Array[untyped] args) -> Array[untyped]
+  end
+
+  def self.truthy?: (untyped obj) -> bool
+
+  def self.eq?: (Expression left, Expression right) -> bool
+
+  def self.lt?: (Expression left, Expression right) -> bool
+
+  # Contextural information and data used for evaluating a filter expression.
+  class FilterContext
+    @env: JSONPathEnvironment
+
+    @current: untyped
+
+    @root: untyped
+
+    attr_reader env: JSONPathEnvironment
+
+    attr_reader current: untyped
+
+    attr_reader root: untyped
+
+    def initialize: (JSONPathEnvironment env, untyped current, untyped root) -> void
+  end
+end
+
+module JSONPathRFC9535
+  class ExpressionType
+    VALUE: :value_expression
+
+    LOGICAL: :logical_expression
+
+    NODES: :nodes_expression
+  end
+
+  # Base class for all filter functions.
+  class FunctionExtension
+    ARG_TYPES: ::Array[Symbol]
+
+    RETURN_TYPE: Symbol
+
+    def call: (*untyped _args, **untyped _kwargs) -> untyped
+  end
+end
+
+module JSONPathRFC9535
+  # Return an array of tokens for the JSONPath expression _query_.
+  #
+  # @param query [String] the JSONPath expression to tokenize.
+  # @return [Array<Token>]
+  def self.tokenize: (String query) -> Array[Token]
+
+  # JSONPath query expreession lexical scanner.
+  #
+  # @see tokenize
+  class Lexer
+    @filter_depth: Integer
+
+    @paren_stack: Array[Integer]
+
+    @tokens: Array[Token]
+
+    @start: Integer
+
+    @query: String
+
+    @scanner: untyped
+
+    RE_INT: ::Regexp
+
+    RE_NAME: ::Regexp
+
+    RE_WHITESPACE: ::Regexp
+
+    S_ESCAPES: Set[String]
+
+    # @dynamic tokens
+    attr_reader tokens: Array[Token]
+
+    def initialize: (String query) -> void
+
+    def run: () -> void
+
+    # Generate a new token with the given type.
+    # @param token_type [Symbol] one of the constants defined on the _Token_ class.
+    # @param value [String | nil] a the token's value, if it is known, otherwise the
+    #   value will be sliced from @query. This is a performance optimisation.
+    def emit: (Symbol token_type, ?untyped value) -> void
+
+    def next: () -> String
+
+    def ignore: () -> void
+
+    def backup: () -> void
+
+    def peek: () -> String
+
+    # Advance the lexer if the next character is equal to _char_.
+    def accept?: (String | Regexp pattern) -> bool
+
+    # Accept a run of digits, possibly preceded by a negative sign.
+    # Does not handle exponents.
+    def accept_int?: () -> bool
+
+    def ignore_whitespace?: () -> (false | true)
+
+    def error: (String message) -> void
+
+    def lex_root: () -> (nil | :lex_segment)
+
+    def lex_segment: () -> (nil | :lex_shorthand_selector | untyped)
+
+    def lex_descendant_segment: () -> untyped
+
+    def lex_shorthand_selector: () -> (nil | :lex_segment)
+
+    def lex_inside_bracketed_segment: () -> untyped
+
+    def lex_inside_filter: () -> untyped
+
+    def self.lex_string_factory: (String quote, Symbol state, Symbol token) -> untyped
+  end
+end
+
+type location_element = String | Integer | Array[location_element]
+
+module JSONPathRFC9535
+  # A JSON-like value and its location.
+  class JSONPathNode
+    @value: untyped
+
+    @location: Array[location_element]
+
+    @root: untyped
+
+    # @dynamic value, location, root
+    attr_reader value: untyped
+
+    # @dynamic value, location, root
+    attr_reader location: Array[location_element]
+
+    # @dynamic value, location, root
+    attr_reader root: untyped
+
+    # @param value [JSON-like] the value at this node.
+    # @param location [Array<String | Integer | Array<String | Integer>>] the sequence of
+    #   names and/or indicies leading to _value_ in _root_.
+    # @param root [JSON-like] the root value containing _value_ at _location_.
+    def initialize: (untyped value, Array[location_element] location, untyped root) -> void
+
+    # Return the normalized path to this node.
+    # @return [String] the normalized path.
+    def path: () -> ::String
+
+    # Return a new node that is a child of this node.
+    # @param value the JSON-like value at the new node.
+    # @param key [Integer, String] the array index or hash key assiciated with _value_.
+    def new_child: (untyped value, String | Integer key) -> JSONPathNode
+
+    def to_s: () -> ::String
+  end
+
+  # An array of JSONPathNode instances.
+  class JSONPathNodeList < Array[JSONPathNode]
+  end
+end
+
+module JSONPathRFC9535
+  # Step through tokens
+  class Stream
+    @tokens: Array[Token]
+
+    @index: Integer
+
+    @eoi: Token
+
+    def initialize: (Array[Token] tokens) -> void
+
+    def next: () -> Token
+
+    def peek: () -> Token
+
+    def expect: (Symbol token_type) -> void
+
+    def expect_not: (Symbol token_type, String message) -> void
+
+    def to_s: () -> ::String
+  end
+
+  class Precedence
+    LOWEST: 1
+
+    LOGICAL_OR: 3
+
+    LOGICAL_AND: 4
+
+    RELATIONAL: 5
+
+    PREFIX: 7
+  end
+
+  # A JSONPath expression parser.
+  class Parser
+    @env: JSONPathEnvironment
+
+    def initialize: (JSONPathEnvironment env) -> void
+
+    # Parse an array of tokens into an abstract syntax tree.
+    # @param tokens [Array<Token>] tokens from the lexer.
+    # @return [Array<Segment>]
+    def parse: (Array[Token] tokens) -> Array[Segment]
+
+    def parse_query: (Stream stream) -> Array[Segment]
+
+    def parse_selectors: (Stream stream) -> Array[Selector]
+
+    def parse_bracketed_selection: (Stream stream) -> Array[Selector]
+
+    def parse_index_or_slice: (Stream stream) -> Selector
+
+    def parse_slice_selector: (Stream stream) -> Selector
+
+    def parse_filter_selector: (Stream stream) -> Selector
+
+    def parse_filter_expression: (Stream stream, ?Integer precedence) -> Expression
+
+    def parse_integer_literal: (Stream stream) -> Expression
+
+    def parse_float_literal: (Stream stream) -> Expression
+
+    def parse_function_expression: (Stream stream) -> Expression
+
+    def parse_grouped_expression: (Stream stream) -> Expression
+
+    def parse_prefix_expression: (Stream stream) -> Expression
+
+    def parse_root_query: (Stream stream) -> Expression
+
+    def parse_relative_query: (Stream stream) -> Expression
+
+    def parse_infix_expression: (Stream stream, Expression left) -> Expression
+
+    def parse_i_json_int: (Token token) -> Integer
+
+    def decode_string_literal: (Token token) -> String
+
+    def raise_for_non_comparable_function: (Expression expression) -> void
+
+    def raise_for_uncompared_literal: (Expression expression) -> void
+
+    def validate_function_extension_sugnature: (Token token, untyped args) -> void
+
+    def function_return_type: (Expression expression) -> (Symbol | nil)
+
+    PRECEDENCES: ::Hash[Symbol, Integer]
+
+    BINARY_OPERATORS: ::Hash[Symbol, "&&" | "||" | "==" | ">=" | ">" | "<=" | "<" | "!="]
+
+    COMPARISON_OPERATORS: Set[String]
+  end
+end
+
+module JSONPathRFC9535
+  # A compiled JSONPath expression ready to be applied to JSON-like values.
+  class JSONPath
+    @env: JSONPathEnvironment
+
+    @segments: Array[Segment]
+
+    def initialize: (JSONPathEnvironment env, Array[Segment] segments) -> void
+
+    def to_s: () -> ::String
+
+    # Apply this JSONPath expression to JSON-like value _root_.
+    # @param root [Array, Hash, String, Integer] the root JSON-like value to apply this query to.
+    # @return [Array<JSONPathNode>] the sequence of nodes found while applying this query to _root_.
+    def find: (untyped root) -> untyped
+
+    alias apply find
+
+    # Return true if this JSONPath expression is a singular query.
+    def singular?: () -> (false | true)
+
+    # Return true if this JSONPath expression has no segments.
+    def empty?: () -> (false | true)
+  end
+end
+
+module JSONPathRFC9535
+  # Base class for all JSONPath segments.
+  class Segment
+    @env: JSONPathEnvironment
+
+    @token: Token
+
+    @selectors: Array[Selector]
+
+    # @dynamic token, selectors
+    attr_reader token: Token
+
+    # @dynamic token, selectors
+    attr_reader selectors: Array[Selector]
+
+    def initialize: (JSONPathEnvironment env, Token token, Array[Selector] selectors) -> void
+
+    # Select the children of each node in _nodes_.
+    def resolve: (Array[JSONPathNode] _nodes) -> Array[JSONPathNode]
+  end
+
+  # The child selection segment.
+  class ChildSegment < Segment
+    def resolve: (Array[JSONPathNode] nodes) -> Array[JSONPathNode]
+
+    def to_s: () -> ::String
+
+    def ==: (untyped other) -> bool
+
+    alias eql? ==
+
+    def hash: () -> Integer
+  end
+
+  # The recursive descent segment
+  class RecursiveDescentSegment < Segment
+    def resolve: (Array[JSONPathNode] nodes) -> Array[JSONPathNode]
+
+    def to_s: () -> ::String
+
+    def ==: (untyped other) -> bool
+
+    alias eql? ==
+
+    def hash: () -> Integer
+
+    def visit: (JSONPathNode node, ?::Integer depth) -> Array[JSONPathNode]
+  end
+end
+
+module JSONPathRFC9535
+  # Base class for all JSONPath selectors
+  class Selector
+    @env: JSONPathEnvironment
+
+    @token: Token
+
+    # @dynamic token
+    attr_reader token: Token
+
+    def initialize: (JSONPathEnvironment env, Token token) -> void
+
+    # Apply this selector to _node_.
+    # @return [Array<JSONPathNode>]
+    def resolve: (JSONPathNode _node) -> Array[JSONPathNode]
+
+    # Return true if this selector is a singular selector.
+    def singular?: () -> false
+  end
+
+  # The name selector select values from hashes given a key.
+  class NameSelector < Selector
+    @name: String
+
+    # @dynamic name
+    attr_reader name: String
+
+    def initialize: (JSONPathEnvironment env, Token token, String name) -> void
+
+    def resolve: (JSONPathNode node) -> ::Array[JSONPathNode]
+
+    def singular?: () -> true
+
+    def to_s: () -> String
+
+    def ==: (untyped other) -> bool
+
+    alias eql? ==
+
+    def hash: () -> Integer
+  end
+
+  # The index selector selects values from arrays given an index.
+  class IndexSelector < Selector
+    @index: Integer
+
+    # @dynamic index
+    attr_reader index: Integer
+
+    def initialize: (JSONPathEnvironment env, Token token, Integer index) -> void
+
+    def resolve: (JSONPathNode node) -> Array[JSONPathNode]
+
+    def singular?: () -> true
+
+    def to_s: () -> String
+
+    def ==: (untyped other) -> bool
+
+    alias eql? ==
+
+    def hash: () -> Integer
+
+    private
+
+    def normalize: (Integer index, Integer length) -> Integer
+  end
+
+  # The wildcard selector selects all elements from an array or values from a hash.
+  class WildcardSelector < Selector
+    def resolve: (JSONPathNode node) -> Array[JSONPathNode]
+
+    def to_s: () -> "*"
+
+    def ==: (untyped other) -> bool
+
+    alias eql? ==
+
+    def hash: () -> Integer
+  end
+
+  # The slice selector selects a range of elements from an array.
+  class SliceSelector < Selector
+    @start: (Integer | nil)
+
+    @stop: (Integer | nil)
+
+    @step: Integer
+
+    # @dynamic start, stop, step
+    attr_reader start: (Integer | nil)
+
+    # @dynamic start, stop, step
+    attr_reader stop: (Integer | nil)
+
+    # @dynamic start, stop, step
+    attr_reader step: Integer
+
+    def initialize: (JSONPathEnvironment env, Token token, (Integer | nil) start, (Integer | nil) stop, (Integer | nil) step) -> void
+
+    def resolve: (JSONPathNode node) -> Array[JSONPathNode]
+
+    def to_s: () -> ::String
+
+    def ==: (untyped other) -> bool
+
+    alias eql? ==
+
+    def hash: () -> Integer
+
+    private
+
+    def normalized_start: (Integer length) -> Integer
+                        
+    def normalized_stop: (Integer length) -> Integer
+  end
+
+  # Select array elements or hash values according to a filter expression.
+  class FilterSelector < Selector
+    @expression: Expression
+
+    # @dynamic expression
+    attr_reader expression: Expression
+
+    def initialize: (JSONPathEnvironment env, Token token, Expression expression) -> void
+
+    def resolve: (JSONPathNode node) -> Array[JSONPathNode]
+
+    def to_s: () -> ::String
+
+    def ==: (untyped other) -> bool
+
+    alias eql? ==
+
+    def hash: () -> Integer
+  end
+end
+
+module JSONPathRFC9535
+  # Tokens are produced by the lexer and consumed by the parser. Each token contains sub
+  # string from a JSONPath expression, its location within the JSONPath expression and a
+  # symbol indicating what type of token it is.
   class Token
-    EOI: Symbol
-    ERROR: Symbol
+    @type: Symbol
 
-    SHORTHAND_NAME: Symbol
-    COLON: Symbol
-    COMMA: Symbol
-    DOT: Symbol
-    DOUBLE_DOT: Symbol
-    FILTER: Symbol
-    INDEX: Symbol
-    LBRACKET: Symbol
-    NAME: Symbol
-    RBRACKET: Symbol
-    ROOT: Symbol
-    WILD: Symbol
+    @value: String
 
-    AND: Symbol
-    CURRENT: Symbol
-    DOUBLE_QUOTE_STRING: Symbol
-    EQ: Symbol
-    FALSE: Symbol
-    FLOAT: Symbol
-    FUNCTION: Symbol
-    GE: Symbol
-    GT: Symbol
-    INT: Symbol
-    LE: Symbol
-    LPAREN: Symbol
-    LT: Symbol
-    NE: Symbol
-    NOT: Symbol
-    NULL: Symbol
-    OP: Symbol
-    OR: Symbol
-    RPAREN: Symbol
-    SINGLE_QUOTE_STRING: Symbol
-    TRUE: Symbol
+    @start: Integer
 
+    @query: String
+
+    EOI: :token_eoi
+
+    ERROR: :token_error
+
+    SHORTHAND_NAME: :token_shorthand_name
+
+    COLON: :token_colon
+
+    COMMA: :token_comma
+
+    DOT: :token_dot
+
+    DOUBLE_DOT: :token_double_dot
+
+    FILTER: :token_filter
+
+    INDEX: :token_index
+
+    LBRACKET: :token_lbracket
+
+    NAME: :token_name
+
+    RBRACKET: :token_rbracket
+
+    ROOT: :token_root
+
+    WILD: :token_wild
+
+    AND: :token_and
+
+    CURRENT: :token_current
+
+    DOUBLE_QUOTE_STRING: :token_double_quote_string
+
+    EQ: :token_eq
+
+    FALSE: :token_false
+
+    FLOAT: :token_float
+
+    FUNCTION: :token_function
+
+    GE: :token_ge
+
+    GT: :token_gt
+
+    INT: :token_int
+
+    LE: :token_le
+
+    LPAREN: :token_lparen
+
+    LT: :token_lt
+
+    NE: :token_ne
+
+    NOT: :token_not
+
+    NULL: :token_null
+
+    OP: :token_op
+
+    OR: :token_or
+
+    RPAREN: :token_rparen
+
+    SINGLE_QUOTE_STRING: :token_single_quote_string
+
+    TRUE: :token_true
+
+    # @dynamic type, value, start, query
     attr_reader type: Symbol
+
+    # @dynamic type, value, start, query
     attr_reader value: String
-    attr_reader span: Span
+
+    # @dynamic type, value, start, query
+    attr_reader start: Integer
+
+    # @dynamic type, value, start, query
     attr_reader query: String
 
-    def initialize: (Symbol, String, Span, String) -> void
-    def expect: (Symbol) -> void
-  end
+    def initialize: (Symbol type, String value, Integer start, String query) -> void
 
-  class Lexer
-    attr_reader tokens: Array[Token]
-    @filter_depth: Integer
-    @paren_stack: Array[Integer]
-    @start: Integer
-    @pos: Integer
-    @query: String
-    @length: Integer
-    @char: Array[String]
-    def initialize: (String) -> void
-    def run: () -> void
-    def emit: (Symbol) -> void
-    def next: () -> String
-    def ignore: () -> void
-    def backup: () -> void
-    def peek: () -> String
-    def accept?: (Regexp) -> bool
-    def accept_match?: (Regexp) -> bool
-    def ignore_whitespace?: () -> bool
-    def error: (String) -> void
-    def lex_root: () -> (Symbol | nil)
-    def lex_segment: () -> (Symbol | nil)
-    def lex_descendant_segment: () -> (Symbol | nil)
-    def lex_inside_bracketed_segment: () -> (Symbol | nil)
-    def lex_shorthand_selector: () -> (Symbol | nil)
-    def lex_inside_filter: () -> (Symbol | nil)
-    def self.lex_string_factory: (String, Symbol) -> untyped
+    def ==: (untyped other) -> bool
+
+    alias eql? ==
+
+    def hash: () -> Integer
+  end
+end
+
+module JSONPathRFC9535
+  # Replace escape sequences with their equivalent Unicode code point.
+  # @param value [String]
+  # @param quote [String] one of '"' or "'".
+  # @param token [Token]
+  # @return [String] A new string without escape seqeuences.
+  def self.unescape_string: (String value, String quote, Token token) -> String
+
+  def self.decode_hex_char: (untyped value, untyped index, Token token) -> ::Array[untyped]
+
+  def self.parse_hex_digits: (untyped digits, Token token) -> untyped
+
+  def self.high_surrogate?: (untyped code_point) -> untyped
+
+  def self.low_surrogate?: (untyped code_point) -> untyped
+
+  def self.code_point_to_string: (untyped code_point, Token token) -> untyped
+end
+
+module JSONPathRFC9535
+  VERSION: String
+end
+
+module JSONPathRFC9535
+  # The standard `count` function.
+  class Count < FunctionExtension
+    ARG_TYPES: ::Array[Symbol]
+
+    RETURN_TYPE: Symbol
+
+    def call: (JSONPathNodeList node_list) -> untyped
+  end
+end
+
+module JSONPathRFC9535
+  # The standard `length` function.
+  class Length < FunctionExtension
+    ARG_TYPES: ::Array[Symbol]
+
+    RETURN_TYPE: Symbol
+
+    def call: (untyped obj) -> (:nothing | untyped)
+  end
+end
+
+module JSONPathRFC9535
+  # The standard `match` function.
+  class Match < FunctionExtension
+    @cache_size: Integer
+
+    @raise_errors: (true | false)
+
+    @cache: LRUCache
+
+    ARG_TYPES: ::Array[Symbol]
+
+    RETURN_TYPE: Symbol
+
+    # @param cache_size [Integer] the maximum size of the regexp cache. Set it to
+    #   zero or negative to disable the cache.
+    # @param raise_errors [bool] if _false_ (the default), return _false_ when this
+    #   function causes a RegexpError instead of raising the exception.
+    def initialize: (?::Integer cache_size, ?raise_errors: bool) -> void
+
+    # @param value [String]
+    # @param pattern [String]
+    # @return bool
+    def call: (untyped value, untyped pattern) -> untyped
+
+    private
+
+    def full_match: (String pattern) -> String
+  end
+end
+
+module JSONPathRFC9535
+  # Map I-Regexp pattern to Ruby regex pattern.
+  # @param pattern [String]
+  # @return [String]
+  def self.map_iregexp: (String pattern) -> String
+end
+
+module JSONPathRFC9535
+  # The standard `search` function.
+  class Search < FunctionExtension
+    @cache_size: Integer
+
+    @raise_errors: (true | false)
+
+    @cache: LRUCache
+
+    ARG_TYPES: ::Array[Symbol]
+
+    RETURN_TYPE: Symbol
+
+    # @param cache_size [Integer] the maximum size of the regexp cache. Set it to
+    #   zero or negative to disable the cache.
+    # @param raise_errors [bool] if _false_ (the default), return _false_ when this
+    #   function causes a RegexpError instead of raising the exception.
+    def initialize: (?::Integer cache_size, ?raise_errors: bool) -> void
+
+    # @param value [String]
+    # @param pattern [String]
+    # @return bool
+    def call: (untyped value, untyped pattern) -> untyped
+  end
+end
+
+module JSONPathRFC9535
+  # The standard `value` function.
+  class Value < FunctionExtension
+    ARG_TYPES: ::Array[Symbol]
+
+    RETURN_TYPE: Symbol
+
+    def call: (JSONPathNodeList node_list) -> (untyped | :nothing)
   end
 end

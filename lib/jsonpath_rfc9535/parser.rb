@@ -409,6 +409,8 @@ module JSONPathRFC9535
           LtExpression.new(token, left, right)
         when Token::NE
           NeExpression.new(token, left, right)
+        else
+          raise JSONPathSyntaxError.new("unexpected token", token)
         end
       else
         raise_for_uncompared_literal(left)
@@ -418,6 +420,8 @@ module JSONPathRFC9535
           LogicalAndExpression.new(token, left, right)
         when Token::OR
           LogicalOrExpression.new(token, left, right)
+        else
+          raise JSONPathSyntaxError.new("unexpected token", token)
         end
       end
     end

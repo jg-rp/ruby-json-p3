@@ -144,45 +144,33 @@ module JSONPathRFC9535
       super(env, token)
       @start = start
       @stop = stop
-      @step = step
+      @step = step || 1
     end
 
-    def resolve(node) # rubocop:disable Metrics/MethodLength, Metrics/AbcSize, Metrics/CyclomaticComplexity, Metrics/PerceivedComplexity
+    def resolve(node) # rubocop:disable Metrics/MethodLength, Metrics/AbcSize
       return [] unless node.value.is_a?(Array)
 
       length = node.value.length
-      step = @step || 1
-      return [] if length.zero? || step.zero?
+      return [] if length.zero? || @step.zero?
 
-      start = if @start.nil?
-                step.negative? ? length - 1 : 0
-              elsif @start.negative?
-                [length + @start, 0].max
-              else
-                [@start, length - 1].min
-              end
+      norm_start = normalized_start(length)
+      norm_stop = normalized_stop(length)
 
-      stop = if @stop.nil?
-               step.negative? ? -1 : length
-             elsif @stop.negative?
-               [length + @stop, -1].max
-             else
-               [@stop, length].min
-             end
+      nodes = []
 
-      if step.positive?
-        node.value[(start...stop).step(step)].map.with_index do |e, i|
-          node.new_child(e, i)
+      if @step.positive?
+
+        for i in (norm_start...norm_stop).step(@step) # rubocop:disable Style/For
+          nodes << node.new_child(node.value[i], i)
         end
       else
-        nodes = []
-        i = start
-        while i > stop
+        i = norm_start
+        while i > norm_stop
           nodes << node.new_child(node.value[i], i)
-          i += step
+          i += @step
         end
-        nodes
       end
+      nodes
     end
 
     def to_s
@@ -208,8 +196,20 @@ module JSONPathRFC9535
 
     private
 
-    def normalized_index(index, length)
-      index.negative? && length >= index.abs ? length + index : index
+    def normalized_start(length)
+      # NOTE: trying to please the type checker :(
+      return @step.negative? ? length - 1 : 0 if @start.nil?
+      return [length + (@start || raise), 0].max if @start&.negative?
+
+      [@start || raise, length - 1].min
+    end
+
+    def normalized_stop(length)
+      # NOTE: trying to please the type checker :(
+      return @step.negative? ? -1 : length if @stop.nil?
+      return [length + (@stop || raise), -1].max if @stop&.negative?
+
+      [@stop || raise, length].min
     end
   end
 

@@ -85,12 +85,12 @@ module JSONPathRFC9535
 
       if node.value.is_a? Array
         node.value.each_with_index do |value, i|
-          child = JSONPathNode.new(value, node.location + [i], node.root)
+          child = JSONPathNode.new(value, [node.location, i], node.root)
           rv.concat visit(child, depth + 1)
         end
       elsif node.value.is_a? Hash
         node.value.each do |key, value|
-          child = JSONPathNode.new(value, node.location + [key], node.root)
+          child = JSONPathNode.new(value, [node.location, key], node.root)
           rv.concat visit(child, depth + 1)
         end
       end
