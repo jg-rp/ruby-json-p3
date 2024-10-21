@@ -1,5 +1,6 @@
 # frozen_string_literal: true
 
+require_relative "../cache"
 require_relative "../function"
 require_relative "pattern"
 
@@ -9,18 +10,34 @@ module JSONPathRFC9535
     ARG_TYPES = [ExpressionType::VALUE, ExpressionType::VALUE].freeze
     RETURN_TYPE = ExpressionType::LOGICAL
 
+    # @param cache_size [Integer] the maximum size of the regexp cache. Set it to
+    #   zero or negative to disable the cache.
+    # @param raise_errors [Boolean] if _false_ (the default), return _false_ when this
+    #   function causes a RegexpError or TypeError instead of raising the exception.
+    def initialize(cache_size = 128, raise_errors: false)
+      super()
+      @cache_size = cache_size
+      @raise_errors = raise_errors
+      @cache = LRUCache.new(cache_size)
+    end
+
     # @param value [String]
     # @param pattern [String]
     # @return Boolean
-    def call(value, pattern)
+    def call(value, pattern) # rubocop:disable Metrics/MethodLength
       return false unless pattern.is_a? String
 
-      # TODO: cache pattern as regex
-      # TODO: check for I-Regexp compliance
-      re = Regexp.new(full_match(pattern))
+      if @cache_size.positive?
+        re = @cache[pattern] || Regexp.new(full_match(pattern))
+      else
+        re = Regexp.new(full_match(pattern))
+        @cache[pattern] = re
+      end
+
       re.match?(value)
     rescue RegexpError, TypeError
-      # TODO: option to raise for debugging
+      raise if @raise_errors
+
       false
     end
 
