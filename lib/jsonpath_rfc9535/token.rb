@@ -45,14 +45,13 @@ module JSONPathRFC9535
     SINGLE_QUOTE_STRING = :token_single_quote_string
     TRUE = :token_true
 
-    # @dynamic type, value, start, stop, query
-    attr_reader :type, :value, :start, :stop, :query
+    # @dynamic type, value, start, query
+    attr_reader :type, :value, :start, :query
 
-    def initialize(type, value, start, stop, query)
+    def initialize(type, value, start, query)
       @type = type
       @value = value
       @start = start
-      @stop = stop
       @query = query
     end
 
@@ -61,7 +60,6 @@ module JSONPathRFC9535
         @type == other.type &&
         @value == other.value &&
         @start == other.start &&
-        @stop == other.stop &&
         @query == other.query
     end
 

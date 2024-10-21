@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require "set"
+require "strscan"
 require_relative "errors"
 require_relative "token"
 
@@ -23,11 +24,10 @@ module JSONPathRFC9535 # rubocop:disable Style/Documentation
   #
   # @see tokenize
   class Lexer # rubocop:disable Metrics/ClassLength
-    RE_NAME = /\A[\u0080-\uFFFFa-zA-Z_][\u0080-\uFFFFa-zA-Z0-9_-]*/
-
-    S_WHITESPACE = Set[" ", "\n", "\t", "\r"].freeze
+    RE_INT = /-?[0-9]+/
+    RE_NAME = /[\u0080-\uFFFFa-zA-Z_][\u0080-\uFFFFa-zA-Z0-9_-]*/
+    RE_WHITESPACE = /[ \n\r\t]+/
     S_ESCAPES = Set["b", "f", "n", "r", "t", "u", "/", "\\"].freeze
-    S_DIGITS = Set["0", "1", "2", "3", "4", "5", "6", "7", "8", "9"]
 
     # @dynamic tokens
     attr_reader :tokens
@@ -37,10 +37,8 @@ module JSONPathRFC9535 # rubocop:disable Style/Documentation
       @paren_stack = []
       @tokens = []
       @start = 0
-      @pos = 0
       @query = query.freeze
-      @length = query.length
-      @chars = query.chars.freeze
+      @scanner = StringScanner.new(query)
     end
 
     def run
@@ -50,118 +48,55 @@ module JSONPathRFC9535 # rubocop:disable Style/Documentation
 
     protected
 
-    def emit(token_type)
-      @tokens << Token.new(token_type, @query[@start...@pos], @start, @pos, @query)
-      @start = @pos
+    # Generate a new token with the given type.
+    # @param token_type [Symbol] one of the constants defined on the _Token_ class.
+    # @param value [String | nil] a the token's value, if it is known, otherwise the
+    #   value will be sliced from @query. This is a performance optimisation.
+    def emit(token_type, value = nil)
+      @tokens << Token.new(token_type, value || @query[@start...@scanner.charpos], @start, @query)
+      @start = @scanner.charpos
     end
 
     def next
-      return "" if @pos >= @length
-
-      c = @chars[@pos]
-      @pos += 1
-      c
+      @scanner.getch || ""
     end
 
     def ignore
-      @start = @pos
+      @start = @scanner.charpos
     end
 
     def backup
-      if @pos <= @start
-        msg = "unexpected end of expression"
-        raise JSONPathSyntaxError.new(msg, Token.new(Token::ERROR, msg, @start, @pos, @query))
-      end
-
-      @pos -= 1
+      # Assumes we're backing-up from a single byte character.
+      @scanner.pos -= 1
     end
 
     def peek
-      c = self.next
-      backup unless c.empty?
-      c
+      # Assumes we're peeking single byte characters.
+      @scanner.peek(1)
     end
 
     # Advance the lexer if the next character is equal to _char_.
-    # @param char [String] a single character
-    # @return [Boolean] _true_ if the character was accepted, _flase_ otherwise.
-    def accept?(char)
-      if self.next == char
-        true
-      else
-        backup
-        false
-      end
-    end
-
-    # Advance the lexer for as long as the next character is in _valid_.
-    # @param valid [Set<String>]
-    # @return [Boolean]
-    def accept_run?(valid)
-      found = false
-      c = self.next
-
-      while !c.nil? && valid.member?(c)
-        c = self.next
-        found = true
-      end
-
-      backup unless c.empty?
-      found
-    end
-
-    # Advance the lexer if the current position starts with _word_.
-    # @param word [String]
-    # @return [Boolean]
-    def accept_word?(word)
-      if @query.index(word, @pos) == @pos
-        @pos += word.length
-        true
-      else
-        false
-      end
+    def accept?(pattern)
+      !@scanner.scan(pattern).nil?
     end
 
     # Accept a run of digits, possibly preceded by a negative sign.
     # Does not handle exponents.
     def accept_int?
-      negative = accept?("-")
-      digits = accept_run?(S_DIGITS)
-      if negative && !digits
-        backup
-        false
-      else
-        digits
-      end
-    end
-
-    # TODO: accept_name? to replace accept_match?(RE_NAME)
-
-    def accept_match?(pattern)
-      match = @query[@pos..].match(pattern)
-      return false if match.nil?
-
-      group = match[0] or raise
-      @pos += group.length
-      true
+      !@scanner.scan(RE_INT).nil?
     end
 
     def ignore_whitespace?
-      unless @pos == @start
-        msg = "you must emit or ignore before consuming whitespace (#{@query[@start...@pos]})"
-        raise JSONPathError.new(msg, Token.new(Token::ERROR, msg, @start, @pos, @query))
-      end
-
-      if accept_run?(S_WHITESPACE)
+      if @scanner.scan(RE_WHITESPACE).nil?
+        false
+      else
         ignore
-        return true
+        true
       end
-
-      false
     end
 
     def error(message)
-      @tokens << Token.new(Token::ERROR, message, @start, @pos, @query)
+      @tokens << Token.new(Token::ERROR, message, @start, @query)
     end
 
     def lex_root
@@ -172,7 +107,7 @@ module JSONPathRFC9535 # rubocop:disable Style/Documentation
         return nil
       end
 
-      emit Token::ROOT
+      emit(Token::ROOT, "$")
       :lex_segment
     end
 
@@ -186,16 +121,16 @@ module JSONPathRFC9535 # rubocop:disable Style/Documentation
 
       case c
       when ""
-        emit Token::EOI
+        emit(Token::EOI, "")
         nil
       when "."
         return :lex_shorthand_selector unless peek == "."
 
         self.next
-        emit Token::DOUBLE_DOT
+        emit(Token::DOUBLE_DOT, "..")
         :lex_descendant_segment
       when "["
-        emit Token::LBRACKET
+        emit(Token::LBRACKET, "[")
         :lex_inside_bracketed_segment
       else
         if @filter_depth.positive?
@@ -214,15 +149,15 @@ module JSONPathRFC9535 # rubocop:disable Style/Documentation
         error "bald descendant segment"
         nil
       when "*"
-        emit Token::WILD
+        emit(Token::WILD, "*")
         :lex_segment
       when "["
-        emit Token::LBRACKET
+        emit(Token::LBRACKET, "[")
         :lex_inside_bracketed_segment
       else
         backup
-        if accept_match?(RE_NAME)
-          emit Token::NAME
+        if accept?(RE_NAME)
+          emit(Token::NAME)
           :lex_segment
         else
           c = self.next
@@ -235,19 +170,19 @@ module JSONPathRFC9535 # rubocop:disable Style/Documentation
     def lex_shorthand_selector # rubocop:disable Metrics/MethodLength
       ignore # ignore dot
 
-      if accept_run?(S_WHITESPACE)
+      if accept?(RE_WHITESPACE)
         error "unexpected whitespace after dot"
         return nil
       end
 
       if peek == "*"
         self.next
-        emit Token::WILD
+        emit(Token::WILD, "*")
         return :lex_segment
       end
 
-      if accept_match?(RE_NAME)
-        emit Token::NAME
+      if accept?(RE_NAME)
+        emit(Token::NAME)
         return :lex_segment
       end
 
@@ -262,21 +197,21 @@ module JSONPathRFC9535 # rubocop:disable Style/Documentation
 
         case c
         when "]"
-          emit Token::RBRACKET
+          emit(Token::RBRACKET, "]")
           return @filter_depth.positive? ? :lex_inside_filter : :lex_segment
         when ""
           error "unclosed bracketed selection"
           return nil
         when "*"
-          emit Token::WILD
+          emit(Token::WILD, "*")
         when "?"
-          emit Token::FILTER
+          emit(Token::FILTER, "?")
           @filter_depth += 1
           return :lex_inside_filter
         when ","
-          emit Token::COMMA
+          emit(Token::COMMA, ",")
         when ":"
-          emit Token::COLON
+          emit(Token::COLON, ":")
         when "'"
           return :lex_single_quoted_string_inside_bracketed_segment
         when '"'
@@ -312,7 +247,7 @@ module JSONPathRFC9535 # rubocop:disable Style/Documentation
           backup
           return :lex_inside_bracketed_segment
         when ","
-          emit Token::COMMA
+          emit(Token::COMMA, ",")
           # If we have unbalanced parens, we are inside a function call and a
           # comma separates arguments. Otherwise a comma separates selectors.
           next if @paren_stack.length.positive?
@@ -324,11 +259,11 @@ module JSONPathRFC9535 # rubocop:disable Style/Documentation
         when '"'
           return :lex_double_quoted_string_inside_filter_expression
         when "("
-          emit Token::LPAREN
+          emit(Token::LPAREN, "(")
           # Are we in a function call? If so, a function argument contains parens.
           @paren_stack[-1] += 1 if @paren_stack.length.positive?
         when ")"
-          emit Token::RPAREN
+          emit(Token::RPAREN, ")")
           # Are we closing a function call or a parenthesized expression?
           if @paren_stack.length.positive?
             if @paren_stack[-1] == 1
@@ -338,10 +273,10 @@ module JSONPathRFC9535 # rubocop:disable Style/Documentation
             end
           end
         when "$"
-          emit Token::ROOT
+          emit(Token::ROOT, "$")
           return :lex_segment
         when "@"
-          emit Token::CURRENT
+          emit(Token::CURRENT, "@")
           return :lex_segment
         when "."
           backup
@@ -349,14 +284,14 @@ module JSONPathRFC9535 # rubocop:disable Style/Documentation
         when "!"
           if peek == "="
             self.next
-            emit Token::NE
+            emit(Token::NE, "!=")
           else
-            emit Token::NOT
+            emit(Token::NOT, "!")
           end
         when "="
           if peek == "="
             self.next
-            emit Token::EQ
+            emit(Token::EQ, "==")
           else
             backup
             error "unexpected filter selector token '#{c}'"
@@ -365,16 +300,16 @@ module JSONPathRFC9535 # rubocop:disable Style/Documentation
         when "<"
           if peek == "="
             self.next
-            emit Token::LE
+            emit(Token::LE, "<=")
           else
-            emit Token::LT
+            emit(Token::LT, "<")
           end
         when ">"
           if peek == "="
             self.next
-            emit Token::GE
+            emit(Token::GE, ">=")
           else
-            emit Token::GT
+            emit(Token::GT, ">")
           end
         else
           backup
@@ -387,26 +322,26 @@ module JSONPathRFC9535 # rubocop:disable Style/Documentation
                 return nil
               end
 
-              accept_match?(/\A[eE][+-]?[0-9]+/)
+              accept?(/[eE][+-]?[0-9]+/)
               emit Token::FLOAT
             # An int, or float if exponent is negative
-            elsif accept_match?(/\A[eE]-[0-9]+/)
+            elsif accept?(/[eE]-[0-9]+/)
               emit Token::FLOAT
             else
-              accept_match?(/\A[eE][+-]?[0-9]+/)
+              accept?(/[eE][+-]?[0-9]+/)
               emit Token::INT
             end
-          elsif accept_word?("&&")
-            emit Token::AND
-          elsif accept_word?("||")
-            emit Token::OR
-          elsif accept_word?("true")
-            emit Token::TRUE
-          elsif accept_word?("false")
-            emit Token::FALSE
-          elsif accept_word?("null")
-            emit Token::NULL
-          elsif accept_match?(/\A[a-z][a-z_0-9]*/)
+          elsif accept?("&&")
+            emit(Token::AND, "&&")
+          elsif accept?("||")
+            emit(Token::OR, "||")
+          elsif accept?("true")
+            emit(Token::TRUE, "true")
+          elsif accept?("false")
+            emit(Token::FALSE, "false")
+          elsif accept?("null")
+            emit(Token::NULL, "null")
+          elsif accept?(/[a-z][a-z_0-9]*/)
             # Function name
             # Keep track of parentheses for this function call.
             @paren_stack << 1
@@ -444,7 +379,7 @@ module JSONPathRFC9535 # rubocop:disable Style/Documentation
               end
             when quote
               backup
-              emit token
+              emit(token)
               self.next
               ignore # move past closing quote
               return state

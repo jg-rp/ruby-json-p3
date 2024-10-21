@@ -1,5 +1,6 @@
 # frozen_string_literal: true
 
+require "json"
 require "set"
 
 require_relative "errors"
@@ -439,18 +440,11 @@ module JSONPathRFC9535
       int
     end
 
-    def decode_string_literal(token) # rubocop:disable Metrics/MethodLength
+    def decode_string_literal(token)
       if token.type == Token::SINGLE_QUOTE_STRING
-        if token.value.include?("\\\"")
-          raise JSONPathSyntaxError.new(
-            "invalid escaped double quote in single quoted string",
-            token
-          )
-        end
-
-        JSONPathRFC9535.unescape_string(token.value.gsub('"', '\\"').gsub("\\'", "'"), token)
+        JSONPathRFC9535.unescape_string(token.value, "'", token)
       else
-        JSONPathRFC9535.unescape_string(token.value, token)
+        JSONPathRFC9535.unescape_string(token.value, '"', token)
       end
     end
 
