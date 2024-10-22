@@ -45,14 +45,15 @@ module JSONPathRFC9535
     SINGLE_QUOTE_STRING = :token_single_quote_string
     TRUE = :token_true
 
-    # @dynamic type, value, start, query
-    attr_reader :type, :value, :start, :query
+    # @dynamic type, value, start, query, message
+    attr_reader :type, :value, :start, :query, :message
 
-    def initialize(type, value, start, query)
+    def initialize(type, value, start, query, message: nil)
       @type = type
       @value = value
       @start = start
       @query = query
+      @message = message
     end
 
     def ==(other)
@@ -60,21 +61,14 @@ module JSONPathRFC9535
         @type == other.type &&
         @value == other.value &&
         @start == other.start &&
-        @query == other.query
+        @query == other.query &&
+        @message == other.message
     end
 
     alias eql? ==
 
     def hash
       [@type, @value].hash
-    end
-
-    def deconstruct
-      [@type, @value]
-    end
-
-    def deconstruct_keys(_)
-      { type: @type, value: @value }
     end
   end
 end

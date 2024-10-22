@@ -794,6 +794,8 @@ module JSONPathRFC9535
 
     @query: String
 
+    @message: (String | nil)
+
     EOI: :token_eoi
 
     ERROR: :token_error
@@ -876,7 +878,10 @@ module JSONPathRFC9535
     # @dynamic type, value, start, query
     attr_reader query: String
 
-    def initialize: (Symbol type, String value, Integer start, String query) -> void
+    # @dynamic type, value, start, query
+    attr_reader message: (String | nil)
+
+    def initialize: (Symbol type, String value, Integer start, String query, ?message: (String | nil)?) -> void
 
     def ==: (untyped other) -> bool
 

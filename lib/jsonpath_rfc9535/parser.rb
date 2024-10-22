@@ -474,10 +474,11 @@ module JSONPathRFC9535
 
     def validate_function_extension_sugnature(token, args) # rubocop:disable Metrics/AbcSize, Metrics/MethodLength, Metrics/CyclomaticComplexity, Metrics/PerceivedComplexity
       func = @env.function_extensions.fetch(token.value)
+      count = func.class::ARG_TYPES.length
 
-      unless args.length == func.class::ARG_TYPES.length
+      unless args.length == count
         raise JSONPathTypeError.new(
-          "#{token.value}() takes #{func.class::ARG_TYPES.length} arguments (#{args.length} given)",
+          "#{token.value}() takes #{count} argument#{count == 1 ? "" : "s"} (#{args.length} given)",
           token
         )
       end

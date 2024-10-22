@@ -45,7 +45,7 @@ TEST_CASES = [
     name: "missing root selector",
     query: "foo.bar",
     want: [
-      Token.new(Token::ERROR, "expected '$', found 'f'", 0, "foo.bar")
+      Token.new(Token::ERROR, "f", 0, "foo.bar", message: "expected '$', found 'f'")
     ]
   },
   {
@@ -55,9 +55,10 @@ TEST_CASES = [
       Token.new(Token::ROOT, "$", 0, "$foo"),
       Token.new(
         Token::ERROR,
-        "expected '.', '..' or a bracketed selection, found 'f'",
+        "f",
         1,
-        "$foo"
+        "$foo",
+        message: "expected '.', '..' or a bracketed selection, found 'f'"
       )
     ]
   },
@@ -76,7 +77,7 @@ TEST_CASES = [
     query: "$. foo.bar",
     want: [
       Token.new(Token::ROOT, "$", 0, "$. foo.bar"),
-      Token.new(Token::ERROR, "unexpected whitespace after dot", 2, "$. foo.bar")
+      Token.new(Token::ERROR, " ", 2, "$. foo.bar", message: "unexpected whitespace after dot")
     ]
   },
   {
@@ -117,9 +118,10 @@ TEST_CASES = [
       Token.new(Token::DOUBLE_DOT, "..", 1, "$...foo"),
       Token.new(
         Token::ERROR,
-        "unexpected descendant selection token '.'",
+        ".",
         3,
-        "$...foo"
+        "$...foo",
+        message: "unexpected descendant selection token '.'"
       )
     ]
   },
@@ -131,9 +133,10 @@ TEST_CASES = [
       Token.new(Token::DOUBLE_DOT, "..", 1, "$....foo"),
       Token.new(
         Token::ERROR,
-        "unexpected descendant selection token '.'",
+        ".",
         3,
-        "$....foo"
+        "$....foo",
+        message: "unexpected descendant selection token '.'"
       )
     ]
   },
@@ -440,6 +443,24 @@ TEST_CASES = [
       Token.new(Token::FLOAT, "42.7", 11, "$[?@.foo > 42.7]"),
       Token.new(Token::RBRACKET, "]", 15, "$[?@.foo > 42.7]"),
       Token.new(Token::EOI, "", 16, "$[?@.foo > 42.7]")
+    ]
+  },
+  {
+    name: "trailing dot",
+    query: "$.foo.",
+    want: [
+      Token.new(Token::ROOT, "$", 0, "$.foo."),
+      Token.new(Token::NAME, "foo", 2, "$.foo."),
+      Token.new(Token::ERROR, ".", 5, "$.foo.", message: "unexpected trailing dot")
+    ]
+  },
+  {
+    name: "unknown shorthand selector",
+    query: "$.foo.&",
+    want: [
+      Token.new(Token::ROOT, "$", 0, "$.foo.&"),
+      Token.new(Token::NAME, "foo", 2, "$.foo.&"),
+      Token.new(Token::ERROR, "&", 6, "$.foo.&", message: "unexpected shorthand selector '&'")
     ]
   }
 ].freeze
