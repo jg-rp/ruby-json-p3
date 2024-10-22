@@ -15,17 +15,17 @@ module JSONPathRFC9535
     end
 
     # Apply this JSONPath expression to JSON-like value _root_.
-    # @param root [Array, Hash, String, Integer] the root JSON-like value to apply this query to.
+    # @param root [Array, Hash, String, Integer, nil] the root JSON-like value to apply this query to.
     # @return [Array<JSONPathNode>] the sequence of nodes found while applying this query to _root_.
     def find(root)
       nodes = [JSONPathNode.new(root, [], root)]
       @segments.each { |segment| nodes = segment.resolve(nodes) }
-      JSONPathNodeList.new(nodes) # TODO: avoid new?
+      JSONPathNodeList.new(nodes)
     end
 
     alias apply find
 
-    # Return true if this JSONPath expression is a singular query.
+    # Return _true_ if this JSONPath expression is a singular query.
     def singular?
       @segments.each do |segment|
         return false if segment.instance_of? RecursiveDescentSegment
@@ -34,7 +34,7 @@ module JSONPathRFC9535
       true
     end
 
-    # Return true if this JSONPath expression has no segments.
+    # Return _true_ if this JSONPath expression has no segments.
     def empty?
       @segments.empty?
     end

@@ -52,6 +52,7 @@ GEM
       ffi (~> 1.0)
     rbs (3.6.1)
       logger
+    redcarpet (3.6.0)
     regexp_parser (2.9.2)
     rubocop (1.66.1)
       json (~> 2.3)
@@ -110,6 +111,7 @@ DEPENDENCIES
   minitest (~> 5.16)
   minitest-fail-fast (~> 0.1.0)
   rake (~> 13.0)
+  redcarpet (~> 3.6)
   rubocop (~> 1.21)
   rubocop-minitest (~> 0.36.0)
   rubocop-performance (~> 1.22)

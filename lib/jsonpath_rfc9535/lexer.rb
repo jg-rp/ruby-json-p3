@@ -23,7 +23,7 @@ module JSONPathRFC9535 # rubocop:disable Style/Documentation
     tokens
   end
 
-  # JSONPath query expreession lexical scanner.
+  # JSONPath query expression lexical scanner.
   #
   # @see tokenize
   class Lexer # rubocop:disable Metrics/ClassLength
@@ -54,7 +54,7 @@ module JSONPathRFC9535 # rubocop:disable Style/Documentation
     # Generate a new token with the given type.
     # @param token_type [Symbol] one of the constants defined on the _Token_ class.
     # @param value [String | nil] a the token's value, if it is known, otherwise the
-    #   value will be sliced from @query. This is a performance optimisation.
+    #   value will be sliced from @query. This is a performance optimization.
     def emit(token_type, value = nil)
       @tokens << Token.new(token_type, value || @query[@start...@scanner.charpos], @start, @query)
       @start = @scanner.charpos
@@ -375,7 +375,7 @@ module JSONPathRFC9535 # rubocop:disable Style/Documentation
       def lex_string_factory(quote, state, token) # rubocop:disable Metrics/MethodLength
         proc {
           # @type self: Lexer
-          ignore # move past openning quote
+          ignore # move past opening quote
 
           loop do
             c = self.next

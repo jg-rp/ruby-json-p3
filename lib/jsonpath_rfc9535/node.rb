@@ -8,7 +8,7 @@ module JSONPathRFC9535
 
     # @param value [JSON-like] the value at this node.
     # @param location [Array<String | Integer | Array<String | Integer>>] the sequence of
-    #   names and/or indicies leading to _value_ in _root_.
+    #   names and/or indices leading to _value_ in _root_.
     # @param root [JSON-like] the root value containing _value_ at _location_.
     def initialize(value, location, root)
       @value = value
@@ -25,7 +25,7 @@ module JSONPathRFC9535
 
     # Return a new node that is a child of this node.
     # @param value the JSON-like value at the new node.
-    # @param key [Integer, String] the array index or hash key assiciated with _value_.
+    # @param key [Integer, String] the array index or hash key associated with _value_.
     def new_child(value, key)
       JSONPathNode.new(value, [@location, key], @root)
     end
@@ -35,6 +35,8 @@ module JSONPathRFC9535
     end
   end
 
-  # An array of JSONPathNode instances.
+  # An array of JSONPathNode instances. We use this internally to differentiate
+  # arrays of Nodes and arrays of data values, which is required when calling
+  # filter functions expecting nodes as arguments. It is just an array though.
   class JSONPathNodeList < Array; end
 end

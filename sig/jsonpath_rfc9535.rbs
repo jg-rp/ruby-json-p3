@@ -32,11 +32,19 @@ end
 module JSONPathRFC9535
   # JSONPath configuration
   class JSONPathEnvironment
+    MAX_INT_INDEX: Numeric
+
+    MIN_INT_INDEX: Numeric
+
+    MAX_RECURSION_DEPTH: Integer
+
+    SYMBOL_SELECTOR: bool
+
     @parser: Parser
 
     @function_extensions: Hash[String, FunctionExtension]
 
-    attr_reader function_extensions: Hash[String, FunctionExtension]
+    attr_accessor function_extensions: Hash[String, FunctionExtension]
 
     def initialize: () -> void
 
@@ -70,6 +78,9 @@ module JSONPathRFC9535
   end
 
   class JSONPathNameError < JSONPathError
+  end
+
+  class JSONPathRecursionError < JSONPathError
   end
 end
 
@@ -555,7 +566,7 @@ module JSONPathRFC9535
 
     def raise_for_uncompared_literal: (Expression expression) -> void
 
-    def validate_function_extension_sugnature: (Token token, untyped args) -> void
+    def validate_function_extension_signature: (Token token, untyped args) -> void
 
     def function_return_type: (Expression expression) -> (Symbol | nil)
 

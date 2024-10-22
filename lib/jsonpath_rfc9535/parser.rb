@@ -354,7 +354,7 @@ module JSONPathRFC9535
       stream.expect(Token::RPAREN)
       stream.next
 
-      validate_function_extension_sugnature(token, args)
+      validate_function_extension_signature(token, args)
       FunctionExpression.new(token, token.value, args)
     end
 
@@ -426,7 +426,7 @@ module JSONPathRFC9535
       end
     end
 
-    def parse_i_json_int(token) # rubocop:disable Metrics/AbcSize, Metrics/MethodLength
+    def parse_i_json_int(token) # rubocop:disable Metrics/MethodLength
       value = token.value
 
       if value.length > 1 && value.start_with?("0", "-0")
@@ -439,7 +439,10 @@ module JSONPathRFC9535
         raise JSONPathSyntaxError.new("invalid I-JSON integer", token)
       end
 
-      raise JSONPathSyntaxError.new("index out of range", token) if int < -(2**53) + 1 || int > (2**53) - 1
+      if int < @env.class::MIN_INT_INDEX || int > @env.class::MAX_INT_INDEX
+        raise JSONPathSyntaxError.new("index out of range",
+                                      token)
+      end
 
       int
     end
@@ -472,7 +475,7 @@ module JSONPathRFC9535
                                     expression.token)
     end
 
-    def validate_function_extension_sugnature(token, args) # rubocop:disable Metrics/AbcSize, Metrics/MethodLength, Metrics/CyclomaticComplexity, Metrics/PerceivedComplexity
+    def validate_function_extension_signature(token, args) # rubocop:disable Metrics/AbcSize, Metrics/MethodLength, Metrics/CyclomaticComplexity, Metrics/PerceivedComplexity
       func = @env.function_extensions.fetch(token.value)
       count = func.class::ARG_TYPES.length
 

@@ -35,4 +35,5 @@ module JSONPathRFC9535
   class JSONPathSyntaxError < JSONPathError; end
   class JSONPathTypeError < JSONPathError; end
   class JSONPathNameError < JSONPathError; end
+  class JSONPathRecursionError < JSONPathError; end
 end

@@ -5,7 +5,7 @@ module JSONPathRFC9535 # rubocop:disable Style/Documentation
   # @param value [String]
   # @param quote [String] one of '"' or "'".
   # @param token [Token]
-  # @return [String] A new string without escape seqeuences.
+  # @return [String] A new string without escape sequences.
   def self.unescape_string(value, quote, token) # rubocop:disable Metrics/MethodLength, Metrics/AbcSize, Metrics/CyclomaticComplexity, Metrics/PerceivedComplexity
     unescaped = String.new(encoding: "UTF-8")
     index = 0
@@ -54,7 +54,7 @@ module JSONPathRFC9535 # rubocop:disable Style/Documentation
   def self.decode_hex_char(value, index, token) # rubocop:disable Metrics/MethodLength, Metrics/AbcSize, Metrics/CyclomaticComplexity
     length = value.length
 
-    raise JSONPathSyntaxError.new("incomplete escape seqeuence", token) if index + 4 >= length
+    raise JSONPathSyntaxError.new("incomplete escape sequence", token) if index + 4 >= length
 
     index += 1 # move past 'u'
     code_point = parse_hex_digits(value[index...index + 4], token)
@@ -64,7 +64,7 @@ module JSONPathRFC9535 # rubocop:disable Style/Documentation
     return [code_point, index + 3] unless high_surrogate?(code_point)
 
     unless index + 9 < length && value[index + 4] == "\\" && value[index + 5] == "u"
-      raise JSONPathSyntaxError.new("incomplete escape seqeuence", token)
+      raise JSONPathSyntaxError.new("incomplete escape sequence", token)
     end
 
     low_surrogate = parse_hex_digits(value[index + 6...index + 10], token)
@@ -90,7 +90,7 @@ module JSONPathRFC9535 # rubocop:disable Style/Documentation
       when 97..102
         code_point |= b - 97 + 10
       else
-        raise JSONPathSyntaxError.new("invalid escape seqeuence", token)
+        raise JSONPathSyntaxError.new("invalid escape sequence", token)
       end
     end
     code_point

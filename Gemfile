@@ -28,3 +28,5 @@ gem "rubocop-performance", "~> 1.22"
 gem "memory_profiler", "~> 1.1"
 
 gem "benchmark-ips", "~> 2.14"
+
+gem "redcarpet", "~> 3.6"

@@ -13,7 +13,7 @@ module JSONPathRFC9535 # rubocop:disable Style/Documentation
       @token = token
     end
 
-    # Evaluate the filter expressin in the given context.
+    # Evaluate the filter expression in the given context.
     def evaluate(_context)
       raise "filter expressions must implement `evaluate(context)`"
     end
@@ -116,7 +116,7 @@ module JSONPathRFC9535 # rubocop:disable Style/Documentation
     end
 
     def to_s
-      "!#{@expreession}"
+      "!#{@expression}"
     end
 
     def ==(other)
@@ -147,7 +147,7 @@ module JSONPathRFC9535 # rubocop:disable Style/Documentation
     end
 
     def to_s
-      raise "infix expressions must impleent `to_s`"
+      raise "infix expressions must implement `to_s`"
     end
 
     def ==(other)
@@ -270,7 +270,7 @@ module JSONPathRFC9535 # rubocop:disable Style/Documentation
     end
 
     def to_s
-      raise "query expressions must impleent `to_s`"
+      raise "query expressions must implement `to_s`"
     end
 
     def ==(other)
@@ -413,7 +413,7 @@ module JSONPathRFC9535 # rubocop:disable Style/Documentation
     false
   end
 
-  # Contextural information and data used for evaluating a filter expression.
+  # Contextual information and data used for evaluating a filter expression.
   class FilterContext
     attr_reader :env, :current, :root
 
