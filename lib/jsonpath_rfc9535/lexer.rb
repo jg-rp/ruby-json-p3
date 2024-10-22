@@ -15,7 +15,10 @@ module JSONPathRFC9535 # rubocop:disable Style/Documentation
     lexer.run
     tokens = lexer.tokens
 
-    raise JSONPathSyntaxError.new(tokens.last.value, tokens.last) if !tokens.empty? && tokens.last.type == Token::ERROR
+    if !tokens.empty? && tokens.last.type == Token::ERROR
+      raise JSONPathSyntaxError.new(tokens.last.message,
+                                    tokens.last)
+    end
 
     tokens
   end
@@ -96,7 +99,9 @@ module JSONPathRFC9535 # rubocop:disable Style/Documentation
     end
 
     def error(message)
-      @tokens << Token.new(Token::ERROR, message, @start, @query)
+      @tokens << Token.new(
+        Token::ERROR, @query[@start...@scanner.charpos], @start, @query, message: message
+      )
     end
 
     def lex_root
@@ -168,6 +173,11 @@ module JSONPathRFC9535 # rubocop:disable Style/Documentation
     end
 
     def lex_shorthand_selector # rubocop:disable Metrics/MethodLength
+      if peek == ""
+        error "unexpected trailing dot"
+        return nil
+      end
+
       ignore # ignore dot
 
       if accept?(RE_WHITESPACE)
@@ -186,7 +196,8 @@ module JSONPathRFC9535 # rubocop:disable Style/Documentation
         return :lex_segment
       end
 
-      error "unexpected shorthand selector '#{peek}'"
+      c = self.next
+      error "unexpected shorthand selector '#{c}'"
       nil
     end
 
@@ -342,6 +353,10 @@ module JSONPathRFC9535 # rubocop:disable Style/Documentation
           elsif accept?("null")
             emit(Token::NULL, "null")
           elsif accept?(/[a-z][a-z_0-9]*/)
+            unless peek == "("
+              error "unexpected filter selector token"
+              return nil
+            end
             # Function name
             # Keep track of parentheses for this function call.
             @paren_stack << 1
