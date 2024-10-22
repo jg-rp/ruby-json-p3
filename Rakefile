@@ -13,4 +13,11 @@ RuboCop::RakeTask.new do |task|
   task.requires << "rubocop-performance"
 end
 
-task default: %i[test rubocop]
+require "steep/rake_task"
+
+Steep::RakeTask.new do |t|
+  t.check.severity_level = :error
+  t.watch.verbose
+end
+
+task default: %i[test rubocop steep]

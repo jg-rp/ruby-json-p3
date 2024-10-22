@@ -5,7 +5,7 @@ require_relative "../function"
 require_relative "pattern"
 
 module JSONPathRFC9535
-  # The standard `count` function.
+  # The standard `match` function.
   class Match < FunctionExtension
     ARG_TYPES = [ExpressionType::VALUE, ExpressionType::VALUE].freeze
     RETURN_TYPE = ExpressionType::LOGICAL

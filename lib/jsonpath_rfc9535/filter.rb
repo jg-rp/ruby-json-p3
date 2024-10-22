@@ -85,7 +85,7 @@ module JSONPathRFC9535 # rubocop:disable Style/Documentation
   # A double or single quoted string literal.
   class StringLiteral < FilterExpressionLiteral
     def to_s
-      json.generate(@value)
+      JSON.generate(@value)
     end
   end
 

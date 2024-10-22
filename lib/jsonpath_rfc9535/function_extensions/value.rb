@@ -3,7 +3,7 @@
 require_relative "../function"
 
 module JSONPathRFC9535
-  # The standard `count` function.
+  # The standard `value` function.
   class Value < FunctionExtension
     ARG_TYPES = [ExpressionType::NODES].freeze
     RETURN_TYPE = ExpressionType::VALUE

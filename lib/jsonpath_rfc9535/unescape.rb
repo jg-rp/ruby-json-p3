@@ -6,13 +6,13 @@ module JSONPathRFC9535 # rubocop:disable Style/Documentation
   # @param quote [String] one of '"' or "'".
   # @param token [Token]
   # @return [String] A new string without escape seqeuences.
-  def self.unescape_string(value, quote, token) # rubocop:disable Metrics/MethodLength, Metrics/AbcSize, Metrics/CyclomaticComplexity
+  def self.unescape_string(value, quote, token) # rubocop:disable Metrics/MethodLength, Metrics/AbcSize, Metrics/CyclomaticComplexity, Metrics/PerceivedComplexity
     unescaped = String.new(encoding: "UTF-8")
     index = 0
     length = value.length
 
     while index < length
-      ch = value[index]
+      ch = value[index] || raise
       if ch == "\\"
         index += 1
         case value[index]
