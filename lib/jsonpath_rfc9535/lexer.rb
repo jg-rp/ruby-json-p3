@@ -16,7 +16,7 @@ module JSONPathRFC9535 # rubocop:disable Style/Documentation
     tokens = lexer.tokens
 
     if !tokens.empty? && tokens.last.type == Token::ERROR
-      raise JSONPathSyntaxError.new(tokens.last.message,
+      raise JSONPathSyntaxError.new(tokens.last.message || raise,
                                     tokens.last)
     end
 
@@ -100,7 +100,7 @@ module JSONPathRFC9535 # rubocop:disable Style/Documentation
 
     def error(message)
       @tokens << Token.new(
-        Token::ERROR, @query[@start...@scanner.charpos], @start, @query, message: message
+        Token::ERROR, @query[@start...@scanner.charpos] || "", @start, @query, message: message
       )
     end
 

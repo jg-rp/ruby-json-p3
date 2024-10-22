@@ -8,11 +8,11 @@ module JSONPathRFC9535
       @token = token
     end
 
-    def detailed_message(highlight: true, **) # rubocop:disable Metrics/AbcSize
+    def detailed_message(highlight: true, **_kwargs) # rubocop:disable Metrics/AbcSize
       if @token.query.strip.empty?
         "empty query"
       else
-        lines = @token.query[...@token.start].lines
+        lines = @token.query[...@token.start]&.lines or [""] # pleasing the type checker
         lineno = lines.length
         col = lines[-1].length
         pad = " " * lineno.to_s.length
