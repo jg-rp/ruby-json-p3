@@ -16,6 +16,12 @@ class TestNameSelectors < Minitest::Test
     assert_empty(path.find({ a: "c" }).map(&:value))
   end
 
+  def test_select_null
+    path = JSONPathRFC9535.compile("$.a")
+
+    assert_equal([nil], path.find({ "a" => nil }).map(&:value))
+  end
+
   def test_symbol_name_selector
     env = SymbolSelectorEnvironment.new
     path = env.compile("$.a")

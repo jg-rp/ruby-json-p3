@@ -95,8 +95,10 @@ module JSONPathRFC9535
 
     def resolve(node)
       if node.value.is_a?(Array)
-        value = node.value[@index]
-        value ? [node.new_child(value, normalize(@index, node.value.length))] : []
+        norm_index = normalize(@index, node.value.length)
+        return [] if norm_index.negative? || norm_index >= node.value.length
+
+        [node.new_child(node.value[@index], norm_index)]
       else
         []
       end
