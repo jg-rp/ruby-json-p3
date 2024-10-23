@@ -268,6 +268,24 @@ class MyJSONPathEnvironment < JSONPathRFC9535::JSONPathEnvironment
   end
 ```
 
+### JSONPathError
+
+`JSONPathError` is the base class for all JSONPath exceptions. The following classes inherit from `JSONPathError` and will only occur when parsing a JSONPath expression, not when applying a path to some data.
+
+- `JSONPathSyntaxError`
+- `JSONPathTypeError`
+- `JSONPathNameError`
+
+`JSONPathError` implements `#detailed_message`. With recent versions of Ruby you should get useful error messages.
+
+```
+JSONPathRFC9535::JSONPathSyntaxError: unexpected trailing whitespace
+  -> '$.foo ' 1:5
+  |
+1 | $.foo
+  |      ^ unexpected trailing whitespace
+```
+
 ## Contributing
 
 Your contributions and questions are always welcome. Feel free to ask questions, report bugs or request features on the [issue tracker](https://github.com/jg-rp/ruby-jsonpath-rfc9535/issues) or on [Github Discussions](https://github.com/jg-rp/ruby-jsonpath-rfc9535/discussions). Pull requests are welcome too.

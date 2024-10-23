@@ -6,6 +6,8 @@ module JSONPathRFC9535
 
   # Base class for JSONPath exceptions that happen when parsing or evaluating a query.
   class JSONPathError < StandardError
+    FULL_MESSAGE = ((RUBY_VERSION.split(".")&.map(&:to_i) <=> [3, 2, 0]) || -1) < 1
+
     def initialize(msg, token)
       super(msg)
       @token = token
@@ -31,7 +33,12 @@ module JSONPathRFC9535
     end
 
     def full_message(highlight: true, order: :top)
-      "#{super}\n#{detailed_message(highlight: highlight, order: order)}"
+      if FULL_MESSAGE
+        # For Ruby < 3.2.0
+        "#{super}\n#{detailed_message(highlight: highlight, order: order)}"
+      else
+        super
+      end
     end
   end
 

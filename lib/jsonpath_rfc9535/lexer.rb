@@ -117,11 +117,12 @@ module JSONPathRFC9535 # rubocop:disable Style/Documentation
     end
 
     def lex_segment # rubocop:disable Metrics/MethodLength, Metrics/CyclomaticComplexity
-      if ignore_whitespace? && peek.empty?
+      if accept?(RE_WHITESPACE) && peek.empty?
         error "unexpected trailing whitespace"
         return nil
       end
 
+      ignore
       c = self.next
 
       case c

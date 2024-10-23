@@ -70,12 +70,14 @@ module JSONPathRFC9535
       @sym = @name.to_sym
     end
 
-    def resolve(node)
+    def resolve(node) # rubocop:disable Metrics/MethodLength
       if node.value.is_a?(Hash)
         if node.value.key?(@name)
           [node.new_child(node.value[@name], @name)]
         elsif node.value.key?(@sym)
           [node.new_child(node.value[@sym], @name)]
+        else
+          []
         end
       else
         []

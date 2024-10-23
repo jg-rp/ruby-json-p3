@@ -73,6 +73,8 @@ module JSONPathRFC9535
 
   # Base class for JSONPath exceptions that happen when parsing or evaluating a query.
   class JSONPathError < StandardError
+    FULL_MESSAGE: bool
+    
     @token: Token
 
     def initialize: (String msg, Token token) -> void
@@ -688,6 +690,29 @@ module JSONPathRFC9535
   # The name selector select values from hashes given a key.
   class NameSelector < Selector
     @name: String
+
+    # @dynamic name
+    attr_reader name: String
+
+    def initialize: (JSONPathEnvironment env, Token token, String name) -> void
+
+    def resolve: (JSONPathNode node) -> ::Array[JSONPathNode]
+
+    def singular?: () -> true
+
+    def to_s: () -> String
+
+    def ==: (untyped other) -> bool
+
+    alias eql? ==
+
+    def hash: () -> Integer
+  end
+
+  class SymbolNameSelector < NameSelector
+    @name: String
+
+    @sym: Symbol
 
     # @dynamic name
     attr_reader name: String
