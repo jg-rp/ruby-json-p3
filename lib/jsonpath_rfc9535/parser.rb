@@ -65,6 +65,8 @@ module JSONPathRFC9535
   class Parser # rubocop:disable Metrics/ClassLength
     def initialize(env)
       @env = env
+      @name_selector = env.class::NAME_SELECTOR
+      @index_selector = env.class::INDEX_SELECTOR
     end
 
     # Parse an array of tokens into an abstract syntax tree.
@@ -104,7 +106,7 @@ module JSONPathRFC9535
       case stream.peek.type
       when Token::NAME
         token = stream.next
-        [NameSelector.new(@env, token, token.value)]
+        [@name_selector.new(@env, token, token.value)]
       when Token::WILD
         [WildcardSelector.new(@env, stream.next)]
       when Token::LBRACKET
@@ -128,7 +130,7 @@ module JSONPathRFC9535
           selectors << parse_index_or_slice(stream)
         when Token::DOUBLE_QUOTE_STRING, Token::SINGLE_QUOTE_STRING
           token = stream.next
-          selectors << NameSelector.new(@env, token, decode_string_literal(token))
+          selectors << @name_selector.new(@env, token, decode_string_literal(token))
         when Token::COLON
           selectors << parse_slice_selector(stream)
         when Token::WILD
@@ -165,7 +167,7 @@ module JSONPathRFC9535
       token = stream.next
       index = parse_i_json_int(token)
 
-      return IndexSelector.new(@env, token, index) unless stream.peek.type == Token::COLON
+      return @index_selector.new(@env, token, index) unless stream.peek.type == Token::COLON
 
       stream.next # move past colon
       stop = nil

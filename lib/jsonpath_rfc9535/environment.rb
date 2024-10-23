@@ -12,8 +12,8 @@ require_relative "function_extensions/search"
 module JSONPathRFC9535
   # JSONPath configuration
   #
-  # You are encouraged to configure your environment by subclassing `JSONPathEnvironment`
-  # and setting one or more constants or overriding {setup_function_extensions}.
+  # Configure an environment by inheriting from `JSONPathEnvironment` and setting one
+  # or more constants and/or overriding {setup_function_extensions}.
   class JSONPathEnvironment
     # The maximum integer allowed when selecting array items by index.
     MAX_INT_INDEX = (2**53) - 1
@@ -21,13 +21,23 @@ module JSONPathRFC9535
     # The minimum integer allowed when selecting array items by index.
     MIN_INT_INDEX = -(2**53) + 1
 
-    # The maximum number of arrays and hashes the recursive descent segment
-    # will traverse before raising a {JSONPathRecursionError}.
+    # The maximum number of arrays and hashes the recursive descent segment will
+    # traverse before raising a {JSONPathRecursionError}.
     MAX_RECURSION_DEPTH = 100
 
-    # When _true_ replaces the default _name selector_ with a name selector
-    # that will resolve hashes with symbol keys as well as string keys.
-    SYMBOL_SELECTOR = false
+    # One of the available implementations of the _name selector_.
+    #
+    # - {NameSelector} (the default) will select values from hashes using string keys.
+    # - {SymbolNameSelector} will select values from hashes using string or symbol keys.
+    #
+    # Implement your own name selector by inheriting from {NameSelector} and overriding
+    # `#resolve`.
+    NAME_SELECTOR = NameSelector
+
+    # An implementation of the _index selector_. The default implementation will
+    # select value from arrays only. Implement your own by inheriting from
+    # {IndexSelector} and overriding `#resolve`.
+    INDEX_SELECTOR = IndexSelector
 
     attr_accessor :function_extensions
 

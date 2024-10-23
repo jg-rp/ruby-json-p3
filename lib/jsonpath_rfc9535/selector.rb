@@ -62,6 +62,27 @@ module JSONPathRFC9535
     end
   end
 
+  # This non-standard name selector selects values from hashes given a string or
+  # symbol key.
+  class SymbolNameSelector < NameSelector
+    def initialize(env, token, name)
+      super
+      @sym = @name.to_sym
+    end
+
+    def resolve(node)
+      if node.value.is_a?(Hash)
+        if node.value.key?(@name)
+          [node.new_child(node.value[@name], @name)]
+        elsif node.value.key?(@sym)
+          [node.new_child(node.value[@sym], @name)]
+        end
+      else
+        []
+      end
+    end
+  end
+
   # The index selector selects values from arrays given an index.
   class IndexSelector < Selector
     # @dynamic index
