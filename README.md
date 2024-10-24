@@ -11,6 +11,13 @@ We follow <a href="https://datatracker.ietf.org/doc/html/rfc9535">RFC 9535</a> s
   <a href="https://github.com/jg-rp/ruby-json-p3/actions">
     <img src="https://img.shields.io/github/actions/workflow/status/jg-rp/ruby-json-p3/main.yml?branch=main&label=tests&style=flat-square" alt="Tests">
   </a>
+  <br>
+  <a href="https://rubygems.org/gems/json_p3">
+    <img alt="Gem Version" src="https://img.shields.io/gem/v/json_p3?style=flat-square">
+  </a>
+  <a href="https://github.com/jg-rp/ruby-json-p3">
+    <img alt="Static Badge" src="https://img.shields.io/badge/Ruby-3.1%20%7C%203.2%20%7C%203.3-CC342D?style=flat-square">
+  </a>
 </p>
 
 ---
@@ -26,7 +33,17 @@ We follow <a href="https://datatracker.ietf.org/doc/html/rfc9535">RFC 9535</a> s
 
 ## Install
 
-TODO: once published to RubyGems.org
+Add `'json_p3'` to your Gemfile:
+
+```
+gem 'json_p3', '~> 0.2.1'
+```
+
+Or
+
+```
+gem install json_p3
+```
 
 ## Example
 
@@ -97,7 +114,7 @@ end
 ## Links
 
 - Change log: https://github.com/jg-rp/ruby-json-p3/blob/main/CHANGELOG.md
-- TODO: RubyGems
+- RubyGems: https://rubygems.org/gems/json_p3
 - Source code: https://github.com/jg-rp/ruby-json-p3
 - Issue tracker: https://github.com/jg-rp/ruby-json-p3/issues
 
