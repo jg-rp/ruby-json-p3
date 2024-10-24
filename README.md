@@ -1,4 +1,4 @@
-<h1 align="center">JSONPath: Query Expressions for JSON in Ruby</h1>
+<h1 align="center">JSONPath, JSON Patch and JSON Pointer for Ruby</h1>
 
 <p align="center">
 We follow <a href="https://datatracker.ietf.org/doc/html/rfc9535">RFC 9535</a> strictly and test against the <a href="https://github.com/jsonpath-standard/jsonpath-compliance-test-suite">JSONPath Compliance Test Suite</a>.
@@ -9,7 +9,7 @@ We follow <a href="https://datatracker.ietf.org/doc/html/rfc9535">RFC 9535</a> s
     <img src="https://img.shields.io/pypi/l/jsonpath-rfc9535.svg?style=flat-square" alt="License">
   </a>
   <a href="https://github.com/jg-rp/ruby-json-p3/actions">
-    <img src="https://img.shields.io/github/actions/workflow/status/jg-rp/ruby-json-p3/main.yaml?branch=main&label=tests&style=flat-square" alt="Tests">
+    <img src="https://img.shields.io/github/actions/workflow/status/jg-rp/ruby-json-p3/main.yml?branch=main&label=tests&style=flat-square" alt="Tests">
   </a>
 </p>
 
