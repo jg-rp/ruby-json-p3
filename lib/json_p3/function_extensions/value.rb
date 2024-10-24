@@ -2,7 +2,7 @@
 
 require_relative "../function"
 
-module JSONPathRFC9535
+module JSONP3
   # The standard `value` function.
   class Value < FunctionExtension
     ARG_TYPES = [ExpressionType::NODES].freeze

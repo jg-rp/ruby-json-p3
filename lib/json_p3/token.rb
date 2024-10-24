@@ -2,7 +2,7 @@
 
 require_relative "errors"
 
-module JSONPathRFC9535
+module JSONP3
   # Tokens are produced by the lexer and consumed by the parser. Each token contains sub
   # string from a JSONPath expression, its location within the JSONPath expression and a
   # symbol indicating what type of token it is.

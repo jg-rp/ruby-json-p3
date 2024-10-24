@@ -2,7 +2,7 @@
 
 require_relative "../function"
 
-module JSONPathRFC9535
+module JSONP3
   # The standard `length` function.
   class Length < FunctionExtension
     ARG_TYPES = [ExpressionType::VALUE].freeze

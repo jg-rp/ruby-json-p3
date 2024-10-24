@@ -4,7 +4,7 @@ require "test_helper"
 
 class TestLRUCache < Minitest::Test
   def test_expire_cache_key
-    cache = JSONPathRFC9535::LRUCache.new(2)
+    cache = JSONP3::LRUCache.new(2)
     cache["a"] = 1
     cache["b"] = 2
 
@@ -18,7 +18,7 @@ class TestLRUCache < Minitest::Test
   end
 
   def test_set_an_existing_key # rubocop:disable Metrics/MethodLength, Metrics/AbcSize
-    cache = JSONPathRFC9535::LRUCache.new(2)
+    cache = JSONP3::LRUCache.new(2)
     cache["a"] = 1
     cache["b"] = 2
 

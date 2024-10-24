@@ -4,7 +4,7 @@ require "test_helper"
 
 class TestNormalizedPath < Minitest::Test
   def test_normalize_negative_index
-    path = JSONPathRFC9535.compile("$.a[-2]")
+    path = JSONP3.compile("$.a[-2]")
     data = { "a" => [1, 2, 3, 4, 5] }
     nodes = path.find(data)
 
@@ -13,7 +13,7 @@ class TestNormalizedPath < Minitest::Test
   end
 
   def test_normalize_reverse_slice
-    path = JSONPathRFC9535.compile("$.a[3:0:-1]")
+    path = JSONP3.compile("$.a[3:0:-1]")
     data = { "a" => [1, 2, 3, 4, 5] }
     nodes = path.find(data)
 

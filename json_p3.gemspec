@@ -1,23 +1,23 @@
 # frozen_string_literal: true
 
-require_relative "lib/jsonpath_rfc9535/version"
+require_relative "lib/json_p3/version"
 
 Gem::Specification.new do |spec|
-  spec.name = "jsonpath_rfc9535"
-  spec.version = JSONPathRFC9535::VERSION
+  spec.name = "json_p3"
+  spec.version = JSONP3::VERSION
   spec.authors = ["James Prior"]
   spec.email = ["jamesgr.prior@gmail.com"]
 
   spec.summary = "JSONPath: Query Expressions for JSON in Ruby"
   spec.description = "JSONPath following RFC 9535"
-  spec.homepage = "https://github.com/jg-rp/ruby-jsonpath-rfc9535"
+  spec.homepage = "https://github.com/jg-rp/ruby-json-p3"
   spec.required_ruby_version = ">= 3.0.0"
 
   # spec.metadata["allowed_push_host"] = "TODO: Set to your gem server 'https://example.com'"
 
   spec.metadata["homepage_uri"] = spec.homepage
-  spec.metadata["source_code_uri"] = "https://github.com/jg-rp/ruby-jsonpath-rfc9535"
-  spec.metadata["changelog_uri"] = "https://github.com/jg-rp/ruby-jsonpath-rfc9535/blob/main/CHANGELOG.md"
+  spec.metadata["source_code_uri"] = "https://github.com/jg-rp/ruby-json-p3"
+  spec.metadata["changelog_uri"] = "https://github.com/jg-rp/ruby-json-p3/blob/main/CHANGELOG.md"
 
   # Specify which files should be added to the gem when it is released.
   # The `git ls-files -z` loads the files in the RubyGem that have been added into git.

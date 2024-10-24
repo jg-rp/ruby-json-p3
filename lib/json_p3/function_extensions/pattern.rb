@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-module JSONPathRFC9535 # rubocop:disable Style/Documentation
+module JSONP3 # rubocop:disable Style/Documentation
   # Map I-Regexp pattern to Ruby regex pattern.
   # @param pattern [String]
   # @return [String]

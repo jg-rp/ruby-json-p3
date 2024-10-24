@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-module JSONPathRFC9535
+module JSONP3
   # A JSON-like value and its location.
   class JSONPathNode
     # @dynamic value, location, root

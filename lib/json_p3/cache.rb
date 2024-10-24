@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-module JSONPathRFC9535
+module JSONP3
   # A least recently used cache relying on Ruby hash insertion order.
   class LRUCache
     attr_reader :max_size
