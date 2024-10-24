@@ -5,6 +5,7 @@ require_relative "lib/json_p3/version"
 Gem::Specification.new do |spec|
   spec.name = "json_p3"
   spec.version = JSONP3::VERSION
+  spec.licenses = ["MIT"]
   spec.authors = ["James Prior"]
   spec.email = ["jamesgr.prior@gmail.com"]
 
