@@ -3,7 +3,7 @@
 require "json"
 require_relative "function"
 
-module JSONPathRFC9535 # rubocop:disable Style/Documentation
+module JSONP3 # rubocop:disable Style/Documentation
   # Base class for all filter expression nodes.
   class Expression
     # @dynamic token
@@ -29,7 +29,7 @@ module JSONPathRFC9535 # rubocop:disable Style/Documentation
     end
 
     def evaluate(context)
-      JSONPathRFC9535.truthy?(@expression.evaluate(context))
+      JSONP3.truthy?(@expression.evaluate(context))
     end
 
     def to_s
@@ -112,7 +112,7 @@ module JSONPathRFC9535 # rubocop:disable Style/Documentation
     end
 
     def evaluate(context)
-      !JSONPathRFC9535.truthy?(@expression.evaluate(context))
+      !JSONP3.truthy?(@expression.evaluate(context))
     end
 
     def to_s
@@ -167,7 +167,7 @@ module JSONPathRFC9535 # rubocop:disable Style/Documentation
   # A logical `&&` expression.
   class LogicalAndExpression < InfixExpression
     def evaluate(context)
-      JSONPathRFC9535.truthy?(@left.evaluate(context)) && JSONPathRFC9535.truthy?(@right.evaluate(context))
+      JSONP3.truthy?(@left.evaluate(context)) && JSONP3.truthy?(@right.evaluate(context))
     end
 
     def to_s
@@ -178,7 +178,7 @@ module JSONPathRFC9535 # rubocop:disable Style/Documentation
   # A logical `||` expression.
   class LogicalOrExpression < InfixExpression
     def evaluate(context)
-      JSONPathRFC9535.truthy?(@left.evaluate(context)) || JSONPathRFC9535.truthy?(@right.evaluate(context))
+      JSONP3.truthy?(@left.evaluate(context)) || JSONP3.truthy?(@right.evaluate(context))
     end
 
     def to_s
@@ -189,7 +189,7 @@ module JSONPathRFC9535 # rubocop:disable Style/Documentation
   # An `==` expression.
   class EqExpression < InfixExpression
     def evaluate(context)
-      JSONPathRFC9535.eq?(@left.evaluate(context), @right.evaluate(context))
+      JSONP3.eq?(@left.evaluate(context), @right.evaluate(context))
     end
 
     def to_s
@@ -200,7 +200,7 @@ module JSONPathRFC9535 # rubocop:disable Style/Documentation
   # A `!=` expression.
   class NeExpression < InfixExpression
     def evaluate(context)
-      !JSONPathRFC9535.eq?(@left.evaluate(context), @right.evaluate(context))
+      !JSONP3.eq?(@left.evaluate(context), @right.evaluate(context))
     end
 
     def to_s
@@ -213,7 +213,7 @@ module JSONPathRFC9535 # rubocop:disable Style/Documentation
     def evaluate(context)
       left = @left.evaluate(context)
       right = @right.evaluate(context)
-      JSONPathRFC9535.eq?(left, right) || JSONPathRFC9535.lt?(left, right)
+      JSONP3.eq?(left, right) || JSONP3.lt?(left, right)
     end
 
     def to_s
@@ -226,7 +226,7 @@ module JSONPathRFC9535 # rubocop:disable Style/Documentation
     def evaluate(context)
       left = @left.evaluate(context)
       right = @right.evaluate(context)
-      JSONPathRFC9535.eq?(left, right) || JSONPathRFC9535.lt?(right, left)
+      JSONP3.eq?(left, right) || JSONP3.lt?(right, left)
     end
 
     def to_s
@@ -237,7 +237,7 @@ module JSONPathRFC9535 # rubocop:disable Style/Documentation
   # A `<` expression.
   class LtExpression < InfixExpression
     def evaluate(context)
-      JSONPathRFC9535.lt?(@left.evaluate(context), @right.evaluate(context))
+      JSONP3.lt?(@left.evaluate(context), @right.evaluate(context))
     end
 
     def to_s
@@ -248,7 +248,7 @@ module JSONPathRFC9535 # rubocop:disable Style/Documentation
   # A `>` expression.
   class GtExpression < InfixExpression
     def evaluate(context)
-      JSONPathRFC9535.lt?(@right.evaluate(context), @left.evaluate(context))
+      JSONP3.lt?(@right.evaluate(context), @left.evaluate(context))
     end
 
     def to_s

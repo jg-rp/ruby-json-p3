@@ -9,7 +9,7 @@ require_relative "function_extensions/count"
 require_relative "function_extensions/match"
 require_relative "function_extensions/search"
 
-module JSONPathRFC9535
+module JSONP3
   # JSONPath configuration
   #
   # Configure an environment by inheriting from `JSONPathEnvironment` and setting one
@@ -51,7 +51,7 @@ module JSONPathRFC9535
     # @param query [String]
     # @return [JSONPath]
     def compile(query)
-      tokens = JSONPathRFC9535.tokenize(query)
+      tokens = JSONP3.tokenize(query)
       JSONPath.new(self, @parser.parse(tokens))
     end
 

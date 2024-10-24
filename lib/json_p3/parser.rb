@@ -11,7 +11,7 @@ require_relative "selector"
 require_relative "token"
 require_relative "unescape"
 
-module JSONPathRFC9535
+module JSONP3
   # Step through tokens
   class Stream
     def initialize(tokens)
@@ -49,7 +49,7 @@ module JSONPathRFC9535
     end
 
     def to_s
-      "JSONPathRFC9535::stream(head=#{peek.inspect})"
+      "JSONP3::stream(head=#{peek.inspect})"
     end
   end
 
@@ -451,9 +451,9 @@ module JSONPathRFC9535
 
     def decode_string_literal(token)
       if token.type == Token::SINGLE_QUOTE_STRING
-        JSONPathRFC9535.unescape_string(token.value, "'", token)
+        JSONP3.unescape_string(token.value, "'", token)
       else
-        JSONPathRFC9535.unescape_string(token.value, '"', token)
+        JSONP3.unescape_string(token.value, '"', token)
       end
     end
 

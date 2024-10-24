@@ -2,7 +2,7 @@
 
 require "test_helper"
 
-Token = JSONPathRFC9535::Token
+Token = JSONP3::Token
 
 TEST_CASES = [
   {
@@ -471,7 +471,7 @@ class TestLexer < Minitest::Spec
   describe "tokenize queries" do
     TEST_CASES.each do |test_case|
       it test_case[:name] do
-        lexer = JSONPathRFC9535::Lexer.new(test_case[:query])
+        lexer = JSONP3::Lexer.new(test_case[:query])
         lexer.run
         _(lexer.tokens).must_equal test_case[:want]
       end

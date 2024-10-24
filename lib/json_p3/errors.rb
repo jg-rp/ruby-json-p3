@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-module JSONPathRFC9535
+module JSONP3
   # An exception raised when a JSONPathEnvironment is misconfigured.
   class JSONPathEnvironmentError < StandardError; end
 

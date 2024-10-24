@@ -1,15 +1,15 @@
-<h1 align="center">JSONPath: Query Expressions for JSON in Ruby</h1>
+<h1 align="center">JSONPath, JSON Patch and JSON Pointer for Ruby</h1>
 
 <p align="center">
 We follow <a href="https://datatracker.ietf.org/doc/html/rfc9535">RFC 9535</a> strictly and test against the <a href="https://github.com/jsonpath-standard/jsonpath-compliance-test-suite">JSONPath Compliance Test Suite</a>.
 </p>
 
 <p align="center">
-  <a href="https://github.com/jg-rp/ruby-jsonpath-rfc9535/blob/main/LICENSE.txt">
+  <a href="https://github.com/jg-rp/ruby-json-p3/blob/main/LICENSE.txt">
     <img src="https://img.shields.io/pypi/l/jsonpath-rfc9535.svg?style=flat-square" alt="License">
   </a>
-  <a href="https://github.com/jg-rp/ruby-jsonpath-rfc9535/actions">
-    <img src="https://img.shields.io/github/actions/workflow/status/jg-rp/ruby-jsonpath-rfc9535/main.yaml?branch=main&label=tests&style=flat-square" alt="Tests">
+  <a href="https://github.com/jg-rp/ruby-json-p3/actions">
+    <img src="https://img.shields.io/github/actions/workflow/status/jg-rp/ruby-json-p3/main.yml?branch=main&label=tests&style=flat-square" alt="Tests">
   </a>
 </p>
 
@@ -31,7 +31,7 @@ TODO: once published to RubyGems.org
 ## Example
 
 ```ruby
-require "jsonpath_rfc9535"
+require "json_p3"
 require "json"
 
 data = JSON.parse <<~JSON
@@ -60,7 +60,7 @@ data = JSON.parse <<~JSON
   }
 JSON
 
-JSONPathRFC9535.find("$.users[?@.score > 85]", data).each do |node|
+JSONP3.find("$.users[?@.score > 85]", data).each do |node|
   puts node.value
 end
 
@@ -71,12 +71,12 @@ end
 Or, reading JSON data from a file:
 
 ```ruby
-require "jsonpath_rfc9535"
+require "json_p3"
 require "json"
 
 data = JSON.load_file("/path/to/some.json")
 
-JSONPathRFC9535.find("$.some.query", data).each do |node|
+JSONP3.find("$.some.query", data).each do |node|
   puts node.value
 end
 ```
@@ -84,22 +84,22 @@ end
 You could read data from a YAML formatted file too, or any data format that can be loaded into hashes and arrays.
 
 ```ruby
-require "jsonpath_rfc9535"
+require "json_p3"
 require "yaml"
 
 data = YAML.load_file("/tmp/some.yaml")
 
-JSONPathRFC9535.find("$.users[?@.score > 85]", data).each do |node|
+JSONP3.find("$.users[?@.score > 85]", data).each do |node|
   puts node.value
 end
 ```
 
 ## Links
 
-- Change log: https://github.com/jg-rp/ruby-jsonpath-rfc9535/blob/main/CHANGELOG.md
+- Change log: https://github.com/jg-rp/ruby-json-p3/blob/main/CHANGELOG.md
 - TODO: RubyGems
-- Source code: https://github.com/jg-rp/ruby-jsonpath-rfc9535
-- Issue tracker: https://github.com/jg-rp/ruby-jsonpath-rfc9535/issues
+- Source code: https://github.com/jg-rp/ruby-json-p3
+- Issue tracker: https://github.com/jg-rp/ruby-json-p3/issues
 
 ## Related projects
 
@@ -122,7 +122,7 @@ Each `JSONPathNode` has:
 - a `path()` method, which returns the normalized path to the node in the target JSON document.
 
 ```ruby
-require "jsonpath_rfc9535"
+require "json_p3"
 require "json"
 
 data = JSON.parse <<~JSON
@@ -151,7 +151,7 @@ data = JSON.parse <<~JSON
   }
 JSON
 
-JSONPathRFC9535.find("$.users[?@.score > 85]", data).each do |node|
+JSONP3.find("$.users[?@.score > 85]", data).each do |node|
   puts "#{node.value} at #{node.path}"
 end
 
@@ -166,7 +166,7 @@ end
 Prepare a JSONPath expression for repeated application to different JSON-like data. An instance of `JSONPath` has a `find(data)` method, which behaves similarly to the module-level `find(query, data)` method.
 
 ```ruby
-require "jsonpath_rfc9535"
+require "json_p3"
 require "json"
 
 data = JSON.parse <<~JSON
@@ -195,7 +195,7 @@ data = JSON.parse <<~JSON
   }
 JSON
 
-path = JSONPathRFC9535.compile("$.users[?@.score > 85]")
+path = JSONP3.compile("$.users[?@.score > 85]")
 
 path.find(data).each do |node|
   puts "#{node.value} at #{node.path}"
@@ -210,21 +210,21 @@ end
 The `find` and `compile` methods described above are convenience methods equivalent to
 
 ```
-JSONPathRFC9535::DEFAULT_ENVIRONMENT.find(query, data)
+JSONP3::DEFAULT_ENVIRONMENT.find(query, data)
 ```
 
 and
 
 ```
-JSONPathRFC9535::DEFAULT_ENVIRONMENT.compile(query)
+JSONP3::DEFAULT_ENVIRONMENT.compile(query)
 ```
 
 You could create your own environment like this:
 
 ```ruby
-require "jsonpath_rfc9535"
+require "json_p3"
 
-jsonpath = JSONPathRFC9535::JSONPathEnvironment.new
+jsonpath = JSONP3::JSONPathEnvironment.new
 nodes = jsonpath.find("$.*", { "a" => "b", "c" => "d" })
 pp nodes.map(&:value) # ["b", "d"]
 ```
@@ -232,7 +232,7 @@ pp nodes.map(&:value) # ["b", "d"]
 To configure an environment with custom filter functions or non-standard selectors, inherit from `JSONPathEnvironment` and override some of its constants or `#setup_function_extensions` method.
 
 ```ruby
-class MyJSONPathEnvironment < JSONPathRFC9535::JSONPathEnvironment
+class MyJSONPathEnvironment < JSONP3::JSONPathEnvironment
   # The maximum integer allowed when selecting array items by index.
   MAX_INT_INDEX = (2**53) - 1
 
@@ -279,7 +279,7 @@ class MyJSONPathEnvironment < JSONPathRFC9535::JSONPathEnvironment
 `JSONPathError` implements `#detailed_message`. With recent versions of Ruby you should get useful error messages.
 
 ```
-JSONPathRFC9535::JSONPathSyntaxError: unexpected trailing whitespace
+JSONP3::JSONPathSyntaxError: unexpected trailing whitespace
   -> '$.foo ' 1:5
   |
 1 | $.foo
@@ -288,15 +288,15 @@ JSONPathRFC9535::JSONPathSyntaxError: unexpected trailing whitespace
 
 ## Contributing
 
-Your contributions and questions are always welcome. Feel free to ask questions, report bugs or request features on the [issue tracker](https://github.com/jg-rp/ruby-jsonpath-rfc9535/issues) or on [Github Discussions](https://github.com/jg-rp/ruby-jsonpath-rfc9535/discussions). Pull requests are welcome too.
+Your contributions and questions are always welcome. Feel free to ask questions, report bugs or request features on the [issue tracker](https://github.com/jg-rp/ruby-json-p3/issues) or on [Github Discussions](https://github.com/jg-rp/ruby-json-p3/discussions). Pull requests are welcome too.
 
 ### Development
 
 The [JSONPath Compliance Test Suite](https://github.com/jsonpath-standard/jsonpath-compliance-test-suite) is included as a git [submodule](https://git-scm.com/book/en/v2/Git-Tools-Submodules). Clone the Ruby JSONPath RFC 9535 git repository and initialize the CTS submodule.
 
 ```shell
-$ git clone git@github.com:jg-rp/ruby-jsonpath-rfc9535.git
-$ cd ruby-jsonpath-rfc9535.git
+$ git clone git@github.com:jg-rp/ruby-json-p3.git
+$ cd ruby-json-p3.git
 $ git submodule update --init
 ```
 

@@ -1,5 +1,7 @@
-## [Unreleased]
+## [0.2.1] - 2024-10-24
 
-## [0.1.0] - 2024-10-13
+- Rename project and gem
+
+## [0.2.0] - 2024-10-24
 
 - Initial release

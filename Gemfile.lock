@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    jsonpath_rfc9535 (0.2.0)
+    json_p3 (0.2.1)
 
 GEM
   remote: https://rubygems.org/
@@ -106,7 +106,7 @@ PLATFORMS
 
 DEPENDENCIES
   benchmark-ips (~> 2.14)
-  jsonpath_rfc9535!
+  json_p3!
   memory_profiler (~> 1.1)
   minitest (~> 5.16)
   minitest-fail-fast (~> 0.1.0)

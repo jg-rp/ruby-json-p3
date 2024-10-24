@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-module JSONPathRFC9535 # rubocop:disable Style/Documentation
+module JSONP3 # rubocop:disable Style/Documentation
   # Replace escape sequences with their equivalent Unicode code point.
   # @param value [String]
   # @param quote [String] one of '"' or "'".
@@ -33,8 +33,8 @@ module JSONPathRFC9535 # rubocop:disable Style/Documentation
         when "t"
           unescaped << "\t"
         when "u"
-          code_point, index = JSONPathRFC9535.decode_hex_char(value, index, token)
-          unescaped << JSONPathRFC9535.code_point_to_string(code_point, token)
+          code_point, index = JSONP3.decode_hex_char(value, index, token)
+          unescaped << JSONP3.code_point_to_string(code_point, token)
         else
           raise JSONPathSyntaxError.new("unknown escape sequence", token)
         end

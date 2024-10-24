@@ -2,22 +2,22 @@
 
 require "test_helper"
 
-class SymbolSelectorEnvironment < JSONPathRFC9535::JSONPathEnvironment
-  NAME_SELECTOR = JSONPathRFC9535::SymbolNameSelector
+class SymbolSelectorEnvironment < JSONP3::JSONPathEnvironment
+  NAME_SELECTOR = JSONP3::SymbolNameSelector
 end
 
 SomeStruct = Struct.new("SomeStruct", :x)
 
 class TestNameSelectors < Minitest::Test
   def test_standard_name_selector
-    path = JSONPathRFC9535.compile("$.a")
+    path = JSONP3.compile("$.a")
 
     assert_equal(["b"], path.find({ "a" => "b", a: "c" }).map(&:value))
     assert_empty(path.find({ a: "c" }).map(&:value))
   end
 
   def test_select_null
-    path = JSONPathRFC9535.compile("$.a")
+    path = JSONP3.compile("$.a")
 
     assert_equal([nil], path.find({ "a" => nil }).map(&:value))
   end

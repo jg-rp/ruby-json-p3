@@ -2,7 +2,7 @@
 
 require_relative "node"
 
-module JSONPathRFC9535
+module JSONP3
   # A compiled JSONPath expression ready to be applied to JSON-like values.
   class JSONPath
     def initialize(env, segments)

@@ -1,5 +1,5 @@
 # RFC 9535 JSONPath query expressions for JSON.
-module JSONPathRFC9535
+module JSONP3
   DefaultEnvironment: JSONPathEnvironment
 
   def self.find: (String path, untyped data) -> JSONPathNodeList
@@ -7,7 +7,7 @@ module JSONPathRFC9535
   def self.compile: (String path) -> JSONPath
 end
 
-module JSONPathRFC9535
+module JSONP3
   # A least recently used cache relying on Ruby hash insertion order.
   class LRUCache
     @data: untyped
@@ -29,7 +29,7 @@ module JSONPathRFC9535
   end
 end
 
-module JSONPathRFC9535
+module JSONP3
   # JSONPath configuration
   class JSONPathEnvironment
     MAX_INT_INDEX: Numeric
@@ -66,7 +66,7 @@ module JSONPathRFC9535
   end
 end
 
-module JSONPathRFC9535
+module JSONP3
   # An exception raised when a JSONPathEnvironment is misconfigured.
   class JSONPathEnvironmentError < StandardError
   end
@@ -93,7 +93,7 @@ module JSONPathRFC9535
   end
 end
 
-module JSONPathRFC9535
+module JSONP3
   # Base class for all filter expression nodes.
   class Expression
     @token: Token
@@ -351,7 +351,7 @@ module JSONPathRFC9535
   end
 end
 
-module JSONPathRFC9535
+module JSONP3
   class ExpressionType
     VALUE: :value_expression
 
@@ -370,7 +370,7 @@ module JSONPathRFC9535
   end
 end
 
-module JSONPathRFC9535
+module JSONP3
   # Return an array of tokens for the JSONPath expression _query_.
   #
   # @param query [String] the JSONPath expression to tokenize.
@@ -451,7 +451,7 @@ end
 
 type location_element = String | Integer | Array[location_element]
 
-module JSONPathRFC9535
+module JSONP3
   # A JSON-like value and its location.
   class JSONPathNode
     @value: untyped
@@ -492,7 +492,7 @@ module JSONPathRFC9535
   end
 end
 
-module JSONPathRFC9535
+module JSONP3
   # Step through tokens
   class Stream
     @tokens: Array[Token]
@@ -591,7 +591,7 @@ module JSONPathRFC9535
   end
 end
 
-module JSONPathRFC9535
+module JSONP3
   # A compiled JSONPath expression ready to be applied to JSON-like values.
   class JSONPath
     @env: JSONPathEnvironment
@@ -617,7 +617,7 @@ module JSONPathRFC9535
   end
 end
 
-module JSONPathRFC9535
+module JSONP3
   # Base class for all JSONPath segments.
   class Segment
     @env: JSONPathEnvironment
@@ -667,7 +667,7 @@ module JSONPathRFC9535
   end
 end
 
-module JSONPathRFC9535
+module JSONP3
   # Base class for all JSONPath selectors
   class Selector
     @env: JSONPathEnvironment
@@ -828,7 +828,7 @@ module JSONPathRFC9535
   end
 end
 
-module JSONPathRFC9535
+module JSONP3
   # Tokens are produced by the lexer and consumed by the parser. Each token contains sub
   # string from a JSONPath expression, its location within the JSONPath expression and a
   # symbol indicating what type of token it is.
@@ -938,7 +938,7 @@ module JSONPathRFC9535
   end
 end
 
-module JSONPathRFC9535
+module JSONP3
   # Replace escape sequences with their equivalent Unicode code point.
   # @param value [String]
   # @param quote [String] one of '"' or "'".
@@ -957,11 +957,11 @@ module JSONPathRFC9535
   def self.code_point_to_string: (untyped code_point, Token token) -> untyped
 end
 
-module JSONPathRFC9535
+module JSONP3
   VERSION: String
 end
 
-module JSONPathRFC9535
+module JSONP3
   # The standard `count` function.
   class Count < FunctionExtension
     ARG_TYPES: ::Array[Symbol]
@@ -972,7 +972,7 @@ module JSONPathRFC9535
   end
 end
 
-module JSONPathRFC9535
+module JSONP3
   # The standard `length` function.
   class Length < FunctionExtension
     ARG_TYPES: ::Array[Symbol]
@@ -983,7 +983,7 @@ module JSONPathRFC9535
   end
 end
 
-module JSONPathRFC9535
+module JSONP3
   # The standard `match` function.
   class Match < FunctionExtension
     @cache_size: Integer
@@ -1013,14 +1013,14 @@ module JSONPathRFC9535
   end
 end
 
-module JSONPathRFC9535
+module JSONP3
   # Map I-Regexp pattern to Ruby regex pattern.
   # @param pattern [String]
   # @return [String]
   def self.map_iregexp: (String pattern) -> String
 end
 
-module JSONPathRFC9535
+module JSONP3
   # The standard `search` function.
   class Search < FunctionExtension
     @cache_size: Integer
@@ -1046,7 +1046,7 @@ module JSONPathRFC9535
   end
 end
 
-module JSONPathRFC9535
+module JSONP3
   # The standard `value` function.
   class Value < FunctionExtension
     ARG_TYPES: ::Array[Symbol]

@@ -4,9 +4,9 @@ require_relative "../cache"
 require_relative "../function"
 require_relative "pattern"
 
-module JSONPathRFC9535
-  # The standard `match` function.
-  class Match < FunctionExtension
+module JSONP3
+  # The standard `search` function.
+  class Search < FunctionExtension
     ARG_TYPES = [ExpressionType::VALUE, ExpressionType::VALUE].freeze
     RETURN_TYPE = ExpressionType::LOGICAL
 
@@ -28,9 +28,9 @@ module JSONPathRFC9535
       return false unless pattern.is_a?(String) && value.is_a?(String)
 
       if @cache_size.positive?
-        re = @cache[pattern] || Regexp.new(full_match(pattern))
+        re = @cache[pattern] || Regexp.new(JSONP3.map_iregexp(pattern))
       else
-        re = Regexp.new(full_match(pattern))
+        re = Regexp.new(JSONP3.map_iregexp(pattern))
         @cache[pattern] = re
       end
 
@@ -39,24 +39,6 @@ module JSONPathRFC9535
       raise if @raise_errors
 
       false
-    end
-
-    private
-
-    def full_match(pattern)
-      parts = []
-      explicit_caret = pattern.start_with?("^")
-      explicit_dollar = pattern.end_with?("$")
-
-      # Replace '^' with '\A' and '$' with '\z'
-      pattern = pattern.sub("^", "\\A") if explicit_caret
-      pattern = "#{pattern[..-1]}\\z" if explicit_dollar
-
-      # Wrap with '\A' and '\z' if they are not already part of the pattern.
-      parts << "\\A(?:" if !explicit_caret && !explicit_dollar
-      parts << JSONPathRFC9535.map_iregexp(pattern)
-      parts << ")\\z" if !explicit_caret && !explicit_dollar
-      parts.join
     end
   end
 end
