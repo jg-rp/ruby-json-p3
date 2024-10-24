@@ -309,11 +309,11 @@ Your contributions and questions are always welcome. Feel free to ask questions,
 
 ### Development
 
-The [JSONPath Compliance Test Suite](https://github.com/jsonpath-standard/jsonpath-compliance-test-suite) is included as a git [submodule](https://git-scm.com/book/en/v2/Git-Tools-Submodules). Clone the Ruby JSONPath RFC 9535 git repository and initialize the CTS submodule.
+The [JSONPath Compliance Test Suite](https://github.com/jsonpath-standard/jsonpath-compliance-test-suite) is included as a git [submodule](https://git-scm.com/book/en/v2/Git-Tools-Submodules). Clone the JSON P3 git repository and initialize the CTS submodule.
 
 ```shell
 $ git clone git@github.com:jg-rp/ruby-json-p3.git
-$ cd ruby-json-p3.git
+$ cd ruby-json-p3
 $ git submodule update --init
 ```
 

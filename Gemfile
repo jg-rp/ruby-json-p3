@@ -2,7 +2,7 @@
 
 source "https://rubygems.org"
 
-# Specify your gem's dependencies in jsonpath_rfc9535.gemspec
+# Specify your gem's dependencies in json_p3.gemspec
 gemspec
 
 gem "rake", "~> 13.0"

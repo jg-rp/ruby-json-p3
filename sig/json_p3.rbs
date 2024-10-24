@@ -1,4 +1,4 @@
-# RFC 9535 JSONPath query expressions for JSON.
+# JSONPath, JSON Patch and JSON Pointer for Ruby
 module JSONP3
   DefaultEnvironment: JSONPathEnvironment
 
