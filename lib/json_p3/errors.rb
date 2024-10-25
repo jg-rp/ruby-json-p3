@@ -46,4 +46,10 @@ module JSONP3
   class JSONPathTypeError < JSONPathError; end
   class JSONPathNameError < JSONPathError; end
   class JSONPathRecursionError < JSONPathError; end
+
+  class JSONPointerResolutionError < StandardError; end
+  class JSONPointerSyntaxError < JSONPointerResolutionError; end
+  class JSONPointerIndexError < JSONPointerResolutionError; end
+  class JSONPointerKeyError < JSONPointerResolutionError; end
+  class JSONPointerTypeError < JSONPointerResolutionError; end
 end

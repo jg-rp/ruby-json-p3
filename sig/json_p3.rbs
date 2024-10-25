@@ -1056,3 +1056,39 @@ module JSONP3
     def call: (JSONPathNodeList node_list) -> (untyped | :nothing)
   end
 end
+
+module JSONP3
+  # Identify a single value in JSON-like data, as per RFC 6901.
+  class JSONPointer
+    @tokens: Array[String | Integer]
+
+    @pointer: String
+
+    UNDEFINED: :__undefined
+
+    attr_reader tokens: Array[String | Integer]
+
+    # Encode an array of strings and integers into a JSON pointer.
+    # @param tokens [Array<String | Integer>]
+    # @return [String]
+    def self.encode: ((Array[String | Integer] | nil) tokens) -> String
+
+    # @param pointer [String]
+    def initialize: (String pointer) -> void
+
+    # Resolve this pointer against JSON-like data _value_.
+    def resolve: (untyped value, ?fallback: untyped) -> untyped
+
+    def to_s: () -> String
+
+    # @param pointer [String]
+    # @return [Array<String | Integer>]
+    def parse: (String pointer) -> Array[String | Integer]
+
+    # @param value [Object]
+    # @param token [String | Integer]
+    # @return [Object] the "fetched" object from _value_ or a symbol indicating
+    #   why an object could not be selected using _token_.
+    def get_item: (untyped value, (String | Integer) token) -> (:index_token_type_error | :index_out_of_range | untyped | :value_type_error)
+  end
+end
