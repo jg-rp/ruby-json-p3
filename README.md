@@ -47,9 +47,7 @@ gem install json_p3
 
 ### Checksum
 
-JSON P3 is cryptographically signed. To be sure the gem you install hasn’t been tampered with:
-
-Add my public key (if you haven’t already) as a trusted certificate
+JSON P3 is cryptographically signed. To be sure the gem you install hasn’t been tampered with, add my public key (if you haven’t already) as a trusted certificate:
 
 ```
 gem cert --add <(curl -Ls https://raw.githubusercontent.com/jg-rp/ruby-json-p3/refs/heads/main/certs/jgrp.pem)
@@ -61,7 +59,7 @@ Followed by:
 gem install json_p3 -P MediumSecurity
 ```
 
-JSON P3 has no runtime dependencies, so `-P HighSecurity` is OK too.
+JSON P3 has no runtime dependencies, so `-P HighSecurity` is OK too. See https://guides.rubygems.org/security/ for mor information.
 
 ## Example
 
