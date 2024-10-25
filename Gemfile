@@ -30,3 +30,7 @@ gem "memory_profiler", "~> 1.1"
 gem "benchmark-ips", "~> 2.14"
 
 gem "redcarpet", "~> 3.6"
+
+gem "fiddle", "~> 1.1"
+
+gem "rdoc", "~> 6.7"

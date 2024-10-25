@@ -46,7 +46,7 @@ module JSONP3 # rubocop:disable Style/Documentation
 
     def run
       state = :lex_root
-      state = method(state).call until state.nil?
+      state = send(state) until state.nil?
     end
 
     protected
@@ -61,7 +61,7 @@ module JSONP3 # rubocop:disable Style/Documentation
     end
 
     def next
-      @scanner.getch || ""
+      @scanner.get_byte || ""
     end
 
     def ignore
@@ -69,7 +69,6 @@ module JSONP3 # rubocop:disable Style/Documentation
     end
 
     def backup
-      # Assumes we're backing-up from a single byte character.
       @scanner.pos -= 1
     end
 
@@ -78,7 +77,7 @@ module JSONP3 # rubocop:disable Style/Documentation
       @scanner.peek(1)
     end
 
-    # Advance the lexer if the next character is equal to _char_.
+    # Advance the lexer if _pattern_ matches from the current position.
     def accept?(pattern)
       !@scanner.scan(pattern).nil?
     end
@@ -306,7 +305,7 @@ module JSONP3 # rubocop:disable Style/Documentation
             emit(Token::EQ, "==")
           else
             backup
-            error "unexpected filter selector token '#{c}'"
+            error "found '=', did you mean '==', '!=', '<=' or '>='?"
             return nil
           end
         when "<"
