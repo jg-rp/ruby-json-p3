@@ -35,7 +35,7 @@ module JSONP3
     NAME_SELECTOR = NameSelector
 
     # An implementation of the _index selector_. The default implementation will
-    # select value from arrays only. Implement your own by inheriting from
+    # select values from arrays only. Implement your own by inheriting from
     # {IndexSelector} and overriding `#resolve`.
     INDEX_SELECTOR = IndexSelector
 

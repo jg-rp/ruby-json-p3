@@ -28,7 +28,7 @@ We follow <a href="https://datatracker.ietf.org/doc/html/rfc9535">RFC 9535</a> s
 - [Example](#example)
 - [Links](#links)
 - [Related projects](#related-projects)
-- [API](#api)
+- [Quick start](#quick-start)
 - [Contributing](#contributing)
 
 ## Install
@@ -140,13 +140,13 @@ end
 - [Python JSONPath](https://github.com/jg-rp/python-jsonpath) - Another Python package implementing JSONPath, but with additional features and customization options.
 - [JSON P3](https://github.com/jg-rp/json-p3) - RFC 9535 implemented in TypeScript.
 
-## API
+## Quick start
 
 ### find
 
 `find(query, value) -> Array[JSONPathNode]`
 
-Apply JSONPath expression _query_ to JSON-like data _value_. An array of JSONPathNode instance is returned, one node for each value matched by _query_. The returned array will be empty if there were no matches.
+Apply JSONPath expression _query_ to JSON-like data _value_. An array of JSONPathNode instances is returned, one node for each value matched by _query_. The returned array will be empty if there were no matches.
 
 Each `JSONPathNode` has:
 
@@ -262,7 +262,7 @@ nodes = jsonpath.find("$.*", { "a" => "b", "c" => "d" })
 pp nodes.map(&:value) # ["b", "d"]
 ```
 
-To configure an environment with custom filter functions or non-standard selectors, inherit from `JSONPathEnvironment` and override some of its constants or `#setup_function_extensions` method.
+To configure an environment with custom filter functions or non-standard selectors, inherit from `JSONPathEnvironment` and override some of its constants or the `#setup_function_extensions` method.
 
 ```ruby
 class MyJSONPathEnvironment < JSONP3::JSONPathEnvironment
@@ -286,7 +286,7 @@ class MyJSONPathEnvironment < JSONP3::JSONPathEnvironment
   NAME_SELECTOR = NameSelector
 
   # An implementation of the _index selector_. The default implementation will
-  # select value from arrays only. Implement your own by inheriting from
+  # select values from arrays only. Implement your own by inheriting from
   # {IndexSelector} and overriding `#resolve`.
   INDEX_SELECTOR = IndexSelector
 
@@ -333,31 +333,31 @@ $ cd ruby-json-p3
 $ git submodule update --init
 ```
 
-We use [Bundler](https://bundler.io/) and [Rake](https://ruby.github.io/rake/). Install development dependencies with
+We use [Bundler](https://bundler.io/) and [Rake](https://ruby.github.io/rake/). Install development dependencies with:
 
 ```
 bundle install
 ```
 
-Run tests with
+Run tests with:
 
 ```
 bundle exec rake test
 ```
 
-Lint with
+Lint with:
 
 ```
 bundle exec rubocop
 ```
 
-And type check with
+And type check with:
 
 ```
 bundle exec steep
 ```
 
-Run one of the benchmarks with
+Run one of the benchmarks with:
 
 ```
 bundle exec ruby performance/benchmark_ips.rb
@@ -367,7 +367,7 @@ bundle exec ruby performance/benchmark_ips.rb
 
 #### CPU profile
 
-Dump profile data with `bundle exec ruby performance/profile.rb`, then generate an HTML flame graph with
+Dump profile data with `bundle exec ruby performance/profile.rb`, then generate an HTML flame graph with:
 
 ```
 bundle exec stackprof --d3-flamegraph .stackprof-cpu-just-compile.dump > flamegraph-cpu-just-compile.html
