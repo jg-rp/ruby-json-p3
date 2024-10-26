@@ -359,7 +359,7 @@ module JSONP3 # rubocop:disable Style/Documentation
     def unpack_node_lists(func, args) # rubocop:disable Metrics/MethodLength
       unpacked_args = []
       args.each_with_index do |arg, i|
-        unless arg.is_a?(JSONPathNodeList) && func.class::ARG_TYPES[i] != ExpressionType::NODES
+        unless arg.is_a?(JSONPathNodeList) && func.class::ARG_TYPES[i] != :nodes_expression
           unpacked_args << arg
           next
         end

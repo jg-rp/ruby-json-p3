@@ -351,20 +351,14 @@ module JSONP3
   end
 end
 
+type expression_t = :value_expression | :logical_expression | :nodes_expression
+
 module JSONP3
-  class ExpressionType
-    VALUE: :value_expression
-
-    LOGICAL: :logical_expression
-
-    NODES: :nodes_expression
-  end
-
   # Base class for all filter functions.
   class FunctionExtension
-    ARG_TYPES: ::Array[Symbol]
+    ARG_TYPES: Array[expression_t]
 
-    RETURN_TYPE: Symbol
+    RETURN_TYPE: expression_t
 
     def call: (*untyped _args, **untyped _kwargs) -> untyped
   end
@@ -581,7 +575,7 @@ module JSONP3
 
     def validate_function_extension_signature: (Token token, untyped args) -> void
 
-    def function_return_type: (Expression expression) -> (Symbol | nil)
+    def function_return_type: (Expression expression) -> (expression_t | nil)
 
     PRECEDENCES: ::Hash[token_t, Integer]
 
@@ -930,9 +924,9 @@ end
 module JSONP3
   # The standard `count` function.
   class Count < FunctionExtension
-    ARG_TYPES: ::Array[Symbol]
+    ARG_TYPES: Array[expression_t]
 
-    RETURN_TYPE: Symbol
+    RETURN_TYPE: expression_t
 
     def call: (JSONPathNodeList node_list) -> untyped
   end
@@ -941,9 +935,9 @@ end
 module JSONP3
   # The standard `length` function.
   class Length < FunctionExtension
-    ARG_TYPES: ::Array[Symbol]
+    ARG_TYPES: Array[expression_t]
 
-    RETURN_TYPE: Symbol
+    RETURN_TYPE: expression_t
 
     def call: (untyped obj) -> (:nothing | untyped)
   end
@@ -958,9 +952,9 @@ module JSONP3
 
     @cache: LRUCache
 
-    ARG_TYPES: ::Array[Symbol]
+    ARG_TYPES: Array[expression_t]
 
-    RETURN_TYPE: Symbol
+    RETURN_TYPE: expression_t
 
     # @param cache_size [Integer] the maximum size of the regexp cache. Set it to
     #   zero or negative to disable the cache.
@@ -995,9 +989,9 @@ module JSONP3
 
     @cache: LRUCache
 
-    ARG_TYPES: ::Array[Symbol]
+    ARG_TYPES: Array[expression_t]
 
-    RETURN_TYPE: Symbol
+    RETURN_TYPE: expression_t
 
     # @param cache_size [Integer] the maximum size of the regexp cache. Set it to
     #   zero or negative to disable the cache.
@@ -1015,9 +1009,9 @@ end
 module JSONP3
   # The standard `value` function.
   class Value < FunctionExtension
-    ARG_TYPES: ::Array[Symbol]
+    ARG_TYPES: Array[expression_t]
 
-    RETURN_TYPE: Symbol
+    RETURN_TYPE: expression_t
 
     def call: (JSONPathNodeList node_list) -> (untyped | :nothing)
   end

@@ -232,7 +232,7 @@ module JSONP3
       # Raise if expression must be compared.
       if expression.is_a? FunctionExpression
         func = @env.function_extensions[expression.name]
-        if func.class::RETURN_TYPE == ExpressionType::VALUE
+        if func.class::RETURN_TYPE == :value_expression
           raise JSONPathTypeError.new("result of #{expression.name}() must be compared", expression.token)
         end
       end
@@ -465,7 +465,7 @@ module JSONP3
       return unless expression.is_a?(FunctionExpression)
 
       func = @env.function_extensions[expression.name]
-      return unless func.class::RETURN_TYPE != ExpressionType::VALUE
+      return unless func.class::RETURN_TYPE != :value_expression
 
       raise JSONPathTypeError.new("result of #{expression.name}() is not comparable", expression.token)
     end
@@ -491,18 +491,18 @@ module JSONP3
       func.class::ARG_TYPES.each_with_index do |t, i|
         arg = args[i]
         case t
-        when ExpressionType::VALUE
+        when :value_expression
           unless arg.is_a?(FilterExpressionLiteral) ||
                  (arg.is_a?(QueryExpression) && arg.query.singular?) ||
-                 (function_return_type(arg) == ExpressionType::VALUE)
+                 (function_return_type(arg) == :value_expression)
             raise JSONPathTypeError.new("#{token.value}() argument #{i} must be of ValueType", arg.token)
           end
-        when ExpressionType::LOGICAL
+        when :logical_expression
           unless arg.is_a?(QueryExpression) || arg.is_a?(InfixExpression)
             raise JSONPathTypeError.new("#{token.value}() argument #{i} must be of LogicalType", arg.token)
           end
-        when ExpressionType::NODES
-          unless arg.is_a?(QueryExpression) || function_return_type(arg) == ExpressionType::NODES
+        when :nodes_expression
+          unless arg.is_a?(QueryExpression) || function_return_type(arg) == :nodes_expression
             raise JSONPathTypeError.new("#{token.value}() argument #{i} must be of NodesType", arg.token)
           end
         end
