@@ -21,7 +21,7 @@ module JSONP3
   # The child selection segment.
   class ChildSegment < Segment
     def resolve(nodes)
-      rv = []
+      rv = [] # : Array[JSONPathNode]
       nodes.each do |node|
         @selectors.each do |selector|
           rv.concat selector.resolve(node)
@@ -50,7 +50,7 @@ module JSONP3
   # The recursive descent segment
   class RecursiveDescentSegment < Segment
     def resolve(nodes)
-      rv = []
+      rv = [] # : Array[JSONPathNode]
       nodes.each do |node|
         visit(node).each do |descendant|
           @selectors.each do |selector|

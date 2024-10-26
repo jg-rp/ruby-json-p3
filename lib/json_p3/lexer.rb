@@ -15,7 +15,7 @@ module JSONP3 # rubocop:disable Style/Documentation
     lexer.run
     tokens = lexer.tokens
 
-    if !tokens.empty? && tokens.last.type == Token::ERROR
+    if !tokens.empty? && tokens.last.type == :token_error
       raise JSONPathSyntaxError.new(tokens.last.message || raise,
                                     tokens.last)
     end
@@ -99,7 +99,7 @@ module JSONP3 # rubocop:disable Style/Documentation
 
     def error(message)
       @tokens << Token.new(
-        Token::ERROR, @query[@start...@scanner.charpos] || "", @start, @query, message: message
+        :token_error, @query[@start...@scanner.charpos] || "", @start, @query, message: message
       )
     end
 
@@ -111,7 +111,7 @@ module JSONP3 # rubocop:disable Style/Documentation
         return nil
       end
 
-      emit(Token::ROOT, "$")
+      emit(:token_root, "$")
       :lex_segment
     end
 
@@ -126,16 +126,16 @@ module JSONP3 # rubocop:disable Style/Documentation
 
       case c
       when ""
-        emit(Token::EOI, "")
+        emit(:token_eoi, "")
         nil
       when "."
         return :lex_shorthand_selector unless peek == "."
 
         self.next
-        emit(Token::DOUBLE_DOT, "..")
+        emit(:token_double_dot, "..")
         :lex_descendant_segment
       when "["
-        emit(Token::LBRACKET, "[")
+        emit(:token_lbracket, "[")
         :lex_inside_bracketed_segment
       else
         if @filter_depth.positive?
@@ -154,15 +154,15 @@ module JSONP3 # rubocop:disable Style/Documentation
         error "bald descendant segment"
         nil
       when "*"
-        emit(Token::WILD, "*")
+        emit(:token_wild, "*")
         :lex_segment
       when "["
-        emit(Token::LBRACKET, "[")
+        emit(:token_lbracket, "[")
         :lex_inside_bracketed_segment
       else
         backup
         if accept?(RE_NAME)
-          emit(Token::NAME)
+          emit(:token_name)
           :lex_segment
         else
           c = self.next
@@ -187,12 +187,12 @@ module JSONP3 # rubocop:disable Style/Documentation
 
       if peek == "*"
         self.next
-        emit(Token::WILD, "*")
+        emit(:token_wild, "*")
         return :lex_segment
       end
 
       if accept?(RE_NAME)
-        emit(Token::NAME)
+        emit(:token_name)
         return :lex_segment
       end
 
@@ -208,21 +208,21 @@ module JSONP3 # rubocop:disable Style/Documentation
 
         case c
         when "]"
-          emit(Token::RBRACKET, "]")
+          emit(:token_rbracket, "]")
           return @filter_depth.positive? ? :lex_inside_filter : :lex_segment
         when ""
           error "unclosed bracketed selection"
           return nil
         when "*"
-          emit(Token::WILD, "*")
+          emit(:token_wild, "*")
         when "?"
-          emit(Token::FILTER, "?")
+          emit(:token_filter, "?")
           @filter_depth += 1
           return :lex_inside_filter
         when ","
-          emit(Token::COMMA, ",")
+          emit(:token_comma, ",")
         when ":"
-          emit(Token::COLON, ":")
+          emit(:token_colon, ":")
         when "'"
           return :lex_single_quoted_string_inside_bracketed_segment
         when '"'
@@ -231,7 +231,7 @@ module JSONP3 # rubocop:disable Style/Documentation
           backup
           if accept_int?
             # Index selector or part of a slice selector.
-            emit Token::INDEX
+            emit(:token_index)
           else
             error "unexpected token '#{c}' in bracketed selection"
             return nil
@@ -258,7 +258,7 @@ module JSONP3 # rubocop:disable Style/Documentation
           backup
           return :lex_inside_bracketed_segment
         when ","
-          emit(Token::COMMA, ",")
+          emit(:token_comma, ",")
           # If we have unbalanced parens, we are inside a function call and a
           # comma separates arguments. Otherwise a comma separates selectors.
           next if @paren_stack.length.positive?
@@ -270,11 +270,11 @@ module JSONP3 # rubocop:disable Style/Documentation
         when '"'
           return :lex_double_quoted_string_inside_filter_expression
         when "("
-          emit(Token::LPAREN, "(")
+          emit(:token_lparen, "(")
           # Are we in a function call? If so, a function argument contains parens.
           @paren_stack[-1] += 1 if @paren_stack.length.positive?
         when ")"
-          emit(Token::RPAREN, ")")
+          emit(:token_rparen, ")")
           # Are we closing a function call or a parenthesized expression?
           if @paren_stack.length.positive?
             if @paren_stack[-1] == 1
@@ -284,10 +284,10 @@ module JSONP3 # rubocop:disable Style/Documentation
             end
           end
         when "$"
-          emit(Token::ROOT, "$")
+          emit(:token_root, "$")
           return :lex_segment
         when "@"
-          emit(Token::CURRENT, "@")
+          emit(:token_current, "@")
           return :lex_segment
         when "."
           backup
@@ -295,14 +295,14 @@ module JSONP3 # rubocop:disable Style/Documentation
         when "!"
           if peek == "="
             self.next
-            emit(Token::NE, "!=")
+            emit(:token_ne, "!=")
           else
-            emit(Token::NOT, "!")
+            emit(:token_not, "!")
           end
         when "="
           if peek == "="
             self.next
-            emit(Token::EQ, "==")
+            emit(:token_eq, "==")
           else
             backup
             error "found '=', did you mean '==', '!=', '<=' or '>='?"
@@ -311,16 +311,16 @@ module JSONP3 # rubocop:disable Style/Documentation
         when "<"
           if peek == "="
             self.next
-            emit(Token::LE, "<=")
+            emit(:token_le, "<=")
           else
-            emit(Token::LT, "<")
+            emit(:token_lt, "<")
           end
         when ">"
           if peek == "="
             self.next
-            emit(Token::GE, ">=")
+            emit(:token_ge, ">=")
           else
-            emit(Token::GT, ">")
+            emit(:token_gt, ">")
           end
         else
           backup
@@ -334,24 +334,24 @@ module JSONP3 # rubocop:disable Style/Documentation
               end
 
               accept?(/[eE][+-]?[0-9]+/)
-              emit Token::FLOAT
+              emit :token_float
             # An int, or float if exponent is negative
             elsif accept?(/[eE]-[0-9]+/)
-              emit Token::FLOAT
+              emit :token_float
             else
               accept?(/[eE][+-]?[0-9]+/)
-              emit Token::INT
+              emit :token_int
             end
           elsif accept?("&&")
-            emit(Token::AND, "&&")
+            emit(:token_and, "&&")
           elsif accept?("||")
-            emit(Token::OR, "||")
+            emit(:token_or, "||")
           elsif accept?("true")
-            emit(Token::TRUE, "true")
+            emit(:token_true, "true")
           elsif accept?("false")
-            emit(Token::FALSE, "false")
+            emit(:token_false, "false")
           elsif accept?("null")
-            emit(Token::NULL, "null")
+            emit(:token_null, "null")
           elsif accept?(/[a-z][a-z_0-9]*/)
             unless peek == "("
               error "unexpected filter selector token"
@@ -360,7 +360,7 @@ module JSONP3 # rubocop:disable Style/Documentation
             # Function name
             # Keep track of parentheses for this function call.
             @paren_stack << 1
-            emit Token::FUNCTION
+            emit :token_function
             self.next
             ignore # move past LPAREN
           else
@@ -379,13 +379,13 @@ module JSONP3 # rubocop:disable Style/Documentation
 
           loop do
             c = self.next
-            peeked = peek
 
             case c
             when ""
               error "unclosed string starting at index #{@start}"
               return nil
             when "\\"
+              peeked = peek
               if S_ESCAPES.member?(peeked) || peeked == quote
                 self.next
               else
@@ -405,15 +405,15 @@ module JSONP3 # rubocop:disable Style/Documentation
     end
 
     define_method(:lex_double_quoted_string_inside_bracketed_segment,
-                  lex_string_factory('"', :lex_inside_bracketed_segment, Token::DOUBLE_QUOTE_STRING))
+                  lex_string_factory('"', :lex_inside_bracketed_segment, :token_double_quote_string))
 
     define_method(:lex_single_quoted_string_inside_bracketed_segment,
-                  lex_string_factory("'", :lex_inside_bracketed_segment, Token::SINGLE_QUOTE_STRING))
+                  lex_string_factory("'", :lex_inside_bracketed_segment, :token_single_quote_string))
 
     define_method(:lex_double_quoted_string_inside_filter_expression,
-                  lex_string_factory('"', :lex_inside_filter, Token::DOUBLE_QUOTE_STRING))
+                  lex_string_factory('"', :lex_inside_filter, :token_double_quote_string))
 
     define_method(:lex_single_quoted_string_inside_filter_expression,
-                  lex_string_factory("'", :lex_inside_filter, Token::SINGLE_QUOTE_STRING))
+                  lex_string_factory("'", :lex_inside_filter, :token_single_quote_string))
   end
 end

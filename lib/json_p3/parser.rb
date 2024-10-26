@@ -74,7 +74,7 @@ module JSONP3
     # @return [Array<Segment>]
     def parse(tokens)
       stream = Stream.new(tokens)
-      stream.expect(Token::ROOT)
+      stream.expect(:token_root)
       stream.next
       parse_query(stream)
     end
@@ -82,15 +82,15 @@ module JSONP3
     protected
 
     def parse_query(stream) # rubocop:disable Metrics/MethodLength
-      segments = []
+      segments = [] # : Array[Segment]
 
       loop do
         case stream.peek.type
-        when Token::DOUBLE_DOT
+        when :token_double_dot
           token = stream.next
           selectors = parse_selectors(stream)
           segments << RecursiveDescentSegment.new(@env, token, selectors)
-        when Token::LBRACKET, Token::NAME, Token::WILD
+        when :token_lbracket, :token_name, :token_wild
           token = stream.peek
           selectors = parse_selectors(stream)
           segments << ChildSegment.new(@env, token, selectors)
@@ -104,12 +104,12 @@ module JSONP3
 
     def parse_selectors(stream) # rubocop:disable Metrics/MethodLength
       case stream.peek.type
-      when Token::NAME
+      when :token_name
         token = stream.next
         [@name_selector.new(@env, token, token.value)]
-      when Token::WILD
+      when :token_wild
         [WildcardSelector.new(@env, stream.next)]
-      when Token::LBRACKET
+      when :token_lbracket
         parse_bracketed_selection(stream)
       else
         []
@@ -117,45 +117,45 @@ module JSONP3
     end
 
     def parse_bracketed_selection(stream) # rubocop:disable Metrics/MethodLength, Metrics/AbcSize, Metrics/CyclomaticComplexity
-      stream.expect Token::LBRACKET
+      stream.expect(:token_lbracket)
       segment_token = stream.next
 
-      selectors = []
+      selectors = [] # : Array[Selector]
 
       loop do # rubocop:disable Metrics/BlockLength
         case stream.peek.type
-        when Token::RBRACKET
+        when :token_rbracket
           break
-        when Token::INDEX
+        when :token_index
           selectors << parse_index_or_slice(stream)
-        when Token::DOUBLE_QUOTE_STRING, Token::SINGLE_QUOTE_STRING
+        when :token_double_quote_string, :token_single_quote_string
           token = stream.next
           selectors << @name_selector.new(@env, token, decode_string_literal(token))
-        when Token::COLON
+        when :token_colon
           selectors << parse_slice_selector(stream)
-        when Token::WILD
+        when :token_wild
           selectors << WildcardSelector.new(@env, stream.next)
-        when Token::FILTER
+        when :token_filter
           selectors << parse_filter_selector(stream)
-        when Token::EOI
+        when :token_eoi
           raise JSONPathSyntaxError.new("unexpected end of query", stream.next)
         else
           raise JSONPathSyntaxError.new("unexpected token in bracketed selection", stream.next)
         end
 
         case stream.peek.type
-        when Token::EOI
+        when :token_eoi
           raise JSONPathSyntaxError.new("unexpected end of selector list", stream.next)
-        when Token::RBRACKET
+        when :token_rbracket
           break
         else
-          stream.expect Token::COMMA
+          stream.expect(:token_comma)
           stream.next
-          stream.expect_not(Token::RBRACKET, "unexpected trailing comma")
+          stream.expect_not(:token_rbracket, "unexpected trailing comma")
         end
       end
 
-      stream.expect(Token::RBRACKET)
+      stream.expect(:token_rbracket)
       stream.next
 
       raise JSONPathSyntaxError.new("empty segment", segment_token) if selectors.empty?
@@ -167,25 +167,25 @@ module JSONP3
       token = stream.next
       index = parse_i_json_int(token)
 
-      return @index_selector.new(@env, token, index) unless stream.peek.type == Token::COLON
+      return @index_selector.new(@env, token, index) unless stream.peek.type == :token_colon
 
       stream.next # move past colon
       stop = nil
       step = nil
 
       case stream.peek.type
-      when Token::INDEX
+      when :token_index
         stop = parse_i_json_int(stream.next)
-      when Token::COLON
+      when :token_colon
         stream.next # move past colon
       end
 
-      stream.next if stream.peek.type == Token::COLON
+      stream.next if stream.peek.type == :token_colon
 
       case stream.peek.type
-      when Token::INDEX
+      when :token_index
         step = parse_i_json_int(stream.next)
-      when Token::RBRACKET
+      when :token_rbracket
         nil
       else
         error_token = stream.next
@@ -196,7 +196,7 @@ module JSONP3
     end
 
     def parse_slice_selector(stream) # rubocop:disable Metrics/MethodLength, Metrics/AbcSize
-      stream.expect(Token::COLON)
+      stream.expect(:token_colon)
       token = stream.next
 
       start = nil
@@ -204,18 +204,18 @@ module JSONP3
       step = nil
 
       case stream.peek.type
-      when Token::INDEX
+      when :token_index
         stop = parse_i_json_int(stream.next)
-      when Token::COLON
+      when :token_colon
         stream.next # move past colon
       end
 
-      stream.next if stream.peek.type == Token::COLON
+      stream.next if stream.peek.type == :token_colon
 
       case stream.peek.type
-      when Token::INDEX
+      when :token_index
         step = parse_i_json_int(stream.next)
-      when Token::RBRACKET
+      when :token_rbracket
         nil
       else
         error_token = stream.next
@@ -247,28 +247,28 @@ module JSONP3
 
     def parse_filter_expression(stream, precedence = Precedence::LOWEST) # rubocop:disable Metrics/AbcSize, Metrics/MethodLength, Metrics/CyclomaticComplexity
       left = case stream.peek.type
-             when Token::DOUBLE_QUOTE_STRING, Token::SINGLE_QUOTE_STRING
+             when :token_double_quote_string, :token_single_quote_string
                token = stream.next
                StringLiteral.new(token, decode_string_literal(token))
-             when Token::FALSE
+             when :token_false
                BooleanLiteral.new(stream.next, false)
-             when Token::TRUE
+             when :token_true
                BooleanLiteral.new(stream.next, true)
-             when Token::FLOAT
+             when :token_float
                parse_float_literal(stream)
-             when Token::FUNCTION
+             when :token_function
                parse_function_expression(stream)
-             when Token::INT
+             when :token_int
                parse_integer_literal(stream)
-             when Token::LPAREN
+             when :token_lparen
                parse_grouped_expression(stream)
-             when Token::NOT
+             when :token_not
                parse_prefix_expression(stream)
-             when Token::NULL
+             when :token_null
                NullLiteral.new(stream.next, nil)
-             when Token::ROOT
+             when :token_root
                parse_root_query(stream)
-             when Token::CURRENT
+             when :token_current
                parse_relative_query(stream)
              else
                token = stream.next
@@ -277,8 +277,8 @@ module JSONP3
 
       loop do
         peeked = stream.peek
-        if peeked.type == Token::EOI ||
-           peeked.type == Token::RBRACKET ||
+        if peeked.type == :token_eoi ||
+           peeked.type == :token_rbracket ||
            PRECEDENCES.fetch(peeked.type, Precedence::LOWEST) < precedence
           break
         end
@@ -315,28 +315,28 @@ module JSONP3
 
     def parse_function_expression(stream) # rubocop:disable Metrics/AbcSize, Metrics/MethodLength, Metrics/CyclomaticComplexity
       token = stream.next
-      args = []
+      args = [] # : Array[Expression]
 
-      while stream.peek.type != Token::RPAREN
+      while stream.peek.type != :token_rparen
         expr = case stream.peek.type
-               when Token::DOUBLE_QUOTE_STRING, Token::SINGLE_QUOTE_STRING
+               when :token_double_quote_string, :token_single_quote_string
                  arg_token = stream.next
                  StringLiteral.new(arg_token, decode_string_literal(arg_token))
-               when Token::FALSE
+               when :token_false
                  BooleanLiteral.new(stream.next, false)
-               when Token::TRUE
+               when :token_true
                  BooleanLiteral.new(stream.next, true)
-               when Token::FLOAT
+               when :token_float
                  parse_float_literal(stream)
-               when Token::FUNCTION
+               when :token_function
                  parse_function_expression(stream)
-               when Token::INT
+               when :token_int
                  parse_integer_literal(stream)
-               when Token::NULL
+               when :token_null
                  NullLiteral.new(stream.next, nil)
-               when Token::ROOT
+               when :token_root
                  parse_root_query(stream)
-               when Token::CURRENT
+               when :token_current
                  parse_relative_query(stream)
                else
                  arg_token = stream.next
@@ -347,13 +347,13 @@ module JSONP3
 
         args << expr
 
-        if stream.peek.type != Token::RPAREN
-          stream.expect(Token::COMMA)
+        if stream.peek.type != :token_rparen
+          stream.expect(:token_comma)
           stream.next
         end
       end
 
-      stream.expect(Token::RPAREN)
+      stream.expect(:token_rparen)
       stream.next
 
       validate_function_extension_signature(token, args)
@@ -364,13 +364,13 @@ module JSONP3
       stream.next # discard "("
       expr = parse_filter_expression(stream)
 
-      while stream.peek.type != Token::RPAREN
-        raise JSONPathSyntaxError.new("unbalanced parentheses", stream.peek) if stream.peek.type == Token::EOI
+      while stream.peek.type != :token_rparen
+        raise JSONPathSyntaxError.new("unbalanced parentheses", stream.peek) if stream.peek.type == :token_eoi
 
         expr = parse_infix_expression(stream, expr)
       end
 
-      stream.expect(Token::RPAREN)
+      stream.expect(:token_rparen)
       stream.next
       expr
     end
@@ -399,28 +399,28 @@ module JSONP3
         raise_for_non_comparable_function(left)
         raise_for_non_comparable_function(right)
         case token.type
-        when Token::EQ
+        when :token_eq
           EqExpression.new(token, left, right)
-        when Token::GE
+        when :token_ge
           GeExpression.new(token, left, right)
-        when Token::GT
+        when :token_gt
           GtExpression.new(token, left, right)
-        when Token::LE
+        when :token_le
           LeExpression.new(token, left, right)
-        when Token::LT
+        when :token_lt
           LtExpression.new(token, left, right)
-        when Token::NE
+        when :token_ne
           NeExpression.new(token, left, right)
         else
           raise JSONPathSyntaxError.new("unexpected token", token)
         end
       else
-        raise_for_uncompared_literal(left)
-        raise_for_uncompared_literal(right)
+        raise_for_not_compared_literal(left)
+        raise_for_not_compared_literal(right)
         case token.type
-        when Token::AND
+        when :token_and
           LogicalAndExpression.new(token, left, right)
-        when Token::OR
+        when :token_or
           LogicalOrExpression.new(token, left, right)
         else
           raise JSONPathSyntaxError.new("unexpected token", token)
@@ -450,7 +450,7 @@ module JSONP3
     end
 
     def decode_string_literal(token)
-      if token.type == Token::SINGLE_QUOTE_STRING
+      if token.type == :token_single_quote_string
         JSONP3.unescape_string(token.value, "'", token)
       else
         JSONP3.unescape_string(token.value, '"', token)
@@ -470,7 +470,7 @@ module JSONP3
       raise JSONPathTypeError.new("result of #{expression.name}() is not comparable", expression.token)
     end
 
-    def raise_for_uncompared_literal(expression)
+    def raise_for_not_compared_literal(expression)
       return unless expression.is_a? FilterExpressionLiteral
 
       raise JSONPathSyntaxError.new("expression literals must be compared",
@@ -518,27 +518,27 @@ module JSONP3
     end
 
     PRECEDENCES = {
-      Token::AND => Precedence::LOGICAL_AND,
-      Token::OR => Precedence::LOGICAL_OR,
-      Token::NOT => Precedence::PREFIX,
-      Token::EQ => Precedence::RELATIONAL,
-      Token::GE => Precedence::RELATIONAL,
-      Token::GT => Precedence::RELATIONAL,
-      Token::LE => Precedence::RELATIONAL,
-      Token::LT => Precedence::RELATIONAL,
-      Token::NE => Precedence::RELATIONAL,
-      Token::RPAREN => Precedence::LOWEST
+      token_and: Precedence::LOGICAL_AND,
+      token_or: Precedence::LOGICAL_OR,
+      token_not: Precedence::PREFIX,
+      token_eq: Precedence::RELATIONAL,
+      token_ge: Precedence::RELATIONAL,
+      token_gt: Precedence::RELATIONAL,
+      token_le: Precedence::RELATIONAL,
+      token_lt: Precedence::RELATIONAL,
+      token_ne: Precedence::RELATIONAL,
+      token_rparen: Precedence::LOWEST
     }.freeze
 
     BINARY_OPERATORS = {
-      Token::AND => "&&",
-      Token::OR => "||",
-      Token::EQ => "==",
-      Token::GE => ">=",
-      Token::GT => ">",
-      Token::LE => "<=",
-      Token::LT => "<",
-      Token::NE => "!="
+      token_and: "&&",
+      token_or: "||",
+      token_eq: "==",
+      token_ge: ">=",
+      token_gt: ">",
+      token_le: "<=",
+      token_lt: "<",
+      token_ne: "!="
     }.freeze
 
     COMPARISON_OPERATORS = Set[
