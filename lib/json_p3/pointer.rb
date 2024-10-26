@@ -61,6 +61,13 @@ module JSONP3
       item
     end
 
+    # TODO: resolve_with_parent
+    # TODO: is_relative_to / relative_to?
+    # TODO: join
+    # TODO: exists / include
+    # TODO: parent
+    # TODO: to
+
     def to_s
       @pointer
     end
