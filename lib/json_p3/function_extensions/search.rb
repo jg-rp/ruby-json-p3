@@ -7,8 +7,8 @@ require_relative "pattern"
 module JSONP3
   # The standard `search` function.
   class Search < FunctionExtension
-    ARG_TYPES = [ExpressionType::VALUE, ExpressionType::VALUE].freeze
-    RETURN_TYPE = ExpressionType::LOGICAL
+    ARG_TYPES = %i[value_expression value_expression].freeze
+    RETURN_TYPE = :logical_expression
 
     # @param cache_size [Integer] the maximum size of the regexp cache. Set it to
     #   zero or negative to disable the cache.

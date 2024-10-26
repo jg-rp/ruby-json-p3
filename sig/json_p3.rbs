@@ -351,20 +351,14 @@ module JSONP3
   end
 end
 
+type expression_t = :value_expression | :logical_expression | :nodes_expression
+
 module JSONP3
-  class ExpressionType
-    VALUE: :value_expression
-
-    LOGICAL: :logical_expression
-
-    NODES: :nodes_expression
-  end
-
   # Base class for all filter functions.
   class FunctionExtension
-    ARG_TYPES: ::Array[Symbol]
+    ARG_TYPES: Array[expression_t]
 
-    RETURN_TYPE: Symbol
+    RETURN_TYPE: expression_t
 
     def call: (*untyped _args, **untyped _kwargs) -> untyped
   end
@@ -412,7 +406,7 @@ module JSONP3
     # @param token_type [Symbol] one of the constants defined on the _Token_ class.
     # @param value [String | nil] a the token's value, if it is known, otherwise the
     #   value will be sliced from @query. This is a performance optimisation.
-    def emit: (Symbol token_type, ?untyped value) -> void
+    def emit: (token_t token_type, ?untyped value) -> void
 
     def next: () -> String
 
@@ -445,7 +439,7 @@ module JSONP3
 
     def lex_inside_filter: () -> untyped
 
-    def self.lex_string_factory: (String quote, Symbol state, Symbol token) -> untyped
+    def self.lex_string_factory: (String quote, Symbol state, token_t token) -> untyped
   end
 end
 
@@ -507,9 +501,9 @@ module JSONP3
 
     def peek: () -> Token
 
-    def expect: (Symbol token_type) -> void
+    def expect: (token_t token_type) -> void
 
-    def expect_not: (Symbol token_type, String message) -> void
+    def expect_not: (token_t token_type, String message) -> void
 
     def to_s: () -> ::String
   end
@@ -577,15 +571,15 @@ module JSONP3
 
     def raise_for_non_comparable_function: (Expression expression) -> void
 
-    def raise_for_uncompared_literal: (Expression expression) -> void
+    def raise_for_not_compared_literal: (Expression expression) -> void
 
     def validate_function_extension_signature: (Token token, untyped args) -> void
 
-    def function_return_type: (Expression expression) -> (Symbol | nil)
+    def function_return_type: (Expression expression) -> (expression_t | nil)
 
-    PRECEDENCES: ::Hash[Symbol, Integer]
+    PRECEDENCES: ::Hash[token_t, Integer]
 
-    BINARY_OPERATORS: ::Hash[Symbol, "&&" | "||" | "==" | ">=" | ">" | "<=" | "<" | "!="]
+    BINARY_OPERATORS: ::Hash[token_t, "&&" | "||" | "==" | ">=" | ">" | "<=" | "<" | "!="]
 
     COMPARISON_OPERATORS: Set[String]
   end
@@ -828,12 +822,48 @@ module JSONP3
   end
 end
 
+type token_t = (
+  :token_eoi |
+  :token_error |
+  :token_colon |
+  :token_comma |
+  :token_double_dot |
+  :token_filter |
+  :token_index |
+  :token_lbracket |
+  :token_name |
+  :token_rbracket |
+  :token_root |
+  :token_wild |
+  :token_and |
+  :token_current |
+  :token_double_quote_string |
+  :token_eq |
+  :token_false |
+  :token_float |
+  :token_function |
+  :token_ge |
+  :token_gt |
+  :token_int |
+  :token_le |
+  :token_lparen |
+  :token_lt |
+  :token_ne |
+  :token_not |
+  :token_null |
+  :token_or |
+  :token_rparen |
+  :token_single_quote_string |
+  :token_true
+)
+    
+
 module JSONP3
   # Tokens are produced by the lexer and consumed by the parser. Each token contains sub
   # string from a JSONPath expression, its location within the JSONPath expression and a
   # symbol indicating what type of token it is.
   class Token
-    @type: Symbol
+    @type: token_t
 
     @value: String
 
@@ -843,78 +873,8 @@ module JSONP3
 
     @message: (String | nil)
 
-    EOI: :token_eoi
-
-    ERROR: :token_error
-
-    SHORTHAND_NAME: :token_shorthand_name
-
-    COLON: :token_colon
-
-    COMMA: :token_comma
-
-    DOT: :token_dot
-
-    DOUBLE_DOT: :token_double_dot
-
-    FILTER: :token_filter
-
-    INDEX: :token_index
-
-    LBRACKET: :token_lbracket
-
-    NAME: :token_name
-
-    RBRACKET: :token_rbracket
-
-    ROOT: :token_root
-
-    WILD: :token_wild
-
-    AND: :token_and
-
-    CURRENT: :token_current
-
-    DOUBLE_QUOTE_STRING: :token_double_quote_string
-
-    EQ: :token_eq
-
-    FALSE: :token_false
-
-    FLOAT: :token_float
-
-    FUNCTION: :token_function
-
-    GE: :token_ge
-
-    GT: :token_gt
-
-    INT: :token_int
-
-    LE: :token_le
-
-    LPAREN: :token_lparen
-
-    LT: :token_lt
-
-    NE: :token_ne
-
-    NOT: :token_not
-
-    NULL: :token_null
-
-    OP: :token_op
-
-    OR: :token_or
-
-    RPAREN: :token_rparen
-
-    SINGLE_QUOTE_STRING: :token_single_quote_string
-
-    TRUE: :token_true
-
     # @dynamic type, value, start, query
-    attr_reader type: Symbol
+    attr_reader type: token_t
 
     # @dynamic type, value, start, query
     attr_reader value: String
@@ -928,7 +888,7 @@ module JSONP3
     # @dynamic type, value, start, query
     attr_reader message: (String | nil)
 
-    def initialize: (Symbol type, String value, Integer start, String query, ?message: (String | nil)?) -> void
+    def initialize: (token_t type, String value, Integer start, String query, ?message: (String | nil)?) -> void
 
     def ==: (untyped other) -> bool
 
@@ -964,9 +924,9 @@ end
 module JSONP3
   # The standard `count` function.
   class Count < FunctionExtension
-    ARG_TYPES: ::Array[Symbol]
+    ARG_TYPES: Array[expression_t]
 
-    RETURN_TYPE: Symbol
+    RETURN_TYPE: expression_t
 
     def call: (JSONPathNodeList node_list) -> untyped
   end
@@ -975,9 +935,9 @@ end
 module JSONP3
   # The standard `length` function.
   class Length < FunctionExtension
-    ARG_TYPES: ::Array[Symbol]
+    ARG_TYPES: Array[expression_t]
 
-    RETURN_TYPE: Symbol
+    RETURN_TYPE: expression_t
 
     def call: (untyped obj) -> (:nothing | untyped)
   end
@@ -992,9 +952,9 @@ module JSONP3
 
     @cache: LRUCache
 
-    ARG_TYPES: ::Array[Symbol]
+    ARG_TYPES: Array[expression_t]
 
-    RETURN_TYPE: Symbol
+    RETURN_TYPE: expression_t
 
     # @param cache_size [Integer] the maximum size of the regexp cache. Set it to
     #   zero or negative to disable the cache.
@@ -1029,9 +989,9 @@ module JSONP3
 
     @cache: LRUCache
 
-    ARG_TYPES: ::Array[Symbol]
+    ARG_TYPES: Array[expression_t]
 
-    RETURN_TYPE: Symbol
+    RETURN_TYPE: expression_t
 
     # @param cache_size [Integer] the maximum size of the regexp cache. Set it to
     #   zero or negative to disable the cache.
@@ -1049,9 +1009,9 @@ end
 module JSONP3
   # The standard `value` function.
   class Value < FunctionExtension
-    ARG_TYPES: ::Array[Symbol]
+    ARG_TYPES: Array[expression_t]
 
-    RETURN_TYPE: Symbol
+    RETURN_TYPE: expression_t
 
     def call: (JSONPathNodeList node_list) -> (untyped | :nothing)
   end
