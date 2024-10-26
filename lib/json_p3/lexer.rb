@@ -56,7 +56,7 @@ module JSONP3 # rubocop:disable Style/Documentation
     # @param value [String | nil] a the token's value, if it is known, otherwise the
     #   value will be sliced from @query. This is a performance optimization.
     def emit(token_type, value = nil)
-      @tokens << Token.new(token_type, value || @query[@start...@scanner.charpos], @start, @query)
+      @tokens << Token.new(token_type, value || @query[@start, @scanner.charpos - @start], @start, @query)
       @start = @scanner.charpos
     end
 
@@ -99,7 +99,7 @@ module JSONP3 # rubocop:disable Style/Documentation
 
     def error(message)
       @tokens << Token.new(
-        :token_error, @query[@start...@scanner.charpos] || "", @start, @query, message: message
+        :token_error, @query[@start, @scanner.charpos - @start] || "", @start, @query, message: message
       )
     end
 
