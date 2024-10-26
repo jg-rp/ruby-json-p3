@@ -249,7 +249,7 @@ module JSONP3
     end
 
     def resolve(node) # rubocop:disable Metrics/MethodLength, Metrics/AbcSize
-      nodes = []
+      nodes = [] # : Array[JSONPathNode]
 
       if node.value.is_a?(Array)
         node.value.each_with_index do |e, i|

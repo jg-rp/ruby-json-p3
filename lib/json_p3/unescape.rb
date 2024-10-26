@@ -57,7 +57,7 @@ module JSONP3 # rubocop:disable Style/Documentation
     raise JSONPathSyntaxError.new("incomplete escape sequence", token) if index + 4 >= length
 
     index += 1 # move past 'u'
-    code_point = parse_hex_digits(value[index...index + 4], token)
+    code_point = parse_hex_digits(value[index, 4], token)
 
     raise JSONPathSyntaxError.new("unexpected low surrogate", token) if low_surrogate?(code_point)
 
@@ -67,7 +67,7 @@ module JSONP3 # rubocop:disable Style/Documentation
       raise JSONPathSyntaxError.new("incomplete escape sequence", token)
     end
 
-    low_surrogate = parse_hex_digits(value[index + 6...index + 10], token)
+    low_surrogate = parse_hex_digits(value[index + 6, 10], token)
 
     raise JSONPathSyntaxError.new("unexpected low surrogate", token) unless low_surrogate?(low_surrogate)
 
