@@ -16,7 +16,7 @@ module JSONP3
     DefaultEnvironment.compile(path)
   end
 
-  def self.resolve(pointer, value, fallback: JSONPointer::UNDEFINED)
-    JSONPointer.new(pointer).resolve(value, fallback: fallback)
+  def self.resolve(pointer, value, default: JSONPointer::UNDEFINED)
+    JSONPointer.new(pointer).resolve(value, default: default)
   end
 end

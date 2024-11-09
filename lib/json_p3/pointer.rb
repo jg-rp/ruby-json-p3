@@ -29,41 +29,42 @@ module JSONP3
     end
 
     # Resolve this pointer against JSON-like data _value_.
-    def resolve(value, fallback: UNDEFINED) # rubocop:disable Metrics/MethodLength, Metrics/CyclomaticComplexity, Metrics/AbcSize
+    def resolve(value, default: UNDEFINED)
       item = value
 
-      @tokens.each_with_index do |token, index|
-        next_item = get_item(item, token)
-        case next_item
-        when :index_out_of_range
-          return fallback if fallback != UNDEFINED
-
-          raise JSONPointerIndexError, "index out of range '#{JSONPointer.encode(@tokens[..index])}'"
-        when :no_such_property
-          return fallback if fallback != UNDEFINED
-
-          raise JSONPointerKeyError, "no such key '#{JSONPointer.encode(@tokens[..index])}'"
-        when :index_token_type_error
-          return fallback if fallback != UNDEFINED
-
-          raise JSONPointerTypeError,
-                "no implicit conversion from #{token.class} to array index '#{JSONPointer.encode(@tokens[..index])}'"
-        when :value_type_error
-          return fallback if fallback != UNDEFINED
-
-          raise JSONPointerTypeError,
-                "expected an array or hash, found #{value.class} '#{JSONPointer.encode(@tokens[..index])}'"
-        else
-          item = next_item
-        end
+      @tokens.each do |token|
+        item = get_item(item, token)
+        return default if item == UNDEFINED
       end
 
       item
     end
 
-    # TODO: resolve_with_parent
-    # TODO: is_relative_to / relative_to?
-    # TODO: join
+    def resolve_with_parent(value)
+      return [UNDEFINED, resolve(value)] if @tokens.empty?
+
+      parent = value
+      (@tokens[...-1] || raise).each do |token|
+        parent = get_item(parent, token)
+        break if parent == UNDEFINED
+      end
+
+      [parent, get_item(parent, @tokens.last)]
+    end
+
+    def relative_to?(pointer)
+      pointer.tokens.length < @tokens.length && @tokens[...pointer.tokens.length] == pointer.tokens
+    end
+
+    # @param parts [String]
+    def join(*parts)
+      pointer = self
+      parts.each do |part|
+        pointer = pointer._join(part)
+      end
+      pointer
+    end
+
     # TODO: exists / include
     # TODO: parent
     # TODO: to
@@ -82,6 +83,8 @@ module JSONP3
               "pointers must start with a slash or be the empty string"
       end
 
+      return [] if pointer.empty?
+
       (pointer[1..] || raise).split("/", -1).map do |token|
         token.match?(/\A[1-9][0-9]*\z/) ? Integer(token) : token.gsub("~1", "/").gsub("~0", "~")
       end
@@ -89,13 +92,12 @@ module JSONP3
 
     # @param value [Object]
     # @param token [String | Integer]
-    # @return [Object] the "fetched" object from _value_ or a symbol indicating
-    #   why an object could not be selected using _token_.
+    # @return [Object] the "fetched" object from _value_ or UNDEFINED.
     def get_item(value, token) # rubocop:disable Metrics/MethodLength, Metrics/CyclomaticComplexity, Metrics/PerceivedComplexity
       if value.is_a?(Array)
         # TODO: handle "#" from relative JSON pointer
-        return :index_token_type_error unless token.is_a?(Integer)
-        return :index_out_of_range if token.negative? || token >= value.length
+        return UNDEFINED unless token.is_a?(Integer)
+        return UNDEFINED if token.negative? || token >= value.length
 
         value[token]
       elsif value.is_a?(Hash)
@@ -103,10 +105,28 @@ module JSONP3
         return value[token] if value.key?(token)
 
         string_token = token.to_s
-        value.key?(string_token) ? value[string_token] : :no_such_property
+        value.key?(string_token) ? value[string_token] : UNDEFINED
       else
-        :value_type_error
+        UNDEFINED
       end
+    end
+
+    # Like `#parse`, but assumes there's no leading slash.
+    # @param pointer [String]
+    # @return [Array<String | Integer>]
+    def _parse(pointer)
+      return [] if pointer.empty?
+
+      pointer.split("/", -1).map do |token|
+        token.match?(/\A[1-9][0-9]*\z/) ? Integer(token) : token.gsub("~1", "/").gsub("~0", "~")
+      end
+    end
+
+    def _join(other)
+      raise JSONPointerTypeError, "unsupported join part" unless other.is_a?(String)
+
+      part = other.lstrip
+      part.start_with?("/") ? JSONPointer.new(part) : JSONPointer.new(JSONPointer.encode(@tokens + _parse(part)))
     end
   end
 end

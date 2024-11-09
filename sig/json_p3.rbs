@@ -1047,24 +1047,37 @@ module JSONP3
     # Encode an array of strings and integers into a JSON pointer.
     # @param tokens [Array<String | Integer>]
     # @return [String]
-    def self.encode: ((Array[String | Integer] | nil) tokens) -> String
+    def self.encode: (Array[String | Integer] tokens) -> String
 
     # @param pointer [String]
     def initialize: (String pointer) -> void
 
     # Resolve this pointer against JSON-like data _value_.
-    def resolve: (untyped value, ?fallback: untyped) -> untyped
+    def resolve: (untyped value, ?default: untyped) -> untyped
+
+    def resolve_with_parent: (untyped value) -> ::Array[untyped]
+
+    def relative_to?: (JSONPointer pointer) -> bool
+
+    # @param parts [String]
+    def join: (*String parts) -> JSONPointer
 
     def to_s: () -> String
 
     # @param pointer [String]
     # @return [Array<String | Integer>]
-    def parse: (String pointer) -> Array[String | Integer]
+    def parse: (String pointer) -> Array[(String | Integer)]
 
     # @param value [Object]
     # @param token [String | Integer]
-    # @return [Object] the "fetched" object from _value_ or a symbol indicating
-    #   why an object could not be selected using _token_.
-    def get_item: (untyped value, (String | Integer) token) -> (:index_token_type_error | :index_out_of_range | untyped | :value_type_error)
+    # @return [Object] the "fetched" object from _value_ or UNDEFINED.
+    def get_item: (untyped value, (String | Integer) token) -> untyped
+
+    # Like `#parse`, but assumes there's no leading slash.
+    # @param pointer [String]
+    # @return [Array<String | Integer>]
+    def _parse: (String pointer) -> Array[(String | Integer)]
+
+    def _join: (String other) -> JSONPointer
   end
 end
