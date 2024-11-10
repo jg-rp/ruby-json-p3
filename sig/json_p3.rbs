@@ -1061,6 +1061,14 @@ module JSONP3
 
     # @param parts [String]
     def join: (*String parts) -> JSONPointer
+            
+    # Return _true_ if this pointer can be resolved against _value_, even if the resolved
+    # value is false or nil.
+    def exist?: (untyped value) -> bool
+
+    # Return this pointer's parent as a new pointer. If this pointer points to the
+    # document root, self is returned.
+    def parent: () -> JSONPointer
 
     def to_s: () -> String
 

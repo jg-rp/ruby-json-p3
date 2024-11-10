@@ -65,8 +65,20 @@ module JSONP3
       pointer
     end
 
-    # TODO: exists / include
-    # TODO: parent
+    # Return _true_ if this pointer can be resolved against _value_, even if the resolved
+    # value is false or nil.
+    def exist?(value)
+      resolve(value) != UNDEFINED
+    end
+
+    # Return this pointer's parent as a new pointer. If this pointer points to the
+    # document root, self is returned.
+    def parent
+      return self if @tokens.empty?
+
+      JSONPointer.new(JSONPointer.encode((@tokens[...-1] || raise)))
+    end
+
     # TODO: to
 
     def to_s
@@ -86,7 +98,7 @@ module JSONP3
       return [] if pointer.empty?
 
       (pointer[1..] || raise).split("/", -1).map do |token|
-        token.match?(/\A[1-9][0-9]*\z/) ? Integer(token) : token.gsub("~1", "/").gsub("~0", "~")
+        token.match?(/\A(?:0|[1-9][0-9]*)\z/) ? Integer(token) : token.gsub("~1", "/").gsub("~0", "~")
       end
     end
 
@@ -118,7 +130,7 @@ module JSONP3
       return [] if pointer.empty?
 
       pointer.split("/", -1).map do |token|
-        token.match?(/\A[1-9][0-9]*\z/) ? Integer(token) : token.gsub("~1", "/").gsub("~0", "~")
+        token.match?(/\A(?:0|[1-9][0-9]*)\z/) ? Integer(token) : token.gsub("~1", "/").gsub("~0", "~")
       end
     end
 

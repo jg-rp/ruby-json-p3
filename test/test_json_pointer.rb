@@ -176,4 +176,67 @@ class TestJSONPointer < Minitest::Test # rubocop:disable Metrics/ClassLength
 
     assert_equal("/bar/0", pointer.join("/bar", "0").to_s)
   end
+
+  def test_parent_of_pointer
+    data = { "some" => { "thing" => [1, 2, 3] } }
+    pointer = JSONP3::JSONPointer.new("/some/thing/0")
+    parent = pointer.parent
+
+    assert_equal(1, pointer.resolve(data))
+    assert_equal("/some/thing", parent.to_s)
+    assert_equal([1, 2, 3], parent.resolve(data))
+  end
+
+  def test_parent_of_parent
+    data = { "some" => { "thing" => [1, 2, 3] } }
+    pointer = JSONP3::JSONPointer.new("/some/thing/0")
+    parent = pointer.parent
+    grandparent = parent.parent
+
+    assert_equal(1, pointer.resolve(data))
+    assert_equal("/some/thing", parent.to_s)
+    assert_equal([1, 2, 3], parent.resolve(data))
+    assert_equal("/some", grandparent.to_s)
+    assert_equal({ "thing" => [1, 2, 3] }, grandparent.resolve(data))
+  end
+
+  def test_parent_is_root
+    data = { "some" => { "thing" => [1, 2, 3] } }
+    pointer = JSONP3::JSONPointer.new("/some")
+    parent = pointer.parent
+
+    assert_equal(data["some"], pointer.resolve(data))
+    assert_equal("", parent.to_s)
+    assert_equal(data, parent.resolve(data))
+  end
+
+  def test_parent_of_root
+    data = { "some" => { "thing" => [1, 2, 3] } }
+    pointer = JSONP3::JSONPointer.new("")
+    parent = pointer.parent
+
+    assert_equal("", parent.to_s)
+    assert_equal(data, parent.resolve(data))
+  end
+
+  def test_pointer_exists_truthy_value
+    data = { "some" => { "thing" => [1, 2, 3] }, "other" => nil }
+    pointer = JSONP3::JSONPointer.new("/some/thing")
+
+    assert(pointer.exist?(data))
+  end
+
+  def test_pointer_exists_falsy_value
+    data = { "some" => { "thing" => [1, 2, 3] }, "other" => nil }
+    pointer = JSONP3::JSONPointer.new("/other")
+
+    assert(pointer.exist?(data))
+  end
+
+  def test_pointer_does_not_exist
+    data = { "some" => { "thing" => [1, 2, 3] }, "other" => nil }
+    pointer = JSONP3::JSONPointer.new("/nosuchthing")
+
+    refute(pointer.exist?(data))
+  end
 end
