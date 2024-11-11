@@ -79,7 +79,12 @@ module JSONP3
       JSONPointer.new(JSONPointer.encode((@tokens[...-1] || raise)))
     end
 
-    # TODO: to
+    # @param rel [String | RelativeJSONPointer]
+    # @return [JSONPointer]
+    def to(rel)
+      p = rel.is_a?(String) ? RelativeJSONPointer.new(rel) : rel
+      p.to(self)
+    end
 
     def to_s
       @pointer
@@ -139,6 +144,68 @@ module JSONP3
 
       part = other.lstrip
       part.start_with?("/") ? JSONPointer.new(part) : JSONPointer.new(JSONPointer.encode(@tokens + _parse(part)))
+    end
+  end
+
+  # A relative JSON Pointer.
+  # See https://datatracker.ietf.org/doc/html/draft-hha-relative-json-pointer
+  class RelativeJSONPointer
+    RE_RELATIVE_POINTER = /\A(?<ORIGIN>\d+)(?<INDEX_G>(?<SIGN>[+-])(?<INDEX>\d))?(?<POINTER>.*)\z/m
+    RE_INT = /\A(0|[1-9][0-9]*)\z/
+
+    # @param rel [String]
+    def initialize(rel) # rubocop:disable Metrics/AbcSize
+      match = RE_RELATIVE_POINTER.match(rel)
+
+      raise JSONPointerSyntaxError, "failed to parse relative pointer" if match.nil?
+
+      @origin = parse_int(match[:ORIGIN])
+      @index = 0
+
+      if match[:INDEX_G]
+        @index = parse_int(match[:INDEX])
+        raise JSONPointerSyntaxError, "index offset can't be zero" if @index.zero?
+
+        @index = -@index if match[:SIGN] == "-"
+      end
+
+      @pointer = match[:POINTER] == "#" ? "#" : JSONPointer.new(match[:POINTER])
+    end
+
+    def to_s
+      sign = @index.positive? ? "+" : ""
+      index = @index.zero? ? "" : "#{sign}#{@index}"
+      "#{@origin}#{index}#{@pointer}"
+    end
+
+    # @param pointer [String | JSONPointer]
+    # @return [JSONPointer]
+    def to(pointer) # rubocop:disable Metrics/AbcSize, Metrics/CyclomaticComplexity, Metrics/PerceivedComplexity
+      p = pointer.is_a?(String) ? JSONPointer.new(pointer) : pointer
+
+      raise JSONPointerIndexError, "origin (#{@origin}) exceeds root (#{p.tokens.length})" if @origin > p.tokens.length
+
+      tokens = @origin < 1 ? p.tokens[0..] : p.tokens[0...-@origin]
+      tokens[-1] = tokens[-1] + @index if @index != 0 && tokens.length.positive? && tokens[-1].is_a?(Integer)
+
+      if @pointer == "#"
+        tokens[-1] = "##{tokens[-1]}"
+      else
+        tokens.concat(@pointer.tokens)
+      end
+
+      JSONPointer.new(JSONPointer.encode(tokens))
+    end
+
+    private
+
+    # @param token [String]
+    # @return [Integer]
+    def parse_int(token)
+      raise JSONPointerSyntaxError, "unexpected leading zero" if token.start_with?("0") && token.length > 1
+      raise JSONPointerSyntaxError, "expected an integer, found '#{token}'" unless RE_INT.match?(token)
+
+      token.to_i
     end
   end
 end
