@@ -5,6 +5,7 @@ require_relative "errors"
 module JSONP3
   # Identify a single value in JSON-like data, as per RFC 6901.
   class JSONPointer
+    RE_INT = /\A(0|[1-9][0-9]*)\z/
     UNDEFINED = :__undefined
 
     attr_reader :tokens
@@ -110,17 +111,24 @@ module JSONP3
     # @param value [Object]
     # @param token [String | Integer]
     # @return [Object] the "fetched" object from _value_ or UNDEFINED.
-    def get_item(value, token) # rubocop:disable Metrics/MethodLength, Metrics/CyclomaticComplexity, Metrics/PerceivedComplexity
+    def get_item(value, token) # rubocop:disable Metrics/MethodLength, Metrics/CyclomaticComplexity, Metrics/PerceivedComplexity, Metrics/AbcSize
       if value.is_a?(Array)
-        # TODO: handle "#" from relative JSON pointer
+        if token.is_a?(String) && token.start_with?("#")
+          maybe_index = token[1..]
+          return maybe_index.to_i if RE_INT.match?(maybe_index)
+        end
+
         return UNDEFINED unless token.is_a?(Integer)
         return UNDEFINED if token.negative? || token >= value.length
 
         value[token]
       elsif value.is_a?(Hash)
-        # TODO: handle "#" from relative JSON pointer
         return value[token] if value.key?(token)
 
+        # Handle "#" from relative JSON pointer
+        return token[1..] if token.is_a?(String) && token.start_with?("#") && value.key?(token[1..])
+
+        # Token might be an integer. Force it to a string and try again.
         string_token = token.to_s
         value.key?(string_token) ? value[string_token] : UNDEFINED
       else
