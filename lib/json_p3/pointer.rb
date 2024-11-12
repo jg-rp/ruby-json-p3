@@ -95,13 +95,14 @@ module JSONP3
 
     # @param pointer [String]
     # @return [Array<String | Integer>]
-    def parse(pointer)
+    def parse(pointer) # rubocop:disable Metrics/CyclomaticComplexity
       if pointer.length.positive? && !pointer.start_with?("/")
         raise JSONPointerSyntaxError,
               "pointers must start with a slash or be the empty string"
       end
 
       return [] if pointer.empty?
+      return [""] if pointer == "/"
 
       (pointer[1..] || raise).split("/", -1).map do |token|
         token.match?(/\A(?:0|[1-9][0-9]*)\z/) ? Integer(token) : token.gsub("~1", "/").gsub("~0", "~")
@@ -162,22 +163,22 @@ module JSONP3
     RE_INT = /\A(0|[1-9][0-9]*)\z/
 
     # @param rel [String]
-    def initialize(rel) # rubocop:disable Metrics/AbcSize
+    def initialize(rel) # rubocop:disable Metrics/AbcSize, Metrics/CyclomaticComplexity, Metrics/PerceivedComplexity
       match = RE_RELATIVE_POINTER.match(rel)
 
       raise JSONPointerSyntaxError, "failed to parse relative pointer" if match.nil?
 
-      @origin = parse_int(match[:ORIGIN])
+      @origin = parse_int(match[:ORIGIN] || raise)
       @index = 0
 
       if match[:INDEX_G]
-        @index = parse_int(match[:INDEX])
+        @index = parse_int(match[:INDEX] || raise)
         raise JSONPointerSyntaxError, "index offset can't be zero" if @index.zero?
 
         @index = -@index if match[:SIGN] == "-"
       end
 
-      @pointer = match[:POINTER] == "#" ? "#" : JSONPointer.new(match[:POINTER])
+      @pointer = match[:POINTER] == "#" ? "#" : JSONPointer.new(match[:POINTER] || raise)
     end
 
     def to_s
@@ -193,13 +194,13 @@ module JSONP3
 
       raise JSONPointerIndexError, "origin (#{@origin}) exceeds root (#{p.tokens.length})" if @origin > p.tokens.length
 
-      tokens = @origin < 1 ? p.tokens[0..] : p.tokens[0...-@origin]
-      tokens[-1] = tokens[-1] + @index if @index != 0 && tokens.length.positive? && tokens[-1].is_a?(Integer)
+      tokens = @origin < 1 ? p.tokens[0..] || raise : p.tokens[0...-@origin] || raise
+      tokens[-1] = (tokens[-1] || raise) + @index if @index != 0 && tokens.length.positive? && tokens[-1].is_a?(Integer)
 
       if @pointer == "#"
         tokens[-1] = "##{tokens[-1]}"
       else
-        tokens.concat(@pointer.tokens)
+        tokens.concat(@pointer.tokens) # steep:ignore
       end
 
       JSONPointer.new(JSONPointer.encode(tokens))

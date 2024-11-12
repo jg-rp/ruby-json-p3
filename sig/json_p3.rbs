@@ -1070,6 +1070,10 @@ module JSONP3
     # document root, self is returned.
     def parent: () -> JSONPointer
 
+    # @param rel [String | RelativeJSONPointer]
+    # @return [JSONPointer]
+    def to: ((String | RelativeJSONPointer) rel) -> JSONPointer
+
     def to_s: () -> String
 
     # @param pointer [String]
@@ -1087,5 +1091,34 @@ module JSONP3
     def _parse: (String pointer) -> Array[(String | Integer)]
 
     def _join: (String other) -> JSONPointer
+  end
+
+  # A relative JSON Pointer.
+  # See https://datatracker.ietf.org/doc/html/draft-hha-relative-json-pointer
+  class RelativeJSONPointer
+    @origin: Integer
+
+    @index: Integer
+
+    @pointer: (String | JSONPointer)
+
+    RE_RELATIVE_POINTER: ::Regexp
+
+    RE_INT: ::Regexp
+
+    # @param rel [String]
+    def initialize: (String rel) -> void
+
+    def to_s: () -> ::String
+
+    # @param pointer [String | JSONPointer]
+    # @return [JSONPointer]
+    def to: ((String | JSONPointer) pointer) -> JSONPointer
+
+    private
+
+    # @param token [String]
+    # @return [Integer]
+    def parse_int: (String token) -> Integer
   end
 end
