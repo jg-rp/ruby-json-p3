@@ -144,7 +144,7 @@ end
 
 ### find
 
-`find(query, value) -> Array[JSONPathNode]`
+`find(query, value) -> Array<JSONPathNode>`
 
 Apply JSONPath expression _query_ to JSON-like data _value_. An array of JSONPathNode instances is returned, one node for each value matched by _query_. The returned array will be empty if there were no matches.
 
@@ -317,6 +317,54 @@ JSONP3::JSONPathSyntaxError: unexpected trailing whitespace
   |
 1 | $.foo
   |      ^ unexpected trailing whitespace
+```
+
+### resolve
+
+`resolve(pointer, value) -> Object`
+
+Resolve a JSON Pointer (RFC 6901) against some data using `JSONP3.resolve()`.
+
+```ruby
+require "json_p3"
+require "json"
+
+data = JSON.parse <<~JSON
+  {
+    "users": [
+      {
+        "name": "Sue",
+        "score": 100
+      },
+      {
+        "name": "Sally",
+        "score": 84,
+        "admin": false
+      },
+      {
+        "name": "John",
+        "score": 86,
+        "admin": true
+      },
+      {
+        "name": "Jane",
+        "score": 55
+      }
+    ],
+    "moderator": "John"
+  }
+JSON
+
+puts JSONP3.resolve("/users/1", data)
+# {"name"=>"Sally", "score"=>84, "admin"=>false}
+```
+
+If a pointer can not be resolved, `JSONP3::JSONPointer::UNDEFINED` is returned instead. You can use your own default value using the `default:` keyword argument.
+
+```ruby
+# continued from above
+
+pp JSONP3.resolve("/no/such/thing", data, default: nil) # nil
 ```
 
 ## Contributing

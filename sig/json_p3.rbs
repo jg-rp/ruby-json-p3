@@ -91,6 +91,22 @@ module JSONP3
 
   class JSONPathRecursionError < JSONPathError
   end
+
+  class JSONPointerResolutionError < StandardError
+  end
+
+  class JSONPointerSyntaxError < JSONPointerResolutionError
+  end
+  
+  class JSONPointerIndexError < JSONPointerResolutionError
+  end
+  
+  class JSONPointerKeyError < JSONPointerResolutionError
+  end
+  
+  class JSONPointerTypeError < JSONPointerResolutionError
+  end
+  
 end
 
 module JSONP3
@@ -1014,5 +1030,95 @@ module JSONP3
     RETURN_TYPE: expression_t
 
     def call: (JSONPathNodeList node_list) -> (untyped | :nothing)
+  end
+end
+
+module JSONP3
+  # Identify a single value in JSON-like data, as per RFC 6901.
+  class JSONPointer
+    @tokens: Array[String | Integer]
+
+    @pointer: String
+
+    UNDEFINED: :__undefined
+
+    attr_reader tokens: Array[String | Integer]
+
+    # Encode an array of strings and integers into a JSON pointer.
+    # @param tokens [Array<String | Integer>]
+    # @return [String]
+    def self.encode: (Array[String | Integer] tokens) -> String
+
+    # @param pointer [String]
+    def initialize: (String pointer) -> void
+
+    # Resolve this pointer against JSON-like data _value_.
+    def resolve: (untyped value, ?default: untyped) -> untyped
+
+    def resolve_with_parent: (untyped value) -> ::Array[untyped]
+
+    def relative_to?: (JSONPointer pointer) -> bool
+
+    # @param parts [String]
+    def join: (*String parts) -> JSONPointer
+            
+    # Return _true_ if this pointer can be resolved against _value_, even if the resolved
+    # value is false or nil.
+    def exist?: (untyped value) -> bool
+
+    # Return this pointer's parent as a new pointer. If this pointer points to the
+    # document root, self is returned.
+    def parent: () -> JSONPointer
+
+    # @param rel [String | RelativeJSONPointer]
+    # @return [JSONPointer]
+    def to: ((String | RelativeJSONPointer) rel) -> JSONPointer
+
+    def to_s: () -> String
+
+    # @param pointer [String]
+    # @return [Array<String | Integer>]
+    def parse: (String pointer) -> Array[(String | Integer)]
+
+    # @param value [Object]
+    # @param token [String | Integer]
+    # @return [Object] the "fetched" object from _value_ or UNDEFINED.
+    def get_item: (untyped value, (String | Integer) token) -> untyped
+
+    # Like `#parse`, but assumes there's no leading slash.
+    # @param pointer [String]
+    # @return [Array<String | Integer>]
+    def _parse: (String pointer) -> Array[(String | Integer)]
+
+    def _join: (String other) -> JSONPointer
+  end
+
+  # A relative JSON Pointer.
+  # See https://datatracker.ietf.org/doc/html/draft-hha-relative-json-pointer
+  class RelativeJSONPointer
+    @origin: Integer
+
+    @index: Integer
+
+    @pointer: (String | JSONPointer)
+
+    RE_RELATIVE_POINTER: ::Regexp
+
+    RE_INT: ::Regexp
+
+    # @param rel [String]
+    def initialize: (String rel) -> void
+
+    def to_s: () -> ::String
+
+    # @param pointer [String | JSONPointer]
+    # @return [JSONPointer]
+    def to: ((String | JSONPointer) pointer) -> JSONPointer
+
+    private
+
+    # @param token [String]
+    # @return [Integer]
+    def parse_int: (String token) -> Integer
   end
 end

@@ -17,7 +17,7 @@ class TestLRUCache < Minitest::Test
     assert_equal(%w[b c], cache.keys)
   end
 
-  def test_set_an_existing_key # rubocop:disable Metrics/MethodLength, Metrics/AbcSize
+  def test_set_an_existing_key
     cache = JSONP3::LRUCache.new(2)
     cache["a"] = 1
     cache["b"] = 2

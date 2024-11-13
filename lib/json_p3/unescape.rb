@@ -6,7 +6,7 @@ module JSONP3 # rubocop:disable Style/Documentation
   # @param quote [String] one of '"' or "'".
   # @param token [Token]
   # @return [String] A new string without escape sequences.
-  def self.unescape_string(value, quote, token) # rubocop:disable Metrics/MethodLength, Metrics/AbcSize, Metrics/CyclomaticComplexity, Metrics/PerceivedComplexity
+  def self.unescape_string(value, quote, token) # rubocop:disable Metrics/MethodLength
     unescaped = String.new(encoding: "UTF-8")
     index = 0
     length = value.length
@@ -51,7 +51,7 @@ module JSONP3 # rubocop:disable Style/Documentation
     unescaped
   end
 
-  def self.decode_hex_char(value, index, token) # rubocop:disable Metrics/MethodLength, Metrics/AbcSize, Metrics/CyclomaticComplexity
+  def self.decode_hex_char(value, index, token)
     length = value.length
 
     raise JSONPathSyntaxError.new("incomplete escape sequence", token) if index + 4 >= length
@@ -78,7 +78,7 @@ module JSONP3 # rubocop:disable Style/Documentation
     [code_point, index + 9]
   end
 
-  def self.parse_hex_digits(digits, token) # rubocop:disable Metrics/MethodLength
+  def self.parse_hex_digits(digits, token)
     code_point = 0
     digits.each_byte do |b|
       code_point <<= 4

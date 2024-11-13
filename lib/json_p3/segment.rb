@@ -79,7 +79,7 @@ module JSONP3
 
     protected
 
-    def visit(node, depth = 1) # rubocop:disable Metrics/AbcSize, Metrics/MethodLength
+    def visit(node, depth = 1)
       raise JSONPathRecursionError.new("recursion limit exceeded", @token) if depth > @env.class::MAX_RECURSION_DEPTH
 
       rv = [node]
