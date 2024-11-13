@@ -356,7 +356,7 @@ module JSONP3 # rubocop:disable Style/Documentation
     # @param func [Proc]
     # @param args [Array<Object>]
     # @return [Array<Object>]
-    def unpack_node_lists(func, args) # rubocop:disable Metrics/MethodLength
+    def unpack_node_lists(func, args)
       unpacked_args = []
       args.each_with_index do |arg, i|
         unless arg.is_a?(JSONPathNodeList) && func.class::ARG_TYPES[i] != :nodes_expression
@@ -384,7 +384,7 @@ module JSONP3 # rubocop:disable Style/Documentation
     obj != false
   end
 
-  def self.eq?(left, right) # rubocop:disable Metrics/MethodLength, Metrics/CyclomaticComplexity, Metrics/PerceivedComplexity, Metrics/AbcSize
+  def self.eq?(left, right)
     left = left.first.value if left.is_a?(JSONPathNodeList) && left.length == 1
     right = right.first.value if right.is_a?(JSONPathNodeList) && right.length == 1
 
@@ -403,7 +403,7 @@ module JSONP3 # rubocop:disable Style/Documentation
     left == right
   end
 
-  def self.lt?(left, right) # rubocop:disable Metrics/CyclomaticComplexity, Metrics/AbcSize, Metrics/PerceivedComplexity
+  def self.lt?(left, right)
     left = left.first.value if left.is_a?(JSONPathNodeList) && left.length == 1
     right = right.first.value if right.is_a?(JSONPathNodeList) && right.length == 1
     return left < right if left.is_a?(String) && right.is_a?(String)

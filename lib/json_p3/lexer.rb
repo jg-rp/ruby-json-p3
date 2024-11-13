@@ -26,7 +26,7 @@ module JSONP3 # rubocop:disable Style/Documentation
   # JSONPath query expression lexical scanner.
   #
   # @see tokenize
-  class Lexer # rubocop:disable Metrics/ClassLength
+  class Lexer
     RE_INT = /-?[0-9]+/
     RE_NAME = /[\u0080-\uFFFFa-zA-Z_][\u0080-\uFFFFa-zA-Z0-9_-]*/
     RE_WHITESPACE = /[ \n\r\t]+/
@@ -115,7 +115,7 @@ module JSONP3 # rubocop:disable Style/Documentation
       :lex_segment
     end
 
-    def lex_segment # rubocop:disable Metrics/MethodLength, Metrics/CyclomaticComplexity
+    def lex_segment # rubocop:disable Metrics/MethodLength
       if accept?(RE_WHITESPACE) && peek.empty?
         error "unexpected trailing whitespace"
         return nil
@@ -148,7 +148,7 @@ module JSONP3 # rubocop:disable Style/Documentation
       end
     end
 
-    def lex_descendant_segment # rubocop:disable Metrics/MethodLength
+    def lex_descendant_segment
       case self.next
       when ""
         error "bald descendant segment"
@@ -172,7 +172,7 @@ module JSONP3 # rubocop:disable Style/Documentation
       end
     end
 
-    def lex_shorthand_selector # rubocop:disable Metrics/MethodLength
+    def lex_shorthand_selector
       if peek == ""
         error "unexpected trailing dot"
         return nil
@@ -201,7 +201,7 @@ module JSONP3 # rubocop:disable Style/Documentation
       nil
     end
 
-    def lex_inside_bracketed_segment # rubocop:disable Metrics/MethodLength, Metrics/AbcSize, Metrics/CyclomaticComplexity
+    def lex_inside_bracketed_segment # rubocop:disable Metrics/MethodLength
       loop do # rubocop:disable Metrics/BlockLength
         ignore_whitespace?
         c = self.next
@@ -372,7 +372,7 @@ module JSONP3 # rubocop:disable Style/Documentation
     end
 
     class << self
-      def lex_string_factory(quote, state, token) # rubocop:disable Metrics/MethodLength
+      def lex_string_factory(quote, state, token)
         proc {
           # @type self: Lexer
           ignore # move past opening quote

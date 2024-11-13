@@ -24,7 +24,7 @@ module JSONP3
     # @param value [String]
     # @param pattern [String]
     # @return Boolean
-    def call(value, pattern) # rubocop:disable Metrics/MethodLength
+    def call(value, pattern)
       return false unless pattern.is_a?(String) && value.is_a?(String)
 
       if @cache_size.positive?

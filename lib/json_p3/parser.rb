@@ -62,7 +62,7 @@ module JSONP3
   end
 
   # A JSONPath expression parser.
-  class Parser # rubocop:disable Metrics/ClassLength
+  class Parser
     def initialize(env)
       @env = env
       @name_selector = env.class::NAME_SELECTOR
@@ -81,7 +81,7 @@ module JSONP3
 
     protected
 
-    def parse_query(stream) # rubocop:disable Metrics/MethodLength
+    def parse_query(stream)
       segments = [] # : Array[Segment]
 
       loop do
@@ -102,7 +102,7 @@ module JSONP3
       segments
     end
 
-    def parse_selectors(stream) # rubocop:disable Metrics/MethodLength
+    def parse_selectors(stream)
       case stream.peek.type
       when :token_name
         token = stream.next
@@ -116,7 +116,7 @@ module JSONP3
       end
     end
 
-    def parse_bracketed_selection(stream) # rubocop:disable Metrics/MethodLength, Metrics/AbcSize, Metrics/CyclomaticComplexity
+    def parse_bracketed_selection(stream) # rubocop:disable Metrics/MethodLength
       stream.expect(:token_lbracket)
       segment_token = stream.next
 
@@ -163,7 +163,7 @@ module JSONP3
       selectors
     end
 
-    def parse_index_or_slice(stream) # rubocop:disable Metrics/MethodLength, Metrics/AbcSize
+    def parse_index_or_slice(stream)
       token = stream.next
       index = parse_i_json_int(token)
 
@@ -195,7 +195,7 @@ module JSONP3
       SliceSelector.new(@env, token, index, stop, step)
     end
 
-    def parse_slice_selector(stream) # rubocop:disable Metrics/MethodLength, Metrics/AbcSize
+    def parse_slice_selector(stream)
       stream.expect(:token_colon)
       token = stream.next
 
@@ -225,7 +225,7 @@ module JSONP3
       SliceSelector.new(@env, token, start, stop, step)
     end
 
-    def parse_filter_selector(stream) # rubocop:disable Metrics/MethodLength, Metrics/AbcSize
+    def parse_filter_selector(stream)
       token = stream.next
       expression = parse_filter_expression(stream)
 
@@ -245,7 +245,7 @@ module JSONP3
       FilterSelector.new(@env, token, FilterExpression.new(token, expression))
     end
 
-    def parse_filter_expression(stream, precedence = Precedence::LOWEST) # rubocop:disable Metrics/AbcSize, Metrics/MethodLength, Metrics/CyclomaticComplexity
+    def parse_filter_expression(stream, precedence = Precedence::LOWEST) # rubocop:disable Metrics/MethodLength, Metrics/CyclomaticComplexity
       left = case stream.peek.type
              when :token_double_quote_string, :token_single_quote_string
                token = stream.next
@@ -313,7 +313,7 @@ module JSONP3
       end
     end
 
-    def parse_function_expression(stream) # rubocop:disable Metrics/AbcSize, Metrics/MethodLength, Metrics/CyclomaticComplexity
+    def parse_function_expression(stream) # rubocop:disable Metrics/MethodLength
       token = stream.next
       args = [] # : Array[Expression]
 
@@ -390,7 +390,7 @@ module JSONP3
       RelativeQueryExpression.new(token, JSONPath.new(@env, parse_query(stream)))
     end
 
-    def parse_infix_expression(stream, left) # rubocop:disable Metrics/AbcSize, Metrics/MethodLength, Metrics/CyclomaticComplexity
+    def parse_infix_expression(stream, left) # rubocop:disable Metrics/MethodLength
       token = stream.next
       precedence = PRECEDENCES.fetch(token.type, Precedence::LOWEST)
       right = parse_filter_expression(stream, precedence)
@@ -428,7 +428,7 @@ module JSONP3
       end
     end
 
-    def parse_i_json_int(token) # rubocop:disable Metrics/MethodLength
+    def parse_i_json_int(token)
       value = token.value
 
       if value.length > 1 && value.start_with?("0", "-0")
@@ -477,7 +477,7 @@ module JSONP3
                                     expression.token)
     end
 
-    def validate_function_extension_signature(token, args) # rubocop:disable Metrics/AbcSize, Metrics/MethodLength, Metrics/CyclomaticComplexity, Metrics/PerceivedComplexity
+    def validate_function_extension_signature(token, args) # rubocop:disable Metrics/MethodLength, Metrics/CyclomaticComplexity
       func = @env.function_extensions.fetch(token.value)
       count = func.class::ARG_TYPES.length
 

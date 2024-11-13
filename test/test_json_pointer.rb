@@ -2,7 +2,7 @@
 
 require "test_helper"
 
-class TestJSONPointer < Minitest::Test # rubocop:disable Metrics/ClassLength
+class TestJSONPointer < Minitest::Test
   def test_to_string
     pointer = JSONP3::JSONPointer.new("/some/thing/1")
 

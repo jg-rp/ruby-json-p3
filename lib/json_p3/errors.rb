@@ -13,7 +13,7 @@ module JSONP3
       @token = token
     end
 
-    def detailed_message(highlight: true, **_kwargs) # rubocop:disable Metrics/AbcSize
+    def detailed_message(highlight: true, **_kwargs)
       if @token.query.strip.empty?
         "empty query"
       else

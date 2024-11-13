@@ -10,7 +10,7 @@ module JSONP3
 
     attr_reader :tokens
 
-    # Encode an array of strings and integers into a JSON pointer.
+    # Encode an array of strings and integers into a JSON Pointer.
     # @param tokens [Array<String | Integer> | nil]
     # @return [String]
     def self.encode(tokens)
@@ -30,6 +30,9 @@ module JSONP3
     end
 
     # Resolve this pointer against JSON-like data _value_.
+    # @param value [Object]
+    # @param default [Object] the value to return if this pointer can not be
+    #  resolved against _value_.
     def resolve(value, default: UNDEFINED)
       item = value
 
@@ -41,6 +44,12 @@ module JSONP3
       item
     end
 
+    # Resolve this pointer against _value_, returning the resolved object and its
+    # parent object.
+    #
+    # @param value [Object]
+    # @return [Array<Object>] an array with exactly two elements, one or both of
+    #   which could be undefined.
     def resolve_with_parent(value)
       return [UNDEFINED, resolve(value)] if @tokens.empty?
 
@@ -53,11 +62,15 @@ module JSONP3
       [parent, get_item(parent, @tokens.last)]
     end
 
+    # Return true if this pointer is relative to _pointer_.
+    # @param pointer [JSONPointer]
+    # @return [bool]
     def relative_to?(pointer)
       pointer.tokens.length < @tokens.length && @tokens[...pointer.tokens.length] == pointer.tokens
     end
 
     # @param parts [String]
+    # @return [JSONPointer]
     def join(*parts)
       pointer = self
       parts.each do |part|
@@ -68,6 +81,7 @@ module JSONP3
 
     # Return _true_ if this pointer can be resolved against _value_, even if the resolved
     # value is false or nil.
+    # @param value [Object]
     def exist?(value)
       resolve(value) != UNDEFINED
     end
@@ -80,6 +94,7 @@ module JSONP3
       JSONPointer.new(JSONPointer.encode((@tokens[...-1] || raise)))
     end
 
+    # Return a new pointer relative to this pointer using Relative JSON Pointer syntax.
     # @param rel [String | RelativeJSONPointer]
     # @return [JSONPointer]
     def to(rel)
@@ -95,7 +110,7 @@ module JSONP3
 
     # @param pointer [String]
     # @return [Array<String | Integer>]
-    def parse(pointer) # rubocop:disable Metrics/CyclomaticComplexity
+    def parse(pointer)
       if pointer.length.positive? && !pointer.start_with?("/")
         raise JSONPointerSyntaxError,
               "pointers must start with a slash or be the empty string"
@@ -112,7 +127,7 @@ module JSONP3
     # @param value [Object]
     # @param token [String | Integer]
     # @return [Object] the "fetched" object from _value_ or UNDEFINED.
-    def get_item(value, token) # rubocop:disable Metrics/MethodLength, Metrics/CyclomaticComplexity, Metrics/PerceivedComplexity, Metrics/AbcSize
+    def get_item(value, token)
       if value.is_a?(Array)
         if token.is_a?(String) && token.start_with?("#")
           maybe_index = token[1..]
@@ -163,7 +178,7 @@ module JSONP3
     RE_INT = /\A(0|[1-9][0-9]*)\z/
 
     # @param rel [String]
-    def initialize(rel) # rubocop:disable Metrics/AbcSize, Metrics/CyclomaticComplexity, Metrics/PerceivedComplexity
+    def initialize(rel)
       match = RE_RELATIVE_POINTER.match(rel)
 
       raise JSONPointerSyntaxError, "failed to parse relative pointer" if match.nil?
@@ -187,9 +202,10 @@ module JSONP3
       "#{@origin}#{index}#{@pointer}"
     end
 
+    # Return a new JSON Pointer by applying this relative pointer to _pointer_.
     # @param pointer [String | JSONPointer]
     # @return [JSONPointer]
-    def to(pointer) # rubocop:disable Metrics/AbcSize, Metrics/CyclomaticComplexity, Metrics/PerceivedComplexity
+    def to(pointer)
       p = pointer.is_a?(String) ? JSONPointer.new(pointer) : pointer
 
       raise JSONPointerIndexError, "origin (#{@origin}) exceeds root (#{p.tokens.length})" if @origin > p.tokens.length

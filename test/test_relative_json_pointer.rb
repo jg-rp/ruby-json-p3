@@ -2,7 +2,7 @@
 
 require "test_helper"
 
-class TestRelativeJSONPointer < Minitest::Test # rubocop:disable Metrics/ClassLength
+class TestRelativeJSONPointer < Minitest::Test
   DOC = {
     "foo" => %w[bar baz biz],
     "highly" => { "nested" => { "objects" => true } }

@@ -70,7 +70,7 @@ module JSONP3
       @sym = @name.to_sym
     end
 
-    def resolve(node) # rubocop:disable Metrics/MethodLength
+    def resolve(node)
       if node.value.is_a?(Hash)
         if node.value.key?(@name)
           [node.new_child(node.value[@name], @name)]
@@ -172,7 +172,7 @@ module JSONP3
       @step = step || 1
     end
 
-    def resolve(node) # rubocop:disable Metrics/MethodLength, Metrics/AbcSize
+    def resolve(node)
       return [] unless node.value.is_a?(Array)
 
       length = node.value.length
@@ -248,7 +248,7 @@ module JSONP3
       @expression = expression
     end
 
-    def resolve(node) # rubocop:disable Metrics/MethodLength, Metrics/AbcSize
+    def resolve(node)
       nodes = [] # : Array[JSONPathNode]
 
       if node.value.is_a?(Array)
