@@ -59,7 +59,7 @@ Followed by:
 gem install json_p3 -P MediumSecurity
 ```
 
-JSON P3 has no runtime dependencies, so `-P HighSecurity` is OK too. See https://guides.rubygems.org/security/ for mor information.
+JSON P3 has no runtime dependencies, so `-P HighSecurity` is OK too. See https://guides.rubygems.org/security/ for more information.
 
 ## Example
 
