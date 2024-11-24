@@ -130,7 +130,7 @@ module JSONP3
     def get_item(value, token)
       if value.is_a?(Array)
         if token.is_a?(String) && token.start_with?("#")
-          maybe_index = token[1..]
+          maybe_index = token[1..] || raise
           return maybe_index.to_i if RE_INT.match?(maybe_index)
         end
 

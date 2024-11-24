@@ -1,5 +1,6 @@
 # frozen_string_literal: true
 
+require "English"
 require_relative "errors"
 
 module JSONP3
@@ -23,39 +24,94 @@ module JSONP3
 
   # The JSON Patch _add_ operation.
   class OpAdd < Op
-    # @param path [JSONPointer]
+    # @param pointer [JSONPointer]
     # @param value [JSON-like value]
-    def initialize(path, value)
+    def initialize(pointer, value)
       super
-      @path = path
+      @pointer = pointer
       @value = value
     end
 
     def name
       "add"
     end
+
+    def apply(value, index)
+      parent, obj = @pointer.resolve_with_parent(value)
+      return @value if parent == JSONP3::JSONPointer::UNDEFINED
+
+      target = @pointer.tokens.last
+      if parent.is_a?(Array)
+        if obj == JSONP3::JSONPointer::UNDEFINED
+          raise JSONPatchError, "index out of range (#{name}:#{index})" unless target == "-"
+
+          parent << @value
+        else
+          parent.insert(target.to_i, @value)
+        end
+      elsif parent.is_a?(Hash)
+        parent[target] = @value
+      else
+        raise JSONPatchError, "unexpected operation on #{parent.class} (#{name}:#{index})"
+      end
+
+      value
+    end
+
+    def to_h
+      { "op" => name, "path" => @pointer.to_s }
+    end
   end
 
   # The JSON Patch _remove_ operation.
   class OpRemove < Op
-    # @param path [JSONPointer]
-    def initialize(path)
+    # @param pointer [JSONPointer]
+    def initialize(pointer)
       super
-      @path = path
+      @pointer = pointer
     end
 
     def name
       "remove"
     end
+
+    def apply(value, index)
+      parent, obj = @pointer.resolve_with_parent(value)
+      raise JSONPatchError, "can't remove root (#{name}:#{index})" if parent == JSONP3::JSONPointer::UNDEFINED
+
+      target = @pointer.tokens.last
+      if target == JSONP3::JSONPointer::UNDEFINED
+        raise JSONPatchError,
+              "unexpected operation on #{parent.class} (#{name}:#{index})"
+      end
+
+      if parent.is_a?(Array)
+        raise JSONPatchError, "no item to remove (#{name}:#{index})" if obj == JSONP3::JSONPointer::UNDEFINED
+
+        parent.delete_at(target.to_i)
+      elsif parent.is_a?(Hash)
+        raise JSONPatchError, "no property to remove (#{name}:#{index})" if obj == JSONP3::JSONPointer::UNDEFINED
+
+        parent.delete(target)
+      else
+        raise JSONPatchError, "unexpected operation on #{parent.class} (#{name}:#{index})"
+      end
+
+      value
+    end
+
+    def to_h
+      { "op" => name, "path" => @pointer.to_s }
+    end
   end
 
   # The JSON Patch _replace_ operation.
   class OpReplace < Op
-    # @param path [JSONPointer]
+    # @param pointer [JSONPointer]
     # @param value [JSON-like value]
-    def initialize(path, value)
+    def initialize(pointer, value)
       super
-      @path = path
+      @pointer = pointer
       @value = value
     end
 
@@ -67,11 +123,11 @@ module JSONP3
   # The JSON Patch _move_ operation.
   class OpMove < Op
     # @param from [JSONPointer]
-    # @param path [JSONPointer]
-    def initialize(from, path)
+    # @param pointer [JSONPointer]
+    def initialize(from, pointer)
       super
       @from = from
-      @path = path
+      @pointer = pointer
     end
 
     def name
@@ -82,11 +138,11 @@ module JSONP3
   # The JSON Patch _copy_ operation.
   class OpCopy < Op
     # @param from [JSONPointer]
-    # @param path [JSONPointer]
-    def initialize(from, path)
+    # @param pointer [JSONPointer]
+    def initialize(from, pointer)
       super
       @from = from
-      @path = path
+      @pointer = pointer
     end
 
     def name
@@ -96,11 +152,11 @@ module JSONP3
 
   # The JSON Patch _test_ operation.
   class OpTest < Op
-    # @param path [JSONPointer]
+    # @param pointer [JSONPointer]
     # @param value [JSON-like value]
-    def initialize(path, value)
+    def initialize(pointer, value)
       super
-      @path = path
+      @pointer = pointer
       @value = value
     end
 
@@ -116,63 +172,63 @@ module JSONP3
       @ops = ops
     end
 
-    # @param path [String | JSONPointer]
+    # @param pointer [String | JSONPointer]
     # @param value [JSON-like value]
     # @return [self]
-    def add(path, value)
-      @ops.push(OpAdd.new(ensure_pointer(path, :add, @ops.length), value))
+    def add(pointer, value)
+      @ops.push(OpAdd.new(ensure_pointer(pointer, :add, @ops.length), value))
       self
     end
 
-    # @param path [String | JSONPointer]
+    # @param pointer [String | JSONPointer]
     # @return [self]
-    def remove(path)
-      @ops.push(OpRemove.new(ensure_pointer(path, :remove, @ops.length)))
+    def remove(pointer)
+      @ops.push(OpRemove.new(ensure_pointer(pointer, :remove, @ops.length)))
       self
     end
 
-    # @param path [String | JSONPointer]
+    # @param pointer [String | JSONPointer]
     # @param value [JSON-like value]
     # @return [self]
-    def replace(path, value)
-      @ops.push(OpReplace.new(ensure_pointer(path, :replace, @ops.length), value))
+    def replace(pointer, value)
+      @ops.push(OpReplace.new(ensure_pointer(pointer, :replace, @ops.length), value))
       self
     end
 
     # @param from [String | JSONPointer]
-    # @param path [String | JSONPointer]
+    # @param pointer [String | JSONPointer]
     # @return [self]
-    def move(from, path)
+    def move(from, pointer)
       @ops.push(OpMove.new(
                   ensure_pointer(from, :move, @ops.length),
-                  ensure_pointer(path, :move, @ops.length)
+                  ensure_pointer(pointer, :move, @ops.length)
                 ))
       self
     end
 
     # @param from [String | JSONPointer]
-    # @param path [String | JSONPointer]
+    # @param pointer [String | JSONPointer]
     # @return [self]
-    def copy(from, path)
+    def copy(from, pointer)
       @ops.push(OpCopy.new(
                   ensure_pointer(from, :copy, @ops.length),
-                  ensure_pointer(path, :copy, @ops.length)
+                  ensure_pointer(pointer, :copy, @ops.length)
                 ))
       self
     end
 
-    # @param path [String | JSONPointer]
+    # @param pointer [String | JSONPointer]
     # @param value [JSON-like value]
     # @return [self]
-    def test(path, value)
-      @ops.push(OpTest.new(ensure_pointer(path, :test, @ops.length), value))
+    def test(pointer, value)
+      @ops.push(OpTest.new(ensure_pointer(pointer, :test, @ops.length), value))
       self
     end
 
     # Apply this patch to JSON-like value _value_.
     def apply(value)
-      # TODO:
-      raise "Not Implemented"
+      @ops.each_with_index { |op, i| value = op.apply(value, i) }
+      value
     end
 
     def to_a
@@ -181,9 +237,12 @@ module JSONP3
 
     private
 
-    def ensure_pointer(path, op, index)
-      # TODO:
-      raise "Not Implemented"
+    def ensure_pointer(pointer, op, index)
+      return pointer unless pointer.is_a?(String)
+
+      JSONP3::JSONPointer.new(pointer)
+    rescue JSONPointerError
+      raise JSONPatchError, "#{$ERROR_INFO} (#{op}:#{index})"
     end
   end
 end
