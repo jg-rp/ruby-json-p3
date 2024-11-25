@@ -124,9 +124,8 @@ class TestRFC6902 < Minitest::Spec
     TEST_CASES.each do |test_case|
       it test_case["description"] do
         _(test_case["patch"].apply(deep_copy(test_case["data"]))).must_equal(test_case["want"])
+        _(JSONP3::JSONPatch.new([test_case["op"]]).apply(deep_copy(test_case["data"]))).must_equal(test_case["want"])
       end
     end
-
-    # TODO: test JSONPatch constructor with test_case["op"]
   end
 end

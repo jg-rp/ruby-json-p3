@@ -18,7 +18,7 @@ module JSONP3
 
     # Return a JSON-like representation of this patch operation.
     def to_h
-      raise "JSON Patch operations must implement #to_hash"
+      raise "JSON Patch operations must implement #to_h"
     end
   end
 
@@ -38,7 +38,12 @@ module JSONP3
 
     def apply(value, index)
       parent, obj = @pointer.resolve_with_parent(value)
-      return @value if parent == JSONP3::JSONPointer::UNDEFINED
+      return @value if parent == JSONP3::JSONPointer::UNDEFINED && @pointer.tokens.empty?
+
+      if parent == JSONP3::JSONPointer::UNDEFINED
+        raise JSONPatchError,
+              "no such property or item '#{@pointer.parent}' (#{name}:#{index})"
+      end
 
       target = @pointer.tokens.last
       if parent.is_a?(Array)
@@ -59,7 +64,7 @@ module JSONP3
     end
 
     def to_h
-      { "op" => name, "path" => @pointer.to_s }
+      { "op" => name, "path" => @pointer.to_s, "value" => @value }
     end
   end
 
@@ -77,7 +82,16 @@ module JSONP3
 
     def apply(value, index)
       parent, obj = @pointer.resolve_with_parent(value)
-      raise JSONPatchError, "can't remove root (#{name}:#{index})" if parent == JSONP3::JSONPointer::UNDEFINED
+
+      if parent == JSONP3::JSONPointer::UNDEFINED && @pointer.tokens.empty?
+        raise JSONPatchError,
+              "can't remove root (#{name}:#{index})"
+      end
+
+      if parent == JSONP3::JSONPointer::UNDEFINED
+        raise JSONPatchError,
+              "no such property or item '#{@pointer.parent}' (#{name}:#{index})"
+      end
 
       target = @pointer.tokens.last
       if target == JSONP3::JSONPointer::UNDEFINED
@@ -121,7 +135,12 @@ module JSONP3
 
     def apply(value, index)
       parent, obj = @pointer.resolve_with_parent(value)
-      return @value if parent == JSONP3::JSONPointer::UNDEFINED
+      return @value if parent == JSONP3::JSONPointer::UNDEFINED && @pointer.tokens.empty?
+
+      if parent == JSONP3::JSONPointer::UNDEFINED
+        raise JSONPatchError,
+              "no such property or item '#{@pointer.parent}' (#{name}:#{index})"
+      end
 
       target = @pointer.tokens.last
       if target == JSONP3::JSONPointer::UNDEFINED
@@ -297,12 +316,11 @@ module JSONP3
 
   # A JSON Patch containing zero or more patch operations.
   class JSONPatch
-    # @param ops [Array<Op>?]
+    # @param ops [Array<Op | Hash<String, untyped>>?]
     def initialize(ops = nil)
-      @ops = ops.nil? ? [] : ops
+      @ops = []
+      build(ops) unless ops.nil?
     end
-
-    # TODO: construct from array of hashes
 
     # @param pointer [String | JSONPointer]
     # @param value [JSON-like value]
@@ -368,6 +386,49 @@ module JSONP3
     end
 
     private
+
+    # @param ops [Array<Op | Hash<String, untyped>>?]
+    # @return void
+    def build(ops)
+      ops.each_with_index do |obj, i|
+        if obj.is_a?(Op)
+          @ops << obj
+          next
+        end
+
+        case obj["op"]
+        when "add"
+          add(op_pointer(obj, "path", "add", i), op_value(obj, "value", "add", i))
+        when "remove"
+          remove(op_pointer(obj, "path", "remove", i))
+        when "replace"
+          replace(op_pointer(obj, "path", "replace", i), op_value(obj, "value", "replace", i))
+        when "move"
+          move(op_pointer(obj, "from", "move", i), op_pointer(obj, "path", "move", i))
+        when "copy"
+          copy(op_pointer(obj, "from", "copy", i), op_pointer(obj, "path", "copy", i))
+        when "test"
+          test(op_pointer(obj, "path", "test", i), op_value(obj, "value", "test", i))
+        else
+          raise JSONPatchError,
+                "expected 'op' to be one of 'add', 'remove', 'replace', 'move', 'copy' or 'test' (#{obj["op"]}:#{i})"
+        end
+      end
+    end
+
+    def op_pointer(obj, key, op, index)
+      raise JSONPatchError, "missing property '#{key}' (#{op}:#{index})" unless obj.key?(key)
+
+      JSONP3::JSONPointer.new(obj[key])
+    rescue JSONPointerError
+      raise JSONPatchError, "#{$ERROR_INFO} (#{op}:#{index})"
+    end
+
+    def op_value(obj, key, op, index)
+      raise JSONPatchError, "missing property '#{key}' (#{op}:#{index})" unless obj.key?(key)
+
+      obj[key]
+    end
 
     def ensure_pointer(pointer, op, index)
       return pointer unless pointer.is_a?(String)

@@ -1223,7 +1223,7 @@ module JSONP3
     @ops: Array[Op]
 
     # @param ops [Array<Op>?]
-    def initialize: (?untyped? ops) -> void
+    def initialize: (?Array[Op | Hash[String, untyped]]? ops) -> void
 
     # @param pointer [String | JSONPointer]
     # @param value [JSON-like value]
@@ -1262,5 +1262,11 @@ module JSONP3
     private
 
     def ensure_pointer: (JSONPointer | String pointer, Symbol op, Integer index) -> JSONPointer
+                      
+    def build: (Array[Op | Hash[String, untyped]]) -> void
+             
+    def op_pointer: (Hash[String, untyped] obj, String key, String op, Integer index) -> JSONPointer
+
+    def op_value: (Hash[String, untyped] obj, String key, String op, Integer index) -> untyped
   end
 end
