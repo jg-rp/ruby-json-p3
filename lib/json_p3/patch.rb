@@ -82,7 +82,7 @@ module JSONP3
       target = @pointer.tokens.last
       if target == JSONP3::JSONPointer::UNDEFINED
         raise JSONPatchError,
-              "unexpected operation on #{parent.class} (#{name}:#{index})"
+              "unexpected operation (#{name}:#{index})"
       end
 
       if parent.is_a?(Array)
@@ -117,6 +117,35 @@ module JSONP3
 
     def name
       "replace"
+    end
+
+    def apply(value, index)
+      parent, obj = @pointer.resolve_with_parent(value)
+      return @value if parent == JSONP3::JSONPointer::UNDEFINED
+
+      target = @pointer.tokens.last
+      if target == JSONP3::JSONPointer::UNDEFINED
+        raise JSONPatchError,
+              "unexpected operation (#{name}:#{index})"
+      end
+
+      if parent.is_a?(Array)
+        raise JSONPatchError, "no item to replace (#{name}:#{index})" if obj == JSONP3::JSONPointer::UNDEFINED
+
+        parent[target.to_i] = @value
+      elsif parent.is_a?(Hash)
+        raise JSONPatchError, "no property to replace (#{name}:#{index})" if obj == JSONP3::JSONPointer::UNDEFINED
+
+        parent[target] = @value
+      else
+        raise JSONPatchError, "unexpected operation on #{parent.class} (#{name}:#{index})"
+      end
+
+      value
+    end
+
+    def to_h
+      { "op" => name, "path" => @pointer.to_s, "value" => @value }
     end
   end
 
