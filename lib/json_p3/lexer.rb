@@ -115,7 +115,7 @@ module JSONP3 # rubocop:disable Style/Documentation
       :lex_segment
     end
 
-    def lex_segment # rubocop:disable Metrics/MethodLength
+    def lex_segment
       if accept?(RE_WHITESPACE) && peek.empty?
         error "unexpected trailing whitespace"
         return nil
@@ -201,7 +201,7 @@ module JSONP3 # rubocop:disable Style/Documentation
       nil
     end
 
-    def lex_inside_bracketed_segment # rubocop:disable Metrics/MethodLength
+    def lex_inside_bracketed_segment
       loop do # rubocop:disable Metrics/BlockLength
         ignore_whitespace?
         c = self.next

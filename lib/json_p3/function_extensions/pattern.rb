@@ -4,7 +4,7 @@ module JSONP3 # rubocop:disable Style/Documentation
   # Map I-Regexp pattern to Ruby regex pattern.
   # @param pattern [String]
   # @return [String]
-  def self.map_iregexp(pattern) # rubocop:disable Metrics/MethodLength
+  def self.map_iregexp(pattern)
     escaped = false
     char_class = false
     mapped = String.new(encoding: "UTF-8")

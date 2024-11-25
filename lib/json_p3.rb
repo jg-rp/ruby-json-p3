@@ -3,6 +3,7 @@
 require_relative "json_p3/version"
 require_relative "json_p3/environment"
 require_relative "json_p3/pointer"
+require_relative "json_p3/patch"
 
 # RFC 9535 JSONPath query expressions for JSON.
 module JSONP3
@@ -18,5 +19,9 @@ module JSONP3
 
   def self.resolve(pointer, value, default: JSONPointer::UNDEFINED)
     JSONPointer.new(pointer).resolve(value, default: default)
+  end
+
+  def self.apply(ops, value)
+    JSONPatch.new(ops).apply(value)
   end
 end

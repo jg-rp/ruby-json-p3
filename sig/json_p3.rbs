@@ -5,12 +5,16 @@ module JSONP3
   def self.find: (String path, untyped data) -> JSONPathNodeList
 
   def self.compile: (String path) -> JSONPath
+                  
+  def self.resolve: (String pointer, untyped value, ?default: untyped) -> untyped
+
+  def self.apply: (Array[Op | Hash[String, untyped]] ops, untyped value) -> untyped
 end
 
 module JSONP3
   # A least recently used cache relying on Ruby hash insertion order.
   class LRUCache
-    @data: untyped
+    @data: Hash[untyped, untyped]
 
     @max_size: Integer
 
@@ -92,19 +96,22 @@ module JSONP3
   class JSONPathRecursionError < JSONPathError
   end
 
-  class JSONPointerResolutionError < StandardError
+  class JSONPointerError < StandardError
   end
 
-  class JSONPointerSyntaxError < JSONPointerResolutionError
+  class JSONPointerIndexError < JSONPointerError
   end
-  
-  class JSONPointerIndexError < JSONPointerResolutionError
+
+  class JSONPointerSyntaxError < JSONPointerError
   end
-  
-  class JSONPointerKeyError < JSONPointerResolutionError
+
+  class JSONPointerTypeError < JSONPointerError
   end
-  
-  class JSONPointerTypeError < JSONPointerResolutionError
+
+  class JSONPatchError < StandardError
+  end
+
+  class JSONPatchTestFailure < JSONPatchError
   end
   
 end
@@ -349,7 +356,7 @@ module JSONP3
 
   def self.lt?: (Expression left, Expression right) -> bool
 
-  # Contextural information and data used for evaluating a filter expression.
+  # Contextual information and data used for evaluating a filter expression.
   class FilterContext
     @env: JSONPathEnvironment
 
@@ -1042,6 +1049,8 @@ module JSONP3
 
     UNDEFINED: :__undefined
 
+    RE_INT: ::Regexp
+
     attr_reader tokens: Array[String | Integer]
 
     # Encode an array of strings and integers into a JSON pointer.
@@ -1120,5 +1129,148 @@ module JSONP3
     # @param token [String]
     # @return [Integer]
     def parse_int: (String token) -> Integer
+  end
+end
+
+module JSONP3
+  # Base class for all JSON Patch operations
+  class Op
+    # Return the name of the patch operation.
+    def name: () -> String
+
+    # Apply the patch operation to _value_.
+    def apply: (untyped _value, Integer _index) -> untyped
+
+    # Return a JSON-like representation of this patch operation.
+    def to_h: () -> untyped
+  end
+
+  # The JSON Patch _add_ operation.
+  class OpAdd < Op
+    @pointer: JSONPointer
+
+    @value: untyped
+
+    # @param pointer [JSONPointer]
+    # @param value [JSON-like value]
+    def initialize: (JSONPointer pointer, untyped value) -> void
+
+    def name: () -> "add"
+  end
+
+  # The JSON Patch _remove_ operation.
+  class OpRemove < Op
+    @pointer: JSONPointer
+
+    # @param papointerth [JSONPointer]
+    def initialize: (JSONPointer pointer) -> void
+
+    def name: () -> "remove"
+  end
+
+  # The JSON Patch _replace_ operation.
+  class OpReplace < Op
+    @pointer: JSONPointer
+
+    @value: untyped
+
+    # @param pointer [JSONPointer]
+    # @param value [JSON-like value]
+    def initialize: (JSONPointer pointer, untyped value) -> void
+
+    def name: () -> "replace"
+  end
+
+  # The JSON Patch _move_ operation.
+  class OpMove < Op
+    @from: JSONPointer
+
+    @pointer: JSONPointer
+
+    # @param from [JSONPointer]
+    # @param pointer [JSONPointer]
+    def initialize: (JSONPointer from, JSONPointer pointer) -> void
+
+    def name: () -> "move"
+  end
+
+  # The JSON Patch _copy_ operation.
+  class OpCopy < Op
+    @from: JSONPointer
+
+    @pointer: JSONPointer
+
+    # @param from [JSONPointer]
+    # @param pointer [JSONPointer]
+    def initialize: (JSONPointer from, JSONPointer pointer) -> void
+
+    def name: () -> "copy"
+            
+    def deep_copy: (untyped obj) -> untyped
+  end
+
+  # The JSON Patch _test_ operation.
+  class OpTest < Op
+    @pointer: JSONPointer
+
+    @value: untyped
+
+    # @param pointer [JSONPointer]
+    # @param value [JSON-like value]
+    def initialize: (JSONPointer pointer, untyped value) -> void
+
+    def name: () -> "test"
+  end
+
+  # A JSON Patch containing zero or more patch operations.
+  class JSONPatch
+    @ops: Array[Op]
+
+    # @param ops [Array<Op>?]
+    def initialize: (?Array[Op | Hash[String, untyped]]? ops) -> void
+
+    # @param pointer [String | JSONPointer]
+    # @param value [JSON-like value]
+    # @return [self]
+    def add: (JSONPointer | String pointer, untyped value) -> self
+
+    # @param pointer [String | JSONPointer]
+    # @return [self]
+    def remove: (JSONPointer | String pointer) -> self
+
+    # @param pointer [String | JSONPointer]
+    # @param value [JSON-like value]
+    # @return [self]
+    def replace: (JSONPointer | String pointer, untyped value) -> self
+
+    # @param from [String | JSONPointer]
+    # @param pointer [String | JSONPointer]
+    # @return [self]
+    def move: (JSONPointer | String from, JSONPointer | String pointer) -> self
+
+    # @param from [String | JSONPointer]
+    # @param pointer [String | JSONPointer]
+    # @return [self]
+    def copy: (JSONPointer | String from, JSONPointer | String pointer) -> self
+
+    # @param pointer [String | JSONPointer]
+    # @param value [JSON-like value]
+    # @return [self]
+    def test: (JSONPointer | String pointer, untyped value) -> self
+
+    # Apply this patch to JSON-like value _value_.
+    def apply: (untyped value) -> untyped
+
+    def to_a: () -> Array[untyped]
+
+    private
+
+    def ensure_pointer: (JSONPointer | String pointer, Symbol op, Integer index) -> JSONPointer
+                      
+    def build: (Array[Op | Hash[String, untyped]]) -> void
+             
+    def op_pointer: (Hash[String, untyped] obj, String key, String op, Integer index) -> JSONPointer
+
+    def op_value: (Hash[String, untyped] obj, String key, String op, Integer index) -> untyped
   end
 end
