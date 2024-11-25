@@ -5,12 +5,16 @@ module JSONP3
   def self.find: (String path, untyped data) -> JSONPathNodeList
 
   def self.compile: (String path) -> JSONPath
+                  
+  def self.resolve: (String pointer, untyped value, ?default: untyped) -> untyped
+
+  def self.apply: (Array[Op | Hash[String, untyped]] ops, untyped value) -> untyped
 end
 
 module JSONP3
   # A least recently used cache relying on Ruby hash insertion order.
   class LRUCache
-    @data: untyped
+    @data: Hash[untyped, untyped]
 
     @max_size: Integer
 

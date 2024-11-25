@@ -367,6 +367,51 @@ If a pointer can not be resolved, `JSONP3::JSONPointer::UNDEFINED` is returned i
 pp JSONP3.resolve("/no/such/thing", data, default: nil) # nil
 ```
 
+### apply
+
+`apply(ops, value) -> Object`
+
+Apply a JSON Patch ([RFC 6902](https://datatracker.ietf.org/doc/html/rfc6902)) with `JSONP3.apply()`. **Data is modified in place**.
+
+```ruby
+require "json"
+require "json_p3"
+
+ops = <<~JSON
+  [
+    { "op": "add", "path": "/some/foo", "value": { "foo": {} } },
+    { "op": "add", "path": "/some/foo", "value": { "bar": [] } },
+    { "op": "copy", "from": "/some/other", "path": "/some/foo/else" },
+    { "op": "add", "path": "/some/foo/bar/-", "value": 1 }
+  ]
+JSON
+
+data = { "some" => { "other" => "thing" } }
+JSONP3.apply(JSON.parse(ops), data)
+pp data
+# {"some"=>{"other"=>"thing", "foo"=>{"bar"=>[1], "else"=>"thing"}}}
+```
+
+`JSONP3.apply(ops, value)` is a convenience method equivalent to `JSONP3::JSONPatch.new(ops).apply(value)`. Use the `JSONPatch` constructor when you need to apply the same patch to different data.
+
+As well as passing an array of hashes following RFC 6902 as ops to `JSONPatch`, we offer a builder API to construct JSON Patch documents programmatically.
+
+```ruby
+require "json_p3"
+
+data = { "some" => { "other" => "thing" } }
+
+patch = JSONP3::JSONPatch.new
+                         .add("/some/foo", { "foo" => [] })
+                         .add("/some/foo", { "bar" => [] })
+                         .copy("/some/other", "/some/foo/else")
+                         .copy("/some/foo/else", "/some/foo/bar/-")
+
+patch.apply(data)
+pp data
+# {"some"=>{"other"=>"thing", "foo"=>{"bar"=>["thing"], "else"=>"thing"}}}
+```
+
 ## Contributing
 
 Your contributions and questions are always welcome. Feel free to ask questions, report bugs or request features on the [issue tracker](https://github.com/jg-rp/ruby-json-p3/issues) or on [Github Discussions](https://github.com/jg-rp/ruby-json-p3/discussions). Pull requests are welcome too.

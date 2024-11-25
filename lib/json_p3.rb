@@ -20,4 +20,8 @@ module JSONP3
   def self.resolve(pointer, value, default: JSONPointer::UNDEFINED)
     JSONPointer.new(pointer).resolve(value, default: default)
   end
+
+  def self.apply(ops, value)
+    JSONPatch.new(ops).apply(value)
+  end
 end

@@ -24,7 +24,7 @@ module JSONP3
       if @data.key?(key)
         @data.delete(key)
       elsif @data.length >= @max_size
-        @data.delete(@data.first[0])
+        @data.delete((@data.first || raise)[0])
       end
       @data[key] = value
     end

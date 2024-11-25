@@ -53,5 +53,70 @@ class TestJSONPatch < Minitest::Test
     assert_equal(patch_obj, patch.to_a)
   end
 
-  # TODO: more tests
+  def test_remove_missing_array_item
+    patch = JSONP3::JSONPatch.new.remove("/foo/99")
+
+    error = assert_raises(JSONP3::JSONPatchError) { patch.apply({ "foo" => [1, 2, 3] }) }
+    assert_equal("no item to remove (remove:0)", error.message)
+  end
+
+  def test_remove_missing_hash_property
+    patch = JSONP3::JSONPatch.new.remove("/foo/baz")
+
+    error = assert_raises(JSONP3::JSONPatchError) { patch.apply({ "foo" => { "bar" => [1, 2, 3] } }) }
+    assert_equal("no property to remove (remove:0)", error.message)
+  end
+
+  def test_replace_missing_array_item
+    patch = JSONP3::JSONPatch.new.replace("/foo/99", 42)
+
+    error = assert_raises(JSONP3::JSONPatchError) { patch.apply({ "foo" => [1, 2, 3] }) }
+    assert_equal("no item to replace (replace:0)", error.message)
+  end
+
+  def test_replace_missing_hash_property
+    patch = JSONP3::JSONPatch.new.replace("/foo/baz", 42)
+
+    error = assert_raises(JSONP3::JSONPatchError) { patch.apply({ "foo" => { "bar" => [1, 2, 3] } }) }
+    assert_equal("no property to replace (replace:0)", error.message)
+  end
+
+  def test_move_to_root
+    patch = JSONP3::JSONPatch.new.move("/foo", "")
+
+    assert_equal({ "bar" => [1, 2, 3] }, patch.apply({ "foo" => { "bar" => [1, 2, 3] } }))
+  end
+
+  def test_copy_to_root
+    patch = JSONP3::JSONPatch.new.copy("/foo", "")
+    data = { "foo" => { "bar" => [1, 2, 3] } }
+
+    assert_equal({ "bar" => [1, 2, 3] }, patch.apply(data))
+    assert_equal({ "foo" => { "bar" => [1, 2, 3] } }, data)
+  end
+
+  def test_build_missing_op
+    op = { "path" => "", "value" => "foo" }
+    error = assert_raises(JSONP3::JSONPatchError) { JSONP3::JSONPatch.new([op]) }
+    assert_equal("expected 'op' to be one of 'add', 'remove', 'replace', 'move', 'copy' or 'test' (:0)",
+                 error.message)
+  end
+
+  def test_build_missing_path
+    op = { "op" => "add", "value" => "foo" }
+    error = assert_raises(JSONP3::JSONPatchError) { JSONP3::JSONPatch.new([op]) }
+    assert_equal("missing property 'path' (add:0)", error.message)
+  end
+
+  def test_build_missing_value
+    op = { "op" => "add", "path" => "/foo" }
+    error = assert_raises(JSONP3::JSONPatchError) { JSONP3::JSONPatch.new([op]) }
+    assert_equal("missing property 'value' (add:0)", error.message)
+  end
+
+  def test_build_invalid_pointer
+    op = { "op" => "add", "path" => "foo/", "value" => 42 }
+    error = assert_raises(JSONP3::JSONPatchError) { JSONP3::JSONPatch.new([op]) }
+    assert_equal("pointers must start with a slash or be the empty string (add:0)", error.message)
+  end
 end
