@@ -1223,7 +1223,7 @@ module JSONP3
     @ops: Array[Op]
 
     # @param ops [Array<Op>?]
-    def initialize: (Array[Op] ops) -> void
+    def initialize: (?untyped? ops) -> void
 
     # @param pointer [String | JSONPointer]
     # @param value [JSON-like value]

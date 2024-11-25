@@ -3,6 +3,7 @@
 require_relative "json_p3/version"
 require_relative "json_p3/environment"
 require_relative "json_p3/pointer"
+require_relative "json_p3/patch"
 
 # RFC 9535 JSONPath query expressions for JSON.
 module JSONP3

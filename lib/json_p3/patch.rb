@@ -27,7 +27,7 @@ module JSONP3
     # @param pointer [JSONPointer]
     # @param value [JSON-like value]
     def initialize(pointer, value)
-      super
+      super()
       @pointer = pointer
       @value = value
     end
@@ -67,7 +67,7 @@ module JSONP3
   class OpRemove < Op
     # @param pointer [JSONPointer]
     def initialize(pointer)
-      super
+      super()
       @pointer = pointer
     end
 
@@ -110,7 +110,7 @@ module JSONP3
     # @param pointer [JSONPointer]
     # @param value [JSON-like value]
     def initialize(pointer, value)
-      super
+      super()
       @pointer = pointer
       @value = value
     end
@@ -154,7 +154,7 @@ module JSONP3
     # @param from [JSONPointer]
     # @param pointer [JSONPointer]
     def initialize(from, pointer)
-      super
+      super()
       @from = from
       @pointer = pointer
     end
@@ -219,7 +219,7 @@ module JSONP3
     # @param from [JSONPointer]
     # @param pointer [JSONPointer]
     def initialize(from, pointer)
-      super
+      super()
       @from = from
       @pointer = pointer
     end
@@ -248,7 +248,7 @@ module JSONP3
 
       # Write the source value to the destination.
       if dest_parent.is_a?(Array)
-        dest_parent[dest_target.to_i] = deep_copy(source_obj)
+        dest_parent.insert(dest_target.to_i, deep_copy(source_obj))
       elsif dest_parent.is_a?(Hash)
         dest_parent[dest_target] = deep_copy(source_obj)
       else
@@ -274,7 +274,7 @@ module JSONP3
     # @param pointer [JSONPointer]
     # @param value [JSON-like value]
     def initialize(pointer, value)
-      super
+      super()
       @pointer = pointer
       @value = value
     end
@@ -298,9 +298,11 @@ module JSONP3
   # A JSON Patch containing zero or more patch operations.
   class JSONPatch
     # @param ops [Array<Op>?]
-    def initialize(ops)
-      @ops = ops
+    def initialize(ops = nil)
+      @ops = ops.nil? ? [] : ops
     end
+
+    # TODO: construct from array of hashes
 
     # @param pointer [String | JSONPointer]
     # @param value [JSON-like value]

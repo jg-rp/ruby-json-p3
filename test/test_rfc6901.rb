@@ -2,7 +2,7 @@
 
 require "test_helper"
 
-class TestCompliance < Minitest::Spec
+class TestRFC6901 < Minitest::Spec
   make_my_diffs_pretty!
 
   RFC6901_DOCUMENT = {
