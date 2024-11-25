@@ -162,6 +162,56 @@ module JSONP3
     def name
       "move"
     end
+
+    def apply(value, index)
+      if @pointer.relative_to?(@from)
+        raise JSONPatchError,
+              "can't move object to one of its children (#{name}:#{index})"
+      end
+
+      # Grab the source value.
+      source_parent, source_obj = @from.resolve_with_parent(value)
+      if source_obj == JSONP3::JSONPointer::UNDEFINED
+        raise JSONPatchError,
+              "source object does not exist (#{name}:#{index})"
+      end
+
+      source_target = @from.tokens.last
+      if source_target == JSONP3::JSONPointer::UNDEFINED
+        raise JSONPatchError,
+              "unexpected operation (#{name}:#{index})"
+      end
+
+      # Delete the target value from the source location.
+      if source_parent.is_a?(Array)
+        source_parent.delete_at(source_target.to_i)
+      elsif source_parent.is_a?(Hash)
+        source_parent.delete(source_target)
+      end
+
+      # Find the parent of the destination pointer.
+      dest_parent, _dest_obj = @pointer.resolve_with_parent(value)
+      return source_obj if dest_parent == JSONP3::JSONPointer::UNDEFINED
+
+      dest_target = @pointer.tokens.last
+      if dest_target == JSONP3::JSONPointer::UNDEFINED
+        raise JSONPatchError,
+              "unexpected operation (#{name}:#{index})"
+      end
+
+      # Write the source value to the destination.
+      if dest_parent.is_a?(Array)
+        dest_parent[dest_target.to_i] = source_obj
+      elsif dest_parent.is_a?(Hash)
+        dest_parent[dest_target] = source_obj
+      end
+
+      value
+    end
+
+    def to_h
+      { "op" => name, "from" => @from.to_s, "path" => @pointer.to_s }
+    end
   end
 
   # The JSON Patch _copy_ operation.
@@ -177,6 +227,46 @@ module JSONP3
     def name
       "copy"
     end
+
+    def apply(value, index)
+      # Grab the source value.
+      _source_parent, source_obj = @from.resolve_with_parent(value)
+      if source_obj == JSONP3::JSONPointer::UNDEFINED
+        raise JSONPatchError,
+              "source object does not exist (#{name}:#{index})"
+      end
+
+      # Find the parent of the destination pointer.
+      dest_parent, _dest_obj = @pointer.resolve_with_parent(value)
+      return deep_copy(source_obj) if dest_parent == JSONP3::JSONPointer::UNDEFINED
+
+      dest_target = @pointer.tokens.last
+      if dest_target == JSONP3::JSONPointer::UNDEFINED
+        raise JSONPatchError,
+              "unexpected operation (#{name}:#{index})"
+      end
+
+      # Write the source value to the destination.
+      if dest_parent.is_a?(Array)
+        dest_parent[dest_target.to_i] = deep_copy(source_obj)
+      elsif dest_parent.is_a?(Hash)
+        dest_parent[dest_target] = deep_copy(source_obj)
+      else
+        raise JSONPatchError, "unexpected operation on #{dest_parent.class} (#{name}:#{index})"
+      end
+
+      value
+    end
+
+    def to_h
+      { "op" => name, "from" => @from.to_s, "path" => @pointer.to_s }
+    end
+
+    private
+
+    def deep_copy(obj)
+      Marshal.load(Marshal.dump(obj))
+    end
   end
 
   # The JSON Patch _test_ operation.
@@ -191,6 +281,17 @@ module JSONP3
 
     def name
       "test"
+    end
+
+    def apply(value, index)
+      obj = @pointer.resolve(value)
+      raise JSONPatchTestFailure, "test failed (#{name}:#{index})" if obj != @value
+
+      value
+    end
+
+    def to_h
+      { "op" => name, "path" => @pointer.to_s, "value" => @value }
     end
   end
 

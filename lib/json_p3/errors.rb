@@ -53,4 +53,5 @@ module JSONP3
   class JSONPointerTypeError < JSONPointerError; end
 
   class JSONPatchError < StandardError; end
+  class JSONPatchTestFailure < JSONPatchError; end
 end

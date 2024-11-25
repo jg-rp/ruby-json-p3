@@ -390,7 +390,7 @@ module JSONP3
       RelativeQueryExpression.new(token, JSONPath.new(@env, parse_query(stream)))
     end
 
-    def parse_infix_expression(stream, left) # rubocop:disable Metrics/MethodLength
+    def parse_infix_expression(stream, left)
       token = stream.next
       precedence = PRECEDENCES.fetch(token.type, Precedence::LOWEST)
       right = parse_filter_expression(stream, precedence)
@@ -477,7 +477,7 @@ module JSONP3
                                     expression.token)
     end
 
-    def validate_function_extension_signature(token, args) # rubocop:disable Metrics/MethodLength, Metrics/CyclomaticComplexity
+    def validate_function_extension_signature(token, args) # rubocop:disable Metrics/CyclomaticComplexity
       func = @env.function_extensions.fetch(token.value)
       count = func.class::ARG_TYPES.length
 

@@ -106,6 +106,9 @@ module JSONP3
 
   class JSONPatchError < StandardError
   end
+
+  class JSONPatchTestFailure < JSONPatchError
+  end
   
 end
 
@@ -349,7 +352,7 @@ module JSONP3
 
   def self.lt?: (Expression left, Expression right) -> bool
 
-  # Contextural information and data used for evaluating a filter expression.
+  # Contextual information and data used for evaluating a filter expression.
   class FilterContext
     @env: JSONPathEnvironment
 
@@ -1198,6 +1201,8 @@ module JSONP3
     def initialize: (JSONPointer from, JSONPointer pointer) -> void
 
     def name: () -> "copy"
+            
+    def deep_copy: (untyped obj) -> untyped
   end
 
   # The JSON Patch _test_ operation.
