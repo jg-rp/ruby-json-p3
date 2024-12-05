@@ -1,4 +1,4 @@
-## [0.3.1] - 2024-12-05 (unreleased)
+## [0.3.1] - 2024-12-05
 
 - Fix JSON Patch `move` and `copy` operations when using the special JSON Pointer token `-`.
 
