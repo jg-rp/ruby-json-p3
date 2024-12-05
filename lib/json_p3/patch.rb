@@ -220,7 +220,11 @@ module JSONP3
 
       # Write the source value to the destination.
       if dest_parent.is_a?(Array)
-        dest_parent[dest_target.to_i] = source_obj
+        if dest_target == "-"
+          dest_parent << source_obj
+        else
+          dest_parent[dest_target.to_i] = source_obj
+        end
       elsif dest_parent.is_a?(Hash)
         dest_parent[dest_target] = source_obj
       end
@@ -267,7 +271,11 @@ module JSONP3
 
       # Write the source value to the destination.
       if dest_parent.is_a?(Array)
-        dest_parent.insert(dest_target.to_i, deep_copy(source_obj))
+        if dest_target == "-"
+          dest_parent << source_obj
+        else
+          dest_parent.insert(dest_target.to_i, deep_copy(source_obj))
+        end
       elsif dest_parent.is_a?(Hash)
         dest_parent[dest_target] = deep_copy(source_obj)
       else

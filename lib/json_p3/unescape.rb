@@ -6,7 +6,7 @@ module JSONP3 # rubocop:disable Style/Documentation
   # @param quote [String] one of '"' or "'".
   # @param token [Token]
   # @return [String] A new string without escape sequences.
-  def self.unescape_string(value, quote, token) # rubocop:disable Metrics/MethodLength
+  def self.unescape_string(value, quote, token)
     unescaped = String.new(encoding: "UTF-8")
     index = 0
     length = value.length
