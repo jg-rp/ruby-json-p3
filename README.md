@@ -474,6 +474,12 @@ Print memory usage to the terminal.
 bundle exec ruby performance/memory_profile.rb
 ```
 
-### TruffleRuby
+### Notes to self
+
+#### Build
+
+`bundle exec rake release` and `bundle exec rake build` will look for `gem-private_key.pem` and `gem-public_cert.pem` in `~/.gem`.
+
+#### TruffleRuby
 
 On macOS Sonoma using MacPorts and `rbenv`, `LIBYAML_PREFIX=/opt/local/lib` is needed to install TruffleRuby and when executing any `bundle` command.

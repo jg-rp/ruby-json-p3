@@ -119,4 +119,18 @@ class TestJSONPatch < Minitest::Test
     error = assert_raises(JSONP3::JSONPatchError) { JSONP3::JSONPatch.new([op]) }
     assert_equal("pointers must start with a slash or be the empty string (add:0)", error.message)
   end
+
+  def test_move_to_end_of_array
+    patch = JSONP3::JSONPatch.new.move("/a", "/foo/bar/-")
+    data = { "foo" => { "bar" => [1, 2, 3] }, "a" => "b" }
+
+    assert_equal({ "foo" => { "bar" => [1, 2, 3, "b"] } }, patch.apply(data))
+  end
+
+  def test_copy_to_end_of_array
+    patch = JSONP3::JSONPatch.new.copy("/a", "/foo/bar/-")
+    data = { "foo" => { "bar" => [1, 2, 3] }, "a" => "b" }
+
+    assert_equal({ "foo" => { "bar" => [1, 2, 3, "b"] }, "a" => "b" }, patch.apply(data))
+  end
 end

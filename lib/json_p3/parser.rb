@@ -116,7 +116,7 @@ module JSONP3
       end
     end
 
-    def parse_bracketed_selection(stream) # rubocop:disable Metrics/MethodLength
+    def parse_bracketed_selection(stream)
       stream.expect(:token_lbracket)
       segment_token = stream.next
 
@@ -245,7 +245,7 @@ module JSONP3
       FilterSelector.new(@env, token, FilterExpression.new(token, expression))
     end
 
-    def parse_filter_expression(stream, precedence = Precedence::LOWEST) # rubocop:disable Metrics/MethodLength, Metrics/CyclomaticComplexity
+    def parse_filter_expression(stream, precedence = Precedence::LOWEST) # rubocop:disable Metrics/CyclomaticComplexity
       left = case stream.peek.type
              when :token_double_quote_string, :token_single_quote_string
                token = stream.next
@@ -313,7 +313,7 @@ module JSONP3
       end
     end
 
-    def parse_function_expression(stream) # rubocop:disable Metrics/MethodLength
+    def parse_function_expression(stream)
       token = stream.next
       args = [] # : Array[Expression]
 
