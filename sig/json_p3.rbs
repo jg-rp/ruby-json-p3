@@ -147,6 +147,10 @@ module JSONP3
     alias eql? ==
 
     def hash: () -> Integer
+            
+    private
+
+    def to_canonical_string: (Expression expression, Integer parent_precedence) -> String
   end
 
   # Base class for expression literals.
