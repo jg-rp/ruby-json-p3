@@ -1,3 +1,6 @@
 [submodule "test/cts"]
 	path = test/cts
 	url = git@github.com:jsonpath-standard/jsonpath-compliance-test-suite.git
+[submodule "test/nts"]
+	path = test/nts
+	url = git@github.com:jg-rp/jsonpath-compliance-normalized-paths.git

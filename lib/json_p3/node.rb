@@ -1,5 +1,7 @@
 # frozen_string_literal: true
 
+require_relative "serialize"
+
 module JSONP3
   # A JSON-like value and its location.
   class JSONPathNode
@@ -19,7 +21,7 @@ module JSONP3
     # Return the normalized path to this node.
     # @return [String] the normalized path.
     def path
-      segments = @location.flatten.map { |i| i.is_a?(String) ? "['#{i}']" : "[#{i}]" }
+      segments = @location.flatten.map { |i| i.is_a?(String) ? "[#{JSONP3.canonical_string(i)}]" : "[#{i}]" }
       "$#{segments.join}"
     end
 

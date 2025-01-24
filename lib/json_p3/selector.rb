@@ -46,7 +46,7 @@ module JSONP3
     end
 
     def to_s
-      @name.inspect
+      JSONP3.canonical_string(@name)
     end
 
     def ==(other)

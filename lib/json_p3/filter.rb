@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
-require "json"
 require_relative "function"
+require_relative "serialize"
 
 module JSONP3 # rubocop:disable Style/Documentation
   # Base class for all filter expression nodes.
@@ -85,7 +85,7 @@ module JSONP3 # rubocop:disable Style/Documentation
   # A double or single quoted string literal.
   class StringLiteral < FilterExpressionLiteral
     def to_s
-      JSON.generate(@value)
+      JSONP3.canonical_string(@value)
     end
   end
 
