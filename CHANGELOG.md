@@ -1,3 +1,8 @@
+## [0.3.2] - unreleased
+
+- Fix normalized string representations of node locations as returned by `JSONPathNode.path`.
+- Fix canonical string representations of instances of `JSONPath`, as returned by `to_s`.
+
 ## [0.3.1] - 2024-12-05
 
 - Fix JSON Patch `move` and `copy` operations when using the special JSON Pointer token `-`.
