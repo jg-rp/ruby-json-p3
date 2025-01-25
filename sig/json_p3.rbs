@@ -126,7 +126,7 @@ module JSONP3
 
     def initialize: (Token token) -> void
 
-    # Evaluate the filter expressin in the given context.
+    # Evaluate the filter expression in the given context.
     def evaluate: (FilterContext _context) -> untyped
   end
 
@@ -398,7 +398,7 @@ module JSONP3
   # @return [Array<Token>]
   def self.tokenize: (String query) -> Array[Token]
 
-  # JSONPath query expreession lexical scanner.
+  # JSONPath query expression lexical scanner.
   #
   # @see tokenize
   class Lexer
@@ -432,7 +432,7 @@ module JSONP3
     # Generate a new token with the given type.
     # @param token_type [Symbol] one of the constants defined on the _Token_ class.
     # @param value [String | nil] a the token's value, if it is known, otherwise the
-    #   value will be sliced from @query. This is a performance optimisation.
+    #   value will be sliced from @query. This is a performance optimization.
     def emit: (token_t token_type, ?untyped value) -> void
 
     def next: () -> String
@@ -492,7 +492,7 @@ module JSONP3
 
     # @param value [JSON-like] the value at this node.
     # @param location [Array<String | Integer | Array<String | Integer>>] the sequence of
-    #   names and/or indicies leading to _value_ in _root_.
+    #   names and/or indices leading to _value_ in _root_.
     # @param root [JSON-like] the root value containing _value_ at _location_.
     def initialize: (untyped value, Array[location_element] location, untyped root) -> void
 
@@ -502,7 +502,7 @@ module JSONP3
 
     # Return a new node that is a child of this node.
     # @param value the JSON-like value at the new node.
-    # @param key [Integer, String] the array index or hash key assiciated with _value_.
+    # @param key [Integer, String] the array index or hash key associated with _value_.
     def new_child: (untyped value, String | Integer key) -> JSONPathNode
 
     def to_s: () -> ::String
@@ -1168,7 +1168,7 @@ module JSONP3
   class OpRemove < Op
     @pointer: JSONPointer
 
-    # @param papointerth [JSONPointer]
+    # @param pointer [JSONPointer]
     def initialize: (JSONPointer pointer) -> void
 
     def name: () -> "remove"
