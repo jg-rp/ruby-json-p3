@@ -1,4 +1,4 @@
-## [0.3.2] - unreleased
+## [0.3.2] - 2025-01-29
 
 - Fix normalized string representations of node locations as returned by `JSONPathNode.path`.
 - Fix canonical string representations of instances of `JSONPath`, as returned by `to_s`.
