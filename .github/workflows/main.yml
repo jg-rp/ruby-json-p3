@@ -24,7 +24,6 @@ jobs:
         uses: ruby/setup-ruby@v1
         with:
           ruby-version: ${{ matrix.ruby }}
-          bundler: 2.5.19
           bundler-cache: false
       - name: Run the default task
         run: |
