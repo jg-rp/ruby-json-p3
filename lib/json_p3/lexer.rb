@@ -209,7 +209,7 @@ module JSONP3 # rubocop:disable Style/Documentation
         case c
         when "]"
           emit(:token_rbracket, "]")
-          return @filter_depth.positive? ? :lex_inside_filter : :lex_segment
+          return :lex_segment
         when ""
           error "unclosed bracketed selection"
           return nil

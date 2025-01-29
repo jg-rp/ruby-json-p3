@@ -2,6 +2,7 @@
 
 - Fix normalized string representations of node locations as returned by `JSONPathNode.path`.
 - Fix canonical string representations of instances of `JSONPath`, as returned by `to_s`.
+- Fixed filter queries with multiple bracketed segments. Previously we were failing to tokenize queries like `$[?@[0][0]]`. See [#15](https://github.com/jg-rp/ruby-json-p3/issues/15).
 
 ## [0.3.1] - 2024-12-05
 
