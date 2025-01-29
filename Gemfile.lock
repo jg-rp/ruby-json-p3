@@ -110,7 +110,6 @@ GEM
       concurrent-ruby (~> 1.0)
     unicode-display_width (2.6.0)
     uri (1.0.2)
-    yard (0.9.37)
 
 PLATFORMS
   ruby
@@ -132,7 +131,6 @@ DEPENDENCIES
   rubocop-rake (~> 0.6.0)
   stackprof (~> 0.2.26)
   steep (~> 1.8)
-  yard (~> 0.9.37)
 
 BUNDLED WITH
    2.5.17
