@@ -462,6 +462,85 @@ TEST_CASES = [
       Token.new(:token_name, "foo", 2, "$.foo.&"),
       Token.new(:token_error, "&", 6, "$.foo.&", message: "unexpected shorthand selector '&'")
     ]
+  },
+  {
+    name: "relative query, bracket notation",
+    query: "$[?(@[0][0])]",
+    want: [
+      Token.new(:token_root, "$", 0, "$[?(@[0][0])]"),
+      Token.new(:token_lbracket, "[", 1, "$[?(@[0][0])]"),
+      Token.new(:token_filter, "?", 2, "$[?(@[0][0])]"),
+      Token.new(:token_lparen, "(", 3, "$[?(@[0][0])]"),
+      Token.new(:token_current, "@", 4, "$[?(@[0][0])]"),
+      Token.new(:token_lbracket, "[", 5, "$[?(@[0][0])]"),
+      Token.new(:token_index, "0", 6, "$[?(@[0][0])]"),
+      Token.new(:token_rbracket, "]", 7, "$[?(@[0][0])]"),
+      Token.new(:token_lbracket, "[", 8, "$[?(@[0][0])]"),
+      Token.new(:token_index, "0", 9, "$[?(@[0][0])]"),
+      Token.new(:token_rbracket, "]", 10, "$[?(@[0][0])]"),
+      Token.new(:token_rparen, ")", 11, "$[?(@[0][0])]"),
+      Token.new(:token_rbracket, "]", 12, "$[?(@[0][0])]"),
+      Token.new(:token_eoi, "", 13, "$[?(@[0][0])]")
+    ]
+  },
+  {
+    name: "relative query, more bracket notation",
+    query: "$[?(@[0][0][1])]",
+    want: [
+      Token.new(:token_root, "$", 0, "$[?(@[0][0][1])]"),
+      Token.new(:token_lbracket, "[", 1, "$[?(@[0][0][1])]"),
+      Token.new(:token_filter, "?", 2, "$[?(@[0][0][1])]"),
+      Token.new(:token_lparen, "(", 3, "$[?(@[0][0][1])]"),
+      Token.new(:token_current, "@", 4, "$[?(@[0][0][1])]"),
+      Token.new(:token_lbracket, "[", 5, "$[?(@[0][0][1])]"),
+      Token.new(:token_index, "0", 6, "$[?(@[0][0][1])]"),
+      Token.new(:token_rbracket, "]", 7, "$[?(@[0][0][1])]"),
+      Token.new(:token_lbracket, "[", 8, "$[?(@[0][0][1])]"),
+      Token.new(:token_index, "0", 9, "$[?(@[0][0][1])]"),
+      Token.new(:token_rbracket, "]", 10, "$[?(@[0][0][1])]"),
+      Token.new(:token_lbracket, "[", 11, "$[?(@[0][0][1])]"),
+      Token.new(:token_index, "1", 12, "$[?(@[0][0][1])]"),
+      Token.new(:token_rbracket, "]", 13, "$[?(@[0][0][1])]"),
+      Token.new(:token_rparen, ")", 14, "$[?(@[0][0][1])]"),
+      Token.new(:token_rbracket, "]", 15, "$[?(@[0][0][1])]"),
+      Token.new(:token_eoi, "", 16, "$[?(@[0][0][1])]")
+    ]
+  },
+  {
+    name: "relative query, bracket and dot notation",
+    query: "$[?(@[0].foo)]",
+    want: [
+      Token.new(:token_root, "$", 0, "$[?(@[0].foo)]"),
+      Token.new(:token_lbracket, "[", 1, "$[?(@[0].foo)]"),
+      Token.new(:token_filter, "?", 2, "$[?(@[0].foo)]"),
+      Token.new(:token_lparen, "(", 3, "$[?(@[0].foo)]"),
+      Token.new(:token_current, "@", 4, "$[?(@[0].foo)]"),
+      Token.new(:token_lbracket, "[", 5, "$[?(@[0].foo)]"),
+      Token.new(:token_index, "0", 6, "$[?(@[0].foo)]"),
+      Token.new(:token_rbracket, "]", 7, "$[?(@[0].foo)]"),
+      Token.new(:token_name, "foo", 9, "$[?(@[0].foo)]"),
+      Token.new(:token_rparen, ")", 12, "$[?(@[0].foo)]"),
+      Token.new(:token_rbracket, "]", 13, "$[?(@[0].foo)]"),
+      Token.new(:token_eoi, "", 14, "$[?(@[0].foo)]")
+    ]
+  },
+  {
+    name: "relative query, dot and bracket notation",
+    query: "$[?(@.foo[0])]",
+    want: [
+      Token.new(:token_root, "$", 0, "$[?(@.foo[0])]"),
+      Token.new(:token_lbracket, "[", 1, "$[?(@.foo[0])]"),
+      Token.new(:token_filter, "?", 2, "$[?(@.foo[0])]"),
+      Token.new(:token_lparen, "(", 3, "$[?(@.foo[0])]"),
+      Token.new(:token_current, "@", 4, "$[?(@.foo[0])]"),
+      Token.new(:token_name, "foo", 6, "$[?(@.foo[0])]"),
+      Token.new(:token_lbracket, "[", 9, "$[?(@.foo[0])]"),
+      Token.new(:token_index, "0", 10, "$[?(@.foo[0])]"),
+      Token.new(:token_rbracket, "]", 11, "$[?(@.foo[0])]"),
+      Token.new(:token_rparen, ")", 12, "$[?(@.foo[0])]"),
+      Token.new(:token_rbracket, "]", 13, "$[?(@.foo[0])]"),
+      Token.new(:token_eoi, "", 14, "$[?(@.foo[0])]")
+    ]
   }
 ].freeze
 
