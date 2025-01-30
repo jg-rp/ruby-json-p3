@@ -21,13 +21,15 @@ module JSONP3
   # The child selection segment.
   class ChildSegment < Segment
     def resolve(nodes)
-      rv = [] # : Array[JSONPathNode]
-      nodes.each do |node|
-        @selectors.each do |selector|
-          rv.concat selector.resolve(node)
+      Enumerator.new do |yielder|
+        nodes.each do |node|
+          @selectors.each do |selector|
+            selector.resolve(node).each do |item|
+              yielder << item
+            end
+          end
         end
       end
-      rv
     end
 
     def to_s
@@ -50,15 +52,17 @@ module JSONP3
   # The recursive descent segment
   class RecursiveDescentSegment < Segment
     def resolve(nodes)
-      rv = [] # : Array[JSONPathNode]
-      nodes.each do |node|
-        visit(node).each do |descendant|
-          @selectors.each do |selector|
-            rv.concat selector.resolve(descendant)
+      Enumerator.new do |yielder|
+        nodes.each do |node|
+          visit(node).each do |descendant|
+            @selectors.each do |selector|
+              selector.resolve(descendant).each do |item|
+                yielder << item
+              end
+            end
           end
         end
       end
-      rv
     end
 
     def to_s
@@ -82,21 +86,24 @@ module JSONP3
     def visit(node, depth = 1)
       raise JSONPathRecursionError.new("recursion limit exceeded", @token) if depth > @env.class::MAX_RECURSION_DEPTH
 
-      rv = [node]
-
-      if node.value.is_a? Array
-        node.value.each_with_index do |value, i|
-          child = JSONPathNode.new(value, [node.location, i], node.root)
-          rv.concat visit(child, depth + 1)
-        end
-      elsif node.value.is_a? Hash
-        node.value.each do |key, value|
-          child = JSONPathNode.new(value, [node.location, key], node.root)
-          rv.concat visit(child, depth + 1)
+      Enumerator.new do |yielder|
+        yielder << node
+        if node.value.is_a? Array
+          node.value.each_with_index do |value, i|
+            child = JSONPathNode.new(value, [node.location, i], node.root)
+            visit(child, depth + 1).each do |item|
+              yielder << item
+            end
+          end
+        elsif node.value.is_a? Hash
+          node.value.each do |key, value|
+            child = JSONPathNode.new(value, [node.location, key], node.root)
+            visit(child, depth + 1).each do |item|
+              yielder << item
+            end
+          end
         end
       end
-
-      rv
     end
   end
 end

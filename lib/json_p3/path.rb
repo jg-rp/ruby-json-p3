@@ -20,7 +20,7 @@ module JSONP3
     def find(root)
       nodes = [JSONPathNode.new(root, [], root)]
       @segments.each { |segment| nodes = segment.resolve(nodes) }
-      JSONPathNodeList.new(nodes)
+      JSONPathNodeList.new(nodes.to_a)
     end
 
     alias apply find

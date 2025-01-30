@@ -12,7 +12,7 @@ module JSONP3
     end
 
     # Apply this selector to _node_.
-    # @return [Array<JSONPathNode>]
+    # @return [Enumerable<JSONPathNode>]
     def resolve(_node)
       raise "selectors must implement resolve(node)"
     end
