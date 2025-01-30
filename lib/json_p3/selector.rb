@@ -12,9 +12,15 @@ module JSONP3
     end
 
     # Apply this selector to _node_.
-    # @return [Enumerable<JSONPathNode>]
+    # @return [Array<JSONPathNode>]
     def resolve(_node)
       raise "selectors must implement resolve(node)"
+    end
+
+    # Apply this selector to _node_.
+    # @return [Enumerable<JSONPathNode>]
+    def resolve_enum(node)
+      resolve(node)
     end
 
     # Return true if this selector is a singular selector.
@@ -145,6 +151,24 @@ module JSONP3
       end
     end
 
+    def resolve_enum(node)
+      if node.value.is_a? Hash
+        Enumerator.new do |yielder|
+          node.value.each do |k, v|
+            yielder << node.new_child(v, k)
+          end
+        end
+      elsif node.value.is_a? Array
+        Enumerator.new do |yielder|
+          node.value.each.with_index do |e, i|
+            yielder << node.new_child(e, i)
+          end
+        end
+      else
+        []
+      end
+    end
+
     def to_s
       "*"
     end
@@ -264,6 +288,22 @@ module JSONP3
       end
 
       nodes
+    end
+
+    def resolve_enum(node)
+      Enumerator.new do |yielder|
+        if node.value.is_a?(Array)
+          node.value.each_with_index do |e, i|
+            context = FilterContext.new(@env, e, node.root)
+            yielder << node.new_child(e, i) if @expression.evaluate(context)
+          end
+        elsif node.value.is_a?(Hash)
+          node.value.each_pair do |k, v|
+            context = FilterContext.new(@env, v, node.root)
+            yielder << node.new_child(v, k) if @expression.evaluate(context)
+          end
+        end
+      end
     end
 
     def to_s

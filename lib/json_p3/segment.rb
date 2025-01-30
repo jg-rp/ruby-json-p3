@@ -13,14 +13,31 @@ module JSONP3
     end
 
     # Select the children of each node in _nodes_.
+    # @return [Array<JSONPathNode>]
     def resolve(_nodes)
       raise "segments must implement resolve(nodes)"
+    end
+
+    # Select the children of each node in _nodes_.
+    # @return [Enumerable<JSONPathNode>]
+    def resolve_enum(_nodes)
+      raise "segments must implement resolve_enum(nodes)"
     end
   end
 
   # The child selection segment.
   class ChildSegment < Segment
     def resolve(nodes)
+      rv = [] # : Array[JSONPathNode]
+      nodes.each do |node|
+        @selectors.each do |selector|
+          rv.concat selector.resolve(node)
+        end
+      end
+      rv
+    end
+
+    def resolve_enum(nodes)
       Enumerator.new do |yielder|
         nodes.each do |node|
           @selectors.each do |selector|
@@ -52,6 +69,18 @@ module JSONP3
   # The recursive descent segment
   class RecursiveDescentSegment < Segment
     def resolve(nodes)
+      rv = [] # : Array[JSONPathNode]
+      nodes.each do |node|
+        visit(node).each do |descendant|
+          @selectors.each do |selector|
+            rv.concat selector.resolve(descendant)
+          end
+        end
+      end
+      rv
+    end
+
+    def resolve_enum(nodes)
       Enumerator.new do |yielder|
         nodes.each do |node|
           visit(node).each do |descendant|

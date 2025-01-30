@@ -192,6 +192,23 @@ end
 # {"name"=>"John", "score"=>86, "admin"=>true} at $['users'][2]
 ```
 
+### find_enum
+
+`find_enum(query, value) -> Enumerable<JSONPathNode>`
+
+`find_enum` is an alternative to `find` which returns an enumerable (usually an enumerator) of `JSONPathNode` instances instead of an array. Depending on the query and the data the query is applied to, `find_enum` can be more efficient than `find`, especially for large data and queries using recursive descent segments.
+
+```ruby
+# ... continued from above
+
+JSONP3.find_enum("$.users[?@.score > 85]", data).each do |node|
+  puts "#{node.value} at #{node.path}"
+end
+
+# {"name"=>"Sue", "score"=>100} at $['users'][0]
+# {"name"=>"John", "score"=>86, "admin"=>true} at $['users'][2]
+```
+
 ### compile
 
 `compile(query) -> JSONPath`
@@ -240,10 +257,14 @@ end
 
 ### JSONPathEnvironment
 
-The `find` and `compile` methods described above are convenience methods equivalent to
+The `find`, `find_enum` and `compile` methods described above are convenience methods equivalent to
 
 ```
 JSONP3::DEFAULT_ENVIRONMENT.find(query, data)
+```
+
+```
+JSONP3::DEFAULT_ENVIRONMENT.find_enum(query, data)
 ```
 
 and

@@ -63,6 +63,14 @@ module JSONP3
       compile(query).find(value)
     end
 
+    # Apply JSONPath expression _query_ to _value_.
+    # @param query [String] the JSONPath expression
+    # @param value [JSON-like data] the target JSON "document"
+    # @return [Enumerable<JSONPath>]
+    def find_enum(query, value)
+      compile(query).find_enum(value)
+    end
+
     # Override this function to configure JSONPath function extensions.
     # By default, only the standard functions described in RFC 9535 are enabled.
     def setup_function_extensions

@@ -20,10 +20,19 @@ module JSONP3
     def find(root)
       nodes = [JSONPathNode.new(root, [], root)]
       @segments.each { |segment| nodes = segment.resolve(nodes) }
-      JSONPathNodeList.new(nodes.to_a)
+      JSONPathNodeList.new(nodes) # TODO: use JSONPathNodeList internally?
     end
 
     alias apply find
+
+    # Apply this JSONPath expression to JSON-like value _root_.
+    # @param root [Array, Hash, String, Integer, nil] the root JSON-like value to apply this query to.
+    # @return [Enumerable<JSONPathNode>] the sequence of nodes found while applying this query to _root_.
+    def find_enum(root)
+      nodes = [JSONPathNode.new(root, [], root)]
+      @segments.each { |segment| nodes = segment.resolve_enum(nodes) }
+      nodes
+    end
 
     # Return _true_ if this JSONPath expression is a singular query.
     def singular?
