@@ -1,3 +1,7 @@
+## [0.4.0] - (unreleased)
+
+- Added `JSONP3.find_enum`, `JSONP3::JSONPathEnvironment.find_enum` and `JSONP3::JSONPath.find_enum`. `find_enum` is like `find`, but returns an Enumerable (usually an Enumerator) of `JSONPathNode` instances instead of a `JSONPathNodeList`. `find_enum` can be more efficient for some combinations of query and data, especially for large data and recursive queries.
+
 ## [0.3.2] - 2025-01-29
 
 - Fix normalized string representations of node locations as returned by `JSONPathNode.path`.

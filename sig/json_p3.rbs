@@ -65,6 +65,8 @@ module JSONP3
     # @param value [JSON-like data]
     # @return [Array<JSONPath>]
     def find: (String query, untyped value) -> JSONPathNodeList
+            
+    def find_enum: (String query, untyped value) -> Enumerable[JSONPathNode]
 
     def setup_function_extensions: () -> void
   end
@@ -149,6 +151,16 @@ module JSONP3
     def hash: () -> Integer
             
     private
+
+    class Precedence
+      LOWEST: 1
+  
+      LOGICAL_OR: 3
+  
+      LOGICAL_AND: 4
+  
+      PREFIX: 7
+    end
 
     def to_canonical_string: (Expression expression, Integer parent_precedence) -> String
   end
@@ -626,7 +638,9 @@ module JSONP3
     # Apply this JSONPath expression to JSON-like value _root_.
     # @param root [Array, Hash, String, Integer] the root JSON-like value to apply this query to.
     # @return [Array<JSONPathNode>] the sequence of nodes found while applying this query to _root_.
-    def find: (untyped root) -> untyped
+    def find: (untyped root) -> JSONPathNodeList
+            
+    def find_enum: (untyped root) -> Enumerable[JSONPathNode]
 
     alias apply find
 
@@ -657,11 +671,16 @@ module JSONP3
 
     # Select the children of each node in _nodes_.
     def resolve: (Array[JSONPathNode] _nodes) -> Array[JSONPathNode]
+
+    # Select the children of each node in _nodes_.
+    def resolve_enum: (Enumerable[JSONPathNode] _nodes) -> Enumerable[JSONPathNode]
   end
 
   # The child selection segment.
   class ChildSegment < Segment
     def resolve: (Array[JSONPathNode] nodes) -> Array[JSONPathNode]
+               
+    def resolve_enum: (Enumerable[JSONPathNode] nodes) -> Enumerable[JSONPathNode]
 
     def to_s: () -> ::String
 
@@ -675,6 +694,8 @@ module JSONP3
   # The recursive descent segment
   class RecursiveDescentSegment < Segment
     def resolve: (Array[JSONPathNode] nodes) -> Array[JSONPathNode]
+               
+    def resolve_enum: (Enumerable[JSONPathNode] nodes) -> Enumerable[JSONPathNode]
 
     def to_s: () -> ::String
 
@@ -685,6 +706,7 @@ module JSONP3
     def hash: () -> Integer
 
     def visit: (JSONPathNode node, ?::Integer depth) -> Array[JSONPathNode]
+    def visit_enum: (JSONPathNode node, ?::Integer depth) -> Enumerable[JSONPathNode]
   end
 end
 
@@ -703,6 +725,7 @@ module JSONP3
     # Apply this selector to _node_.
     # @return [Array<JSONPathNode>]
     def resolve: (JSONPathNode _node) -> Array[JSONPathNode]
+    def resolve_enum: (JSONPathNode _node) -> Enumerable[JSONPathNode]
 
     # Return true if this selector is a singular selector.
     def singular?: () -> false
@@ -718,6 +741,7 @@ module JSONP3
     def initialize: (JSONPathEnvironment env, Token token, String name) -> void
 
     def resolve: (JSONPathNode node) -> ::Array[JSONPathNode]
+    def resolve_enum: (JSONPathNode node) -> Enumerable[JSONPathNode]
 
     def singular?: () -> true
 
@@ -741,6 +765,7 @@ module JSONP3
     def initialize: (JSONPathEnvironment env, Token token, String name) -> void
 
     def resolve: (JSONPathNode node) -> ::Array[JSONPathNode]
+    def resolve_enum: (JSONPathNode node) -> Enumerable[JSONPathNode]
 
     def singular?: () -> true
 
@@ -762,7 +787,8 @@ module JSONP3
 
     def initialize: (JSONPathEnvironment env, Token token, Integer index) -> void
 
-    def resolve: (JSONPathNode node) -> Array[JSONPathNode]
+    def resolve: (JSONPathNode node) -> ::Array[JSONPathNode]
+    def resolve_enum: (JSONPathNode node) -> Enumerable[JSONPathNode]
 
     def singular?: () -> true
 
@@ -781,7 +807,8 @@ module JSONP3
 
   # The wildcard selector selects all elements from an array or values from a hash.
   class WildcardSelector < Selector
-    def resolve: (JSONPathNode node) -> Array[JSONPathNode]
+    def resolve: (JSONPathNode node) -> ::Array[JSONPathNode]
+    def resolve_enum: (JSONPathNode node) -> Enumerable[JSONPathNode]
 
     def to_s: () -> "*"
 
@@ -811,7 +838,8 @@ module JSONP3
 
     def initialize: (JSONPathEnvironment env, Token token, (Integer | nil) start, (Integer | nil) stop, (Integer | nil) step) -> void
 
-    def resolve: (JSONPathNode node) -> Array[JSONPathNode]
+    def resolve: (JSONPathNode node) -> ::Array[JSONPathNode]
+    def resolve_enum: (JSONPathNode node) -> Enumerable[JSONPathNode]
 
     def to_s: () -> ::String
 
@@ -837,7 +865,8 @@ module JSONP3
 
     def initialize: (JSONPathEnvironment env, Token token, Expression expression) -> void
 
-    def resolve: (JSONPathNode node) -> Array[JSONPathNode]
+    def resolve: (JSONPathNode node) -> ::Array[JSONPathNode]
+    def resolve_enum: (JSONPathNode node) -> Enumerable[JSONPathNode]
 
     def to_s: () -> ::String
 

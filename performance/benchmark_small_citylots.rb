@@ -15,4 +15,12 @@ Benchmark.bm(15) do |x|
   x.report("shallow:") do
     JSONP3.find("$.features..properties", DATA)
   end
+
+  x.report("enum deep:") do
+    JSONP3.find_enum("$.features..properties.BLOCK_NUM", DATA).to_a
+  end
+
+  x.report("enum shallow:") do
+    JSONP3.find_enum("$.features..properties", DATA).to_a
+  end
 end

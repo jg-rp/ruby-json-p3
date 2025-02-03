@@ -13,6 +13,10 @@ module JSONP3
     DefaultEnvironment.find(path, data)
   end
 
+  def self.find_enum(path, data)
+    DefaultEnvironment.find_enum(path, data)
+  end
+
   def self.compile(path)
     DefaultEnvironment.compile(path)
   end

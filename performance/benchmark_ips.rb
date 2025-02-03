@@ -26,4 +26,8 @@ Benchmark.ips do |x|
   x.report("just find:") do
     COMPILED_QUERIES.map { |p, d| p.find(d) }
   end
+
+  x.report("just find (enum):") do
+    COMPILED_QUERIES.map { |p, d| p.find_enum(d).to_a }
+  end
 end

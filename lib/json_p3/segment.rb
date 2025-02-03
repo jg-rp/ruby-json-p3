@@ -13,8 +13,15 @@ module JSONP3
     end
 
     # Select the children of each node in _nodes_.
+    # @return [Array<JSONPathNode>]
     def resolve(_nodes)
       raise "segments must implement resolve(nodes)"
+    end
+
+    # Select the children of each node in _nodes_.
+    # @return [Enumerable<JSONPathNode>]
+    def resolve_enum(_nodes)
+      raise "segments must implement resolve_enum(nodes)"
     end
   end
 
@@ -28,6 +35,18 @@ module JSONP3
         end
       end
       rv
+    end
+
+    def resolve_enum(nodes)
+      Enumerator.new do |yielder|
+        nodes.each do |node|
+          @selectors.each do |selector|
+            selector.resolve(node).each do |item|
+              yielder << item
+            end
+          end
+        end
+      end
     end
 
     def to_s
@@ -59,6 +78,20 @@ module JSONP3
         end
       end
       rv
+    end
+
+    def resolve_enum(nodes)
+      Enumerator.new do |yielder|
+        nodes.each do |node|
+          visit_enum(node).each do |descendant|
+            @selectors.each do |selector|
+              selector.resolve(descendant).each do |item|
+                yielder << item
+              end
+            end
+          end
+        end
+      end
     end
 
     def to_s
@@ -97,6 +130,29 @@ module JSONP3
       end
 
       rv
+    end
+
+    def visit_enum(node, depth = 1)
+      raise JSONPathRecursionError.new("recursion limit exceeded", @token) if depth > @env.class::MAX_RECURSION_DEPTH
+
+      Enumerator.new do |yielder|
+        yielder << node
+        if node.value.is_a? Array
+          node.value.each_with_index do |value, i|
+            child = JSONPathNode.new(value, [node.location, i], node.root)
+            visit_enum(child, depth + 1).each do |item|
+              yielder << item
+            end
+          end
+        elsif node.value.is_a? Hash
+          node.value.each do |key, value|
+            child = JSONPathNode.new(value, [node.location, key], node.root)
+            visit_enum(child, depth + 1).each do |item|
+              yielder << item
+            end
+          end
+        end
+      end
     end
   end
 end
