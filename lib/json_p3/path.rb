@@ -29,7 +29,7 @@ module JSONP3
     # @param root [Array, Hash, String, Integer, nil] the root JSON-like value to apply this query to.
     # @return [Enumerable<JSONPathNode>] the sequence of nodes found while applying this query to _root_.
     def find_enum(root)
-      nodes = [JSONPathNode.new(root, [], root)]
+      nodes = [JSONPathNode.new(root, [], root)] # : Enumerable[JSONPathNode]
       @segments.each { |segment| nodes = segment.resolve_enum(nodes) }
       nodes
     end

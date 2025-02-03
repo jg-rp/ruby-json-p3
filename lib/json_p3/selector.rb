@@ -205,7 +205,7 @@ module JSONP3
       norm_start = normalized_start(length)
       norm_stop = normalized_stop(length)
 
-      nodes = []
+      nodes = [] # : Array[JSONPathNode]
 
       if @step.positive?
 

@@ -83,7 +83,7 @@ module JSONP3
     def resolve_enum(nodes)
       Enumerator.new do |yielder|
         nodes.each do |node|
-          visit(node).each do |descendant|
+          visit_enum(node).each do |descendant|
             @selectors.each do |selector|
               selector.resolve(descendant).each do |item|
                 yielder << item
@@ -115,19 +115,39 @@ module JSONP3
     def visit(node, depth = 1)
       raise JSONPathRecursionError.new("recursion limit exceeded", @token) if depth > @env.class::MAX_RECURSION_DEPTH
 
+      rv = [node]
+
+      if node.value.is_a? Array
+        node.value.each_with_index do |value, i|
+          child = JSONPathNode.new(value, [node.location, i], node.root)
+          rv.concat visit(child, depth + 1)
+        end
+      elsif node.value.is_a? Hash
+        node.value.each do |key, value|
+          child = JSONPathNode.new(value, [node.location, key], node.root)
+          rv.concat visit(child, depth + 1)
+        end
+      end
+
+      rv
+    end
+
+    def visit_enum(node, depth = 1)
+      raise JSONPathRecursionError.new("recursion limit exceeded", @token) if depth > @env.class::MAX_RECURSION_DEPTH
+
       Enumerator.new do |yielder|
         yielder << node
         if node.value.is_a? Array
           node.value.each_with_index do |value, i|
             child = JSONPathNode.new(value, [node.location, i], node.root)
-            visit(child, depth + 1).each do |item|
+            visit_enum(child, depth + 1).each do |item|
               yielder << item
             end
           end
         elsif node.value.is_a? Hash
           node.value.each do |key, value|
             child = JSONPathNode.new(value, [node.location, key], node.root)
-            visit(child, depth + 1).each do |item|
+            visit_enum(child, depth + 1).each do |item|
               yielder << item
             end
           end

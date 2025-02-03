@@ -152,6 +152,16 @@ module JSONP3
             
     private
 
+    class Precedence
+      LOWEST: 1
+  
+      LOGICAL_OR: 3
+  
+      LOGICAL_AND: 4
+  
+      PREFIX: 7
+    end
+
     def to_canonical_string: (Expression expression, Integer parent_precedence) -> String
   end
 
@@ -695,7 +705,8 @@ module JSONP3
 
     def hash: () -> Integer
 
-    def visit: (JSONPathNode node, ?::Integer depth) -> Enumerable[JSONPathNode]
+    def visit: (JSONPathNode node, ?::Integer depth) -> Array[JSONPathNode]
+    def visit_enum: (JSONPathNode node, ?::Integer depth) -> Enumerable[JSONPathNode]
   end
 end
 

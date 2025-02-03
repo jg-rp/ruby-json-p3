@@ -44,7 +44,7 @@ module JSONP3
     private
 
     def full_match(pattern)
-      parts = []
+      parts = [] # : Array[String]
       explicit_caret = pattern.start_with?("^")
       explicit_dollar = pattern.end_with?("$")
 
