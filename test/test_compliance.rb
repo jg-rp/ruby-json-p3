@@ -14,9 +14,11 @@ class TestCompliance < Minitest::Spec
         if test_case.key? "result"
           nodes = JSONP3.find(test_case["selector"], test_case["document"])
           _(nodes.map(&:value)).must_equal(test_case["result"])
+          _(nodes.map(&:path)).must_equal(test_case["result_paths"])
         elsif test_case.key? "results"
           nodes = JSONP3.find(test_case["selector"], test_case["document"])
           _(test_case["results"]).must_include(nodes.map(&:value))
+          _(test_case["results_paths"]).must_include(nodes.map(&:path))
         elsif test_case.key? "invalid_selector"
           assert_raises JSONP3::JSONPathError do
             JSONP3.compile(test_case["selector"])
@@ -33,10 +35,12 @@ class TestCompliance < Minitest::Spec
           enum = JSONP3.find_enum(test_case["selector"], test_case["document"])
           nodes = enum.to_a
           _(nodes.map(&:value)).must_equal(test_case["result"])
+          _(nodes.map(&:path)).must_equal(test_case["result_paths"])
         elsif test_case.key? "results"
           enum = JSONP3.find_enum(test_case["selector"], test_case["document"])
           nodes = enum.to_a
           _(test_case["results"]).must_include(nodes.map(&:value))
+          _(test_case["results_paths"]).must_include(nodes.map(&:path))
         elsif test_case.key? "invalid_selector"
           assert_raises JSONP3::JSONPathError do
             JSONP3.compile(test_case["selector"])
