@@ -245,7 +245,7 @@ module JSONP3
       FilterSelector.new(@env, token, FilterExpression.new(token, expression))
     end
 
-    def parse_filter_expression(stream, precedence = Precedence::LOWEST) # rubocop:disable Metrics/CyclomaticComplexity
+    def parse_filter_expression(stream, precedence = Precedence::LOWEST)
       left = case stream.peek.type
              when :token_double_quote_string, :token_single_quote_string
                token = stream.next
@@ -477,7 +477,7 @@ module JSONP3
                                     expression.token)
     end
 
-    def validate_function_extension_signature(token, args) # rubocop:disable Metrics/CyclomaticComplexity
+    def validate_function_extension_signature(token, args)
       func = @env.function_extensions.fetch(token.value)
       count = func.class::ARG_TYPES.length
 
