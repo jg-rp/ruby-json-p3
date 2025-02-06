@@ -202,8 +202,7 @@ module JSONP3
       length = node.value.length
       return [] if length.zero? || @step.zero?
 
-      range = (normalized_start(length)...normalized_stop(length)).step(@step)
-      range.zip(node.value[range]).map { |i, value| node.new_child(value, i) } # steep:ignore
+      (normalized_start(length)...normalized_stop(length)).step(@step).map { |i| node.new_child(node.value[i], i) }
     end
 
     def to_s
