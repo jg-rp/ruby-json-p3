@@ -202,7 +202,23 @@ module JSONP3
       length = node.value.length
       return [] if length.zero? || @step.zero?
 
-      (normalized_start(length)...normalized_stop(length)).step(@step).map { |i| node.new_child(node.value[i], i) }
+      normalized_start = if @start.nil?
+                           @step.negative? ? length - 1 : 0
+                         elsif @start&.negative?
+                           [length + (@start || raise), 0].max
+                         else
+                           [@start || raise, length - 1].min
+                         end
+
+      normalized_stop = if @stop.nil?
+                          @step.negative? ? -1 : length
+                        elsif @stop&.negative?
+                          [length + (@stop || raise), -1].max
+                        else
+                          [@stop || raise, length].min
+                        end
+
+      (normalized_start...normalized_stop).step(@step).map { |i| node.new_child(node.value[i], i) }
     end
 
     def to_s
@@ -224,24 +240,6 @@ module JSONP3
 
     def hash
       [@start, @stop, @step, @token].hash
-    end
-
-    private
-
-    def normalized_start(length)
-      # NOTE: trying to please the type checker :(
-      return @step.negative? ? length - 1 : 0 if @start.nil?
-      return [length + (@start || raise), 0].max if @start&.negative?
-
-      [@start || raise, length - 1].min
-    end
-
-    def normalized_stop(length)
-      # NOTE: trying to please the type checker :(
-      return @step.negative? ? -1 : length if @stop.nil?
-      return [length + (@stop || raise), -1].max if @stop&.negative?
-
-      [@stop || raise, length].min
     end
   end
 
