@@ -202,24 +202,8 @@ module JSONP3
       length = node.value.length
       return [] if length.zero? || @step.zero?
 
-      norm_start = normalized_start(length)
-      norm_stop = normalized_stop(length)
-
-      nodes = [] # : Array[JSONPathNode]
-
-      if @step.positive?
-
-        for i in (norm_start...norm_stop).step(@step) # rubocop:disable Style/For
-          nodes << node.new_child(node.value[i], i)
-        end
-      else
-        i = norm_start
-        while i > norm_stop
-          nodes << node.new_child(node.value[i], i)
-          i += @step
-        end
-      end
-      nodes
+      range = (normalized_start(length)...normalized_stop(length)).step(@step)
+      range.zip(node.value[range]).map { |i, value| node.new_child(value, i) }
     end
 
     def to_s
@@ -248,7 +232,7 @@ module JSONP3
     def normalized_start(length)
       # NOTE: trying to please the type checker :(
       return @step.negative? ? length - 1 : 0 if @start.nil?
-      return [length + (@start || raise), 0].max if @start&.negative?
+      return [length + (@start || raise), 0].max if @start.negative?
 
       [@start || raise, length - 1].min
     end
@@ -256,7 +240,7 @@ module JSONP3
     def normalized_stop(length)
       # NOTE: trying to please the type checker :(
       return @step.negative? ? -1 : length if @stop.nil?
-      return [length + (@stop || raise), -1].max if @stop&.negative?
+      return [length + (@stop || raise), -1].max if @stop.negative?
 
       [@stop || raise, length].min
     end
