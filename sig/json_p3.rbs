@@ -848,12 +848,6 @@ module JSONP3
     alias eql? ==
 
     def hash: () -> Integer
-
-    private
-
-    def normalized_start: (Integer length) -> Integer
-                        
-    def normalized_stop: (Integer length) -> Integer
   end
 
   # Select array elements or hash values according to a filter expression.
