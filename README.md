@@ -255,9 +255,21 @@ end
 # {"name"=>"John", "score"=>86, "admin"=>true} at $['users'][2]
 ```
 
+### match / first
+
+`match(query, value) -> JSONPathNode | nil`
+
+`match` (alias `first`) returns a node for the first available match when applying _query_ to _value_, or `nil` if there were no matches.
+
+### match?
+
+`match?(query, value) -> bool`
+
+`match?` returns `true` if there was at least one match from applying _query_ to _value_, or `false` otherwise.
+
 ### JSONPathEnvironment
 
-The `find`, `find_enum` and `compile` methods described above are convenience methods equivalent to
+The `find`, `find_enum` and `compile` methods described above are convenience methods equivalent to:
 
 ```
 JSONP3::DEFAULT_ENVIRONMENT.find(query, data)

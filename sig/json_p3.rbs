@@ -3,8 +3,16 @@ module JSONP3
   DefaultEnvironment: JSONPathEnvironment
 
   def self.find: (String path, untyped data) -> JSONPathNodeList
+               
+  def self.find_enum: (String path, untyped data) -> Enumerable[JSONPathNode]
 
   def self.compile: (String path) -> JSONPath
+                  
+  def self.match: (String path, untyped data) -> (JSONPathNode | nil)
+                
+  def self.first: (String path, untyped data) -> (JSONPathNode | nil)
+                
+  def self.match?: (String path, untyped data) -> bool
                   
   def self.resolve: (String pointer, untyped value, ?default: untyped) -> untyped
 
@@ -67,6 +75,12 @@ module JSONP3
     def find: (String query, untyped value) -> JSONPathNodeList
             
     def find_enum: (String query, untyped value) -> Enumerable[JSONPathNode]
+                 
+    def match: (String query, untyped value) -> (JSONPathNode | nil)
+             
+    def match?: (String query, untyped value) -> bool
+              
+    def first: (String query, untyped value) -> (JSONPathNode | nil)
 
     def setup_function_extensions: () -> void
   end
@@ -639,8 +653,14 @@ module JSONP3
     # @param root [Array, Hash, String, Integer] the root JSON-like value to apply this query to.
     # @return [Array<JSONPathNode>] the sequence of nodes found while applying this query to _root_.
     def find: (untyped root) -> JSONPathNodeList
-            
+
     def find_enum: (untyped root) -> Enumerable[JSONPathNode]
+
+    def match: (untyped root) -> (JSONPathNode | nil)
+
+    def match?: (untyped root) -> bool
+
+    def first: (untyped root) -> (JSONPathNode | nil)
 
     alias apply find
 
