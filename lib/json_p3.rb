@@ -21,6 +21,18 @@ module JSONP3
     DefaultEnvironment.compile(path)
   end
 
+  def self.match(path, data)
+    DefaultEnvironment.match(path, data)
+  end
+
+  def self.match?(path, data)
+    DefaultEnvironment.match?(path, data)
+  end
+
+  def self.first(path, data)
+    DefaultEnvironment.first(path, data)
+  end
+
   def self.resolve(pointer, value, default: JSONPointer::UNDEFINED)
     JSONPointer.new(pointer).resolve(value, default: default)
   end

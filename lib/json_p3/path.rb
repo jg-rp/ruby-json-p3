@@ -34,6 +34,27 @@ module JSONP3
       nodes
     end
 
+    # Return the first node from applying this JSONPath expression to JSON-like value _root_.
+    # @param root [Array, Hash, String, Integer, nil] the root JSON-like value to apply this query to.
+    # @return [JSONPathNode | nil] the first available node or nil if there were no matches.
+    def match(root)
+      find_enum(root).first
+    end
+
+    # Return `true` if this query results in at least one node, or `false` otherwise.
+    # @param root [Array, Hash, String, Integer, nil] the root JSON-like value to apply this query to.
+    # @return [bool] `true` if this query results in at least one node, or `false` otherwise.
+    def match?(root)
+      !find_enum(root).first.nil?
+    end
+
+    # Return the first node from applying this JSONPath expression to JSON-like value _root_.
+    # @param root [Array, Hash, String, Integer, nil] the root JSON-like value to apply this query to.
+    # @return [JSONPathNode | nil] the first available node or nil if there were no matches.
+    def first(root)
+      find_enum(root).first
+    end
+
     # Return _true_ if this JSONPath expression is a singular query.
     def singular?
       @segments.each do |segment|

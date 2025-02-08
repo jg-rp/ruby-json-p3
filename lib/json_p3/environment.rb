@@ -71,6 +71,33 @@ module JSONP3
       compile(query).find_enum(value)
     end
 
+    # Apply JSONPath expression _query_ to _value_ an return the first
+    # available node.
+    # @param query [String] the JSONPath expression
+    # @param value [JSON-like data] the target JSON "document"
+    # @return [JSONPathNode | nil]
+    def match(path, value)
+      find_enum(path, value).first
+    end
+
+    # Apply JSONPath expression _query_ to _value_ an return `true` if there's at
+    # least one node, or nil if there were no matches.
+    # @param query [String] the JSONPath expression
+    # @param value [JSON-like data] the target JSON "document"
+    # @return [bool]
+    def match?(path, value)
+      !find_enum(path, value).first.nil?
+    end
+
+    # Apply JSONPath expression _query_ to _value_ an return the first
+    # available node, or nil if there were no matches.
+    # @param query [String] the JSONPath expression
+    # @param value [JSON-like data] the target JSON "document"
+    # @return [JSONPathNode | nil]
+    def first(path, value)
+      find_enum(path, value).first
+    end
+
     # Override this function to configure JSONPath function extensions.
     # By default, only the standard functions described in RFC 9535 are enabled.
     def setup_function_extensions
