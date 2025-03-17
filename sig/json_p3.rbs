@@ -432,6 +432,8 @@ module JSONP3
 
     @paren_stack: Array[Integer]
 
+    @bracket_stack: Array[Array[untyped]]
+
     @tokens: Array[Token]
 
     @start: Integer
@@ -450,6 +452,9 @@ module JSONP3
 
     # @dynamic tokens
     attr_reader tokens: Array[Token]
+
+    # @dynamic tokens
+    attr_reader bracket_stack: Array[Array[untyped]]
 
     def initialize: (String query) -> void
 
