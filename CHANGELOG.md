@@ -1,4 +1,4 @@
-## [0.4.1] - unreleased
+## [0.4.1] - 2025-03-18
 
 - Fixed `JSONPathSyntaxError` claiming "unbalanced parentheses" when the query has balanced brackets.
 
