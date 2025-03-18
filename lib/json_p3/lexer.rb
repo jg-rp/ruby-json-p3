@@ -20,6 +20,12 @@ module JSONP3 # rubocop:disable Style/Documentation
                                     tokens.last)
     end
 
+    unless lexer.bracket_stack.empty?
+      ch, index = *lexer.bracket_stack.last
+      msg = "unbalanced brackets"
+      raise JSONPathSyntaxError.new(msg, Token.new(:token_error, ch, index, query, message: msg))
+    end
+
     tokens
   end
 
@@ -33,11 +39,12 @@ module JSONP3 # rubocop:disable Style/Documentation
     S_ESCAPES = Set["b", "f", "n", "r", "t", "u", "/", "\\"].freeze
 
     # @dynamic tokens
-    attr_reader :tokens
+    attr_reader :tokens, :bracket_stack
 
     def initialize(query)
       @filter_depth = 0
-      @paren_stack = []
+      @func_call_stack = []
+      @bracket_stack = []
       @tokens = []
       @start = 0
       @query = query.freeze
@@ -135,6 +142,7 @@ module JSONP3 # rubocop:disable Style/Documentation
         emit(:token_double_dot, "..")
         :lex_descendant_segment
       when "["
+        @bracket_stack << ["[", @start]
         emit(:token_lbracket, "[")
         :lex_inside_bracketed_segment
       else
@@ -157,6 +165,7 @@ module JSONP3 # rubocop:disable Style/Documentation
         emit(:token_wild, "*")
         :lex_segment
       when "["
+        @bracket_stack << ["[", @start]
         emit(:token_lbracket, "[")
         :lex_inside_bracketed_segment
       else
@@ -208,6 +217,13 @@ module JSONP3 # rubocop:disable Style/Documentation
 
         case c
         when "]"
+          if @bracket_stack.empty? || @bracket_stack.last.first != "["
+            backup
+            error "unbalanced brackets"
+            return nil
+          end
+
+          @bracket_stack.pop
           emit(:token_rbracket, "]")
           return :lex_segment
         when ""
@@ -251,17 +267,13 @@ module JSONP3 # rubocop:disable Style/Documentation
           return nil
         when "]"
           @filter_depth -= 1
-          if @paren_stack.length == 1
-            error "unbalanced parentheses"
-            return nil
-          end
           backup
           return :lex_inside_bracketed_segment
         when ","
           emit(:token_comma, ",")
           # If we have unbalanced parens, we are inside a function call and a
           # comma separates arguments. Otherwise a comma separates selectors.
-          next if @paren_stack.length.positive?
+          next if @func_call_stack.length.positive?
 
           @filter_depth -= 1
           return :lex_inside_bracketed_segment
@@ -270,17 +282,25 @@ module JSONP3 # rubocop:disable Style/Documentation
         when '"'
           return :lex_double_quoted_string_inside_filter_expression
         when "("
+          @bracket_stack << ["(", @start]
           emit(:token_lparen, "(")
           # Are we in a function call? If so, a function argument contains parens.
-          @paren_stack[-1] += 1 if @paren_stack.length.positive?
+          @func_call_stack[-1] += 1 if @func_call_stack.length.positive?
         when ")"
+          if @bracket_stack.empty? || @bracket_stack.last.first != "("
+            backup
+            error "unbalanced brackets"
+            return nil
+          end
+
+          @bracket_stack.pop
           emit(:token_rparen, ")")
           # Are we closing a function call or a parenthesized expression?
-          if @paren_stack.length.positive?
-            if @paren_stack[-1] == 1
-              @paren_stack.pop
+          if @func_call_stack.length.positive?
+            if @func_call_stack[-1] == 1
+              @func_call_stack.pop
             else
-              @paren_stack[-1] -= 1
+              @func_call_stack[-1] -= 1
             end
           end
         when "$"
@@ -359,8 +379,9 @@ module JSONP3 # rubocop:disable Style/Documentation
             end
             # Function name
             # Keep track of parentheses for this function call.
-            @paren_stack << 1
+            @func_call_stack << 1
             emit :token_function
+            @bracket_stack << ["(", @start]
             self.next
             ignore # move past LPAREN
           else

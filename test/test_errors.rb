@@ -23,4 +23,16 @@ class TestErrors < Minitest::Test
 
     assert_raises(JSONP3::JSONPathRecursionError) { path.find(data) }
   end
+
+  def test_unclosed_selection_list
+    assert_raises(JSONP3::JSONPathSyntaxError) { JSONP3.compile("$[1,2") }
+  end
+
+  def test_unclosed_selection_list_inside_filter
+    assert_raises(JSONP3::JSONPathSyntaxError) { JSONP3.compile("$[?@.a < 1") }
+  end
+
+  def test_nested_functions_with_unbalanced_parens
+    assert_raises(JSONP3::JSONPathSyntaxError) { JSONP3.compile("$.values[?match(@.a, value($..['regex'])]") }
+  end
 end
