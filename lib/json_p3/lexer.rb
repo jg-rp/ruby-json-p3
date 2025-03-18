@@ -15,15 +15,15 @@ module JSONP3 # rubocop:disable Style/Documentation
     lexer.run
     tokens = lexer.tokens
 
+    if !tokens.empty? && tokens.last.type == :token_error
+      raise JSONPathSyntaxError.new(tokens.last.message || raise,
+                                    tokens.last)
+    end
+
     unless lexer.bracket_stack.empty?
       ch, index = *lexer.bracket_stack.last
       msg = "unbalanced brackets"
       raise JSONPathSyntaxError.new(msg, Token.new(:token_error, ch, index, query, message: msg))
-    end
-
-    if !tokens.empty? && tokens.last.type == :token_error
-      raise JSONPathSyntaxError.new(tokens.last.message || raise,
-                                    tokens.last)
     end
 
     tokens
