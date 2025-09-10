@@ -97,11 +97,11 @@ module JSONP3 # rubocop:disable Style/Documentation
   end
 
   def self.high_surrogate?(code_point)
-    code_point >= 0xD800 && code_point <= 0xDBFF
+    code_point.between?(0xD800, 0xDBFF)
   end
 
   def self.low_surrogate?(code_point)
-    code_point >= 0xDC00 && code_point <= 0xDFFF
+    code_point.between?(0xDC00, 0xDFFF)
   end
 
   def self.code_point_to_string(code_point, token)

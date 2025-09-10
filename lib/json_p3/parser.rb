@@ -483,7 +483,7 @@ module JSONP3
 
       unless args.length == count
         raise JSONPathTypeError.new(
-          "#{token.value}() takes #{count} argument#{count == 1 ? "" : "s"} (#{args.length} given)",
+          "#{token.value}() takes #{count} argument#{"s" unless count == 1} (#{args.length} given)",
           token
         )
       end
@@ -547,7 +547,7 @@ module JSONP3
       ">",
       "<=",
       "<",
-      "!=",
+      "!="
     ]
   end
 end
