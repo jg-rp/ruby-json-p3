@@ -1,8 +1,6 @@
-require:
+plugins:
   - rubocop-minitest
   - rubocop-rake
-
-plugins:
   - rubocop-performance
 
 AllCops:
@@ -33,3 +31,6 @@ Metrics/PerceivedComplexity:
 Naming/MethodParameterName:
   AllowedNames:
     - op
+
+Naming/PredicateMethod:
+  Enabled: false

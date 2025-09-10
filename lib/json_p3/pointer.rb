@@ -91,7 +91,7 @@ module JSONP3
     def parent
       return self if @tokens.empty?
 
-      JSONPointer.new(JSONPointer.encode((@tokens[...-1] || raise)))
+      JSONPointer.new(JSONPointer.encode(@tokens[...-1] || raise))
     end
 
     # Return a new pointer relative to this pointer using Relative JSON Pointer syntax.
