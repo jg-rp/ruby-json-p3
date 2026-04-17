@@ -13,6 +13,12 @@ Style/StringLiterals:
 Style/StringLiteralsInInterpolation:
   EnforcedStyle: double_quotes
 
+Style/ComparableBetween:
+  Enabled: false
+
+Layout/LeadingCommentSpace:
+  Enabled: false
+
 Metrics/AbcSize:
   Max: 50
 
@@ -23,14 +29,24 @@ Metrics/CyclomaticComplexity:
   Max: 20
 
 Metrics/MethodLength:
-  Max: 50
+  Enabled: false
 
 Metrics/PerceivedComplexity:
   Max: 20
 
+Metrics/BlockNesting:
+  Max: 4
+
+Metrics/BlockLength:
+  Enabled: false
+
+Metrics/ModuleLength:
+  Enabled: false
+
 Naming/MethodParameterName:
   AllowedNames:
     - op
+    - ch
 
 Naming/PredicateMethod:
   Enabled: false

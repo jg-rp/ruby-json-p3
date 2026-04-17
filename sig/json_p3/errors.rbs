@@ -1,0 +1,48 @@
+
+module JSONP3
+  # An exception raised when a JSONPathEnvironment is misconfigured.
+  class JSONPathEnvironmentError < StandardError
+  end
+
+  # Base class for JSONPath exceptions that happen when parsing or evaluating a query.
+  class JSONPathError < StandardError
+    FULL_MESSAGE: bool
+    
+    @token: t_token
+
+    @query: String
+
+    def initialize: (String msg, t_token token, String query) -> void
+  end
+
+  class JSONPathSyntaxError < JSONPathError
+  end
+
+  class JSONPathTypeError < JSONPathError
+  end
+
+  class JSONPathNameError < JSONPathError
+  end
+
+  class JSONPathRecursionError < JSONPathError
+  end
+
+  class JSONPointerError < StandardError
+  end
+
+  class JSONPointerIndexError < JSONPointerError
+  end
+
+  class JSONPointerSyntaxError < JSONPointerError
+  end
+
+  class JSONPointerTypeError < JSONPointerError
+  end
+
+  class JSONPatchError < StandardError
+  end
+
+  class JSONPatchTestFailure < JSONPatchError
+  end
+  
+end

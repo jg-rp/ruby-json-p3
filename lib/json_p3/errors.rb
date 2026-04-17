@@ -8,25 +8,27 @@ module JSONP3
   class JSONPathError < StandardError
     FULL_MESSAGE = ((RUBY_VERSION.split(".")&.map(&:to_i) <=> [3, 2, 0]) || -1) < 1
 
-    def initialize(msg, token)
+    def initialize(msg, token, query)
       super(msg)
       @token = token
+      @query = query
     end
 
     def detailed_message(highlight: true, **_kwargs)
-      if @token.query.strip.empty?
+      if @query.strip.empty?
         "empty query"
       else
-        lines = @token.query[...@token.start]&.lines or [""] # pleasing the type checker
+        value = JSONP3::Path.get_token_value(@token, @query)
+        lines = @query[...@token[1]]&.lines or [""] # pleasing the type checker
         lineno = lines.length
         col = lines[-1].length
         pad = " " * lineno.to_s.length
-        pointer = (" " * col) + ("^" * [@token.value.length, 1].max)
+        pointer = (" " * col) + ("^" * [value.length, 1].max)
         <<~ENDOFMESSAGE.strip
           #{self.class}: #{message}
-          #{pad} -> '#{@token.query}' #{lineno}:#{col}
+          #{pad} -> '#{@query}' #{lineno}:#{col}
           #{pad} |
-          #{lineno} | #{@token.query}
+          #{lineno} | #{@query}
           #{pad} | #{pointer} #{highlight ? "\e[1m#{message}\e[0m" : message}
         ENDOFMESSAGE
       end

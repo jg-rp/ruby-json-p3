@@ -1,14 +1,3 @@
-# frozen_string_literal: true
-
-require_relative "lexer"
-require_relative "parser"
-require_relative "path"
-require_relative "function_extensions/length"
-require_relative "function_extensions/value"
-require_relative "function_extensions/count"
-require_relative "function_extensions/match"
-require_relative "function_extensions/search"
-
 module JSONP3
   module Path
     # JSONPath configuration
@@ -16,15 +5,17 @@ module JSONP3
     # Configure an environment by inheriting from `Environment` and setting one
     # or more constants and/or overriding {setup_function_extensions}.
     class Environment
+      @function_extensions: Hash[String, FunctionExtension]
+
       # The maximum integer allowed when selecting array items by index.
-      MAX_INT_INDEX = (2**53) - 1
+      MAX_INT_INDEX: Numeric
 
       # The minimum integer allowed when selecting array items by index.
-      MIN_INT_INDEX = -(2**53) + 1
+      MIN_INT_INDEX: Numeric
 
       # The maximum number of arrays and hashes the recursive descent segment will
       # traverse before raising a {JSONPathRecursionError}.
-      MAX_RECURSION_DEPTH = 100
+      MAX_RECURSION_DEPTH: Integer
 
       # One of the available implementations of the _name selector_.
       #
@@ -33,80 +24,58 @@ module JSONP3
       #
       # Implement your own name selector by inheriting from {NameSelector} and overriding
       # `#resolve`.
-      NAME_SELECTOR = NameSelector
+      NAME_SELECTOR: untyped
 
       # An implementation of the _index selector_. The default implementation will
       # select values from arrays only. Implement your own by inheriting from
       # {IndexSelector} and overriding `#resolve`.
-      INDEX_SELECTOR = IndexSelector
+      INDEX_SELECTOR: untyped
 
-      attr_accessor :function_extensions
+      attr_accessor function_extensions: Hash[String, FunctionExtension]
 
-      def initialize
-        @function_extensions = {}
-        setup_function_extensions
-      end
+      def initialize: () -> void
 
       # Prepare JSONPath expression _query_ for repeated application.
       # @param query [String]
       # @return [Query]
-      def compile(query)
-        tokens = JSONP3::Path.tokenize(query)
-        Query.new(self, Parser.new(self, query, tokens).parse)
-      end
+      def compile: (String query) -> Query
 
       # Apply JSONPath expression _query_ to _value_.
       # @param query [String] the JSONPath expression
       # @param value [JSON-like data] the target JSON "document"
       # @return [Array<JSONPath>]
-      def find(query, value)
-        compile(query).find(value)
-      end
+      def find: (String query, untyped value) -> JSONP3::Path::NodeList
 
       # Apply JSONPath expression _query_ to _value_.
       # @param query [String] the JSONPath expression
       # @param value [JSON-like data] the target JSON "document"
-      # @return [Enumerable<JSONPath>]
-      def find_enum(query, value)
-        compile(query).find_enum(value)
-      end
+      # @return [Enumerable<Query>]
+      def find_enum: (String query, untyped value) -> Enumerable[JSONP3::Path::Node]
 
       # Apply JSONPath expression _query_ to _value_ an return the first
       # available node.
       # @param query [String] the JSONPath expression
       # @param value [JSON-like data] the target JSON "document"
-      # @return [JSONPathNode | nil]
-      def match(path, value)
-        find_enum(path, value).first
-      end
+      # @return [Node | nil]
+      def match: (String path, untyped value) -> (JSONP3::Path::Node | nil)
 
       # Apply JSONPath expression _query_ to _value_ an return `true` if there's at
       # least one node, or nil if there were no matches.
       # @param query [String] the JSONPath expression
       # @param value [JSON-like data] the target JSON "document"
       # @return [bool]
-      def match?(path, value)
-        !find_enum(path, value).first.nil?
-      end
+      def match?: (String path, untyped value) -> bool
 
       # Apply JSONPath expression _query_ to _value_ an return the first
       # available node, or nil if there were no matches.
       # @param query [String] the JSONPath expression
       # @param value [JSON-like data] the target JSON "document"
-      # @return [JSONPathNode | nil]
-      def first(path, value)
-        find_enum(path, value).first
-      end
+      # @return [Node | nil]
+      def first: (untyped path, untyped value) -> (JSONP3::Path::Node | nil)
 
       # Override this function to configure JSONPath function extensions.
       # By default, only the standard functions described in RFC 9535 are enabled.
-      def setup_function_extensions
-        @function_extensions["length"] = Length.new
-        @function_extensions["count"] = Count.new
-        @function_extensions["value"] = Value.new
-        @function_extensions["match"] = Match.new
-        @function_extensions["search"] = Search.new
-      end
+      def setup_function_extensions: () -> untyped
     end
   end
 end

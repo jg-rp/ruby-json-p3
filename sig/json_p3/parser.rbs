@@ -1,0 +1,104 @@
+module JSONP3
+  # JSONPath
+  module Path
+    # JSONPath query parser.
+    class Parser
+      @env: Environment
+
+      @query: String
+
+      @tokens: Array[t_token]
+
+      @pos: Integer
+
+      @eoi: t_token
+
+      class Precedence
+        LOWEST: 1
+        LOGICAL_OR: 3
+        LOGICAL_AND: 4
+        RELATIONAL: 5
+        PREFIX: 7
+      end
+
+      PRECEDENCES: Hash[Symbol, Integer]
+
+      BINARY_OPERATORS: Hash[Symbol, String]
+
+      COMPARISON_OPERATORS: Set[String]
+
+      # @param env [Environment]
+      # @param query [String]
+      # @param tokens [Array[t_token]]
+      def initialize: (Environment env, String query, Array[t_token] tokens) -> void
+
+      def next: () -> t_token
+
+      def eat: (t_token_kind kind, ?String? message) -> t_token
+
+      def skip: (t_token_kind kind) -> void
+
+      def current: () -> t_token
+
+      def current_kind: () -> t_token_kind
+
+      def peek: (?::Integer offset) -> t_token
+
+      def parse: () -> Array[Segment]
+
+      def parse_segments: () -> Array[Segment]
+
+      def parse_descendant_selectors: () -> Array[Selector]
+
+      def parse_shorthand_selector: () -> Selector
+
+      def parse_bracketed_selectors: () -> Array[Selector]
+
+      def parse_index_or_slice: () -> Selector
+
+      def parse_slice_selector: () -> Selector
+
+      def parse_filter_selector: () -> Selector
+
+      def parse_filter_expression: (Integer precedence) -> Expression
+
+      def parse_function_expression: () -> Expression
+
+      def parse_primary: () -> Expression
+
+      def parse_grouped_expression: () -> Expression
+
+      def parse_prefix_expression: () -> Expression
+
+      def parse_infix_expression: (Expression left) -> Expression
+
+      def parse_integer_literal: () -> Expression
+                               
+      def parse_float_literal: () -> Expression
+
+      def parse_absolute_query: () -> Expression
+
+      def parse_relative_query: () -> Expression
+
+      def parse_i_json_int: (t_token token) -> Integer
+
+      def decode_string_literal: (t_token token) -> String
+
+      def unescape_string: (String string, t_token token) -> String
+
+      def throw_for_not_compared: (Expression expression) -> void
+
+      def throw_for_non_comparable: (Expression expression) -> void
+
+      def validate_function_signature: (t_token token, Array[Expression] args) -> void
+
+      def literal?: (Expression expr) -> bool
+
+      def filter_query?: (Expression expr) -> bool
+
+      def infix_expression?: (Expression expr) -> bool
+
+      def singular_query?: (Query query) -> bool
+    end
+  end
+end

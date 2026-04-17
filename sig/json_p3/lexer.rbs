@@ -1,0 +1,62 @@
+type t_token = [t_token_kind, Integer, Integer]
+         
+type t_token_kind = (
+  :token_and |
+  :token_asterisk |
+  :token_at |
+  :token_colon |
+  :token_comma |
+  :token_dollar |
+  :token_dot |
+  :token_double_dot |
+  :token_double_quoted_esc_string |
+  :token_double_quoted_string |
+  :token_eoi |
+  :token_eq |
+  :token_error |
+  :token_false |
+  :token_float |
+  :token_function |
+  :token_ge |
+  :token_gt |
+  :token_index |
+  :token_int |
+  :token_lbracket |
+  :token_le |
+  :token_lparen |
+  :token_lt |
+  :token_name |
+  :token_ne |
+  :token_not |
+  :token_null |
+  :token_or |
+  :token_question |
+  :token_rbracket |
+  :token_rparen |
+  :token_single_quoted_esc_string |
+  :token_single_quoted_string |
+  :token_true |
+  :token_trivia
+) 
+
+module JSONP3
+  module Path
+    RE_FLOAT: Regexp
+    RE_INDEX: Regexp
+    RE_INT: Regexp
+
+    def self.tokenize: (String query) -> Array[t_token]
+                
+    def self.scan_string_literal: (String query, Integer byte, Integer pos) -> [t_token, Integer]
+                
+    def self.name_first?: (Integer ch) -> bool
+                        
+    def self.name_ch?: (Integer ch) -> bool
+                    
+    def self.number_ch?: (Integer ch) -> bool
+                      
+    def self.trivia?: (Integer ch) -> bool
+                    
+    def self.get_token_value: (t_token token, String query) -> String
+  end
+end
