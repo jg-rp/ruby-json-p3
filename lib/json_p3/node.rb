@@ -22,8 +22,9 @@ module JSONP3
       # Return the normalized path to this node.
       # @return [String] the normalized path.
       def path
-        # TODO: Mode canonical_string to JSONP3::Path
-        segments = @location.flatten.map { |i| i.is_a?(String) ? "[#{JSONP3.canonical_string(i)}]" : "[#{i}]" }
+        segments = @location.flatten.map do |i|
+          i.is_a?(String) ? "[#{JSONP3::Path.canonical_string(i)}]" : "[#{i}]"
+        end
         "$#{segments.join}"
       end
 

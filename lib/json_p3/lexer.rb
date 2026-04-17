@@ -189,15 +189,18 @@ module JSONP3
       end
 
       token = [:token_error, start, pos]
-      raise JSONPathSyntaxError.new("unclosed string literal", token)
+      raise JSONPathSyntaxError.new(
+        "unclosed string literal",
+        token, query
+      )
     end
 
     def self.name_first?(ch)
-      (ch >= 48 && ch <= 57) || (ch >= 65 && ch <= 90) || (ch >= 97 && ch <= 122) || ch == 95 || (ch >= 0x80 && ch <= 0xffff)
+      (ch >= 65 && ch <= 90) || (ch >= 97 && ch <= 122) || ch == 95 || (ch >= 0x80 && ch <= 0xffff)
     end
 
     def self.name_ch?(ch)
-      (ch >= 65 && ch <= 90) || (ch >= 97 && ch <= 122) || ch == 95 || (ch >= 0x80 && ch <= 0xffff)
+      (ch >= 48 && ch <= 57) || (ch >= 65 && ch <= 90) || (ch >= 97 && ch <= 122) || ch == 95 || (ch >= 0x80 && ch <= 0xffff)
     end
 
     def self.number_ch?(ch)

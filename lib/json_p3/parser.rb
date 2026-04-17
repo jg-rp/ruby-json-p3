@@ -166,7 +166,7 @@ module JSONP3
 
         case token.first
         when :token_name
-          NameSelector.new(
+          @env.class::NAME_SELECTOR.new(
             @env,
             token,
             JSONP3::Path.get_token_value(token, @query)
@@ -195,17 +195,19 @@ module JSONP3
             selectors << parse_index_or_slice
           when :token_double_quoted_string, :token_single_quoted_string
             token = self.next
-            selectors << NameSelector.new(
+            selectors << @env.class::NAME_SELECTOR.new(
               @env,
-              @token,
+              token,
               JSONP3::Path.get_token_value(token, @query)
             )
           when :token_double_quoted_esc_string, :token_single_quoted_esc_string
             token = self.next
-            selectors << NameSelector.new(
+            selectors << @env.class::NAME_SELECTOR.new(
               @env,
-              @token,
-              unescape_string(JSONP3::Path.get_token_value(token, @query), token)
+              token,
+              JSONP3::Path.unescape(
+                JSONP3::Path.get_token_value(token, @query), token, @query
+              )
             )
           when :token_colon
             selectors << parse_slice_selector
@@ -256,7 +258,7 @@ module JSONP3
         index = parse_i_json_int(token)
         skip(:token_trivia)
 
-        return @index_selector.new(@env, token, index) unless peek.first == :token_colon
+        return @env.class::INDEX_SELECTOR.new(@env, token, index) unless peek.first == :token_colon
 
         stop = nil
         step = nil
@@ -345,8 +347,26 @@ module JSONP3
 
         skip(:token_trivia)
         eat(:token_comma)
-        validate_function_signature(token, args)
-        FunctionExpression.new(token, JSONP3::Path.get_token_value(token, @query), args)
+
+        name = JSONP3::Path.get_token_value(token, @query)
+        func = @env.function_extensions[name]
+
+        unless func
+          raise JSONPathNameError.new(
+            "unknown function extension #{name}",
+            token,
+            @query
+          )
+        end
+
+        validate_function_signature(name, func, args, token)
+
+        FunctionExpression.new(
+          token,
+          name,
+          func,
+          args
+        )
       end
 
       def parse_primary
@@ -354,9 +374,17 @@ module JSONP3
         peeked = peek
 
         case peeked.first
-        when :token_single_quoted_string, :token_single_quoted_esc_string, :token_double_quoted_string, :token_double_quoted_esc_string
+        when :token_single_quoted_string, :token_double_quoted_string
           token = self.next
-          StringLiteral.new(token, decode_string_literal(token))
+          StringLiteral.new(token, JSONP3::Path.get_token_value(token, @query))
+        when :token_single_quoted_esc_string, :token_double_quoted_esc_string
+          token = self.next
+          StringLiteral.new(
+            token,
+            JSONP3::Path.unescape(
+              JSONP3::Path.get_token_value(token, @query), token, @query
+            )
+          )
         when :token_name
           case JSONP3::Path.get_token_value(peeked, @query)
           when "null"
@@ -504,12 +532,12 @@ module JSONP3
 
       def parse_absolute_query
         token = eat(:token_dollar)
-        AbsoluteQuery.new(token, parse_segments)
+        AbsoluteQueryExpression.new(token, Query.new(@env, parse_segments))
       end
 
       def parse_relative_query
         token = eat(:token_dollar)
-        RelativeQuery.new(token, parse_segments)
+        RelativeQueryExpression.new(token, Query.new(@env, parse_segments))
       end
 
       def parse_i_json_int(token)
@@ -544,36 +572,92 @@ module JSONP3
         int
       end
 
-      def unescape_string(string, token)
-        raise "not implemented"
-      end
-
       def throw_for_not_compared(expression)
-        raise "not implemented"
+        if expression.is_a?(FilterExpressionLiteral)
+          raise JSONPathTypeError.new(
+            "filter expression literals must be compared",
+            expression.token,
+            @query
+          )
+        end
+
+        if expression.is_a?(FunctionExpression) &&
+           expression.func.class::RETURN_TYPE == :value_expression
+          raise JSONPathTypeError.new(
+            "result of #{expression.name}() must be compared",
+            expression.token,
+            @query
+          )
+        end
       end
 
       def throw_for_non_comparable(expression)
-        raise "not implemented"
+        if expression.is_a?(QueryExpression) && !expression.query.singular?
+          raise JSONPathTypeError.new(
+            "non-singular query is not comparable",
+            expression.token,
+            @query
+          )
+        end
+
+        if expression.is_a?(FunctionExpression) &&
+           expression.func.class::RETURN_TYPE != :value_expression
+          raise JSONPathTypeError.new(
+            "result of #{expression.name}() is not comparable",
+            expression.token,
+            @query
+          )
+        end
       end
 
-      def validate_function_signature(token, args)
-        raise "not implemented"
+      def validate_function_signature(name, func, args, token)
+        count = func.class::ARG_TYPES.length
+
+        unless args.length == count
+          raise JSONPathTypeError.new(
+            "#{name}() takes #{count} argument#{"s" unless count == 1} (#{args.length} given)",
+            token,
+            @query
+          )
+        end
+
+        func.class::ARG_TYPES.each_with_index do |t, i|
+          arg = args[i]
+          case t
+          when :value_expression
+            unless arg.is_a?(FilterExpressionLiteral) ||
+                   (arg.is_a?(QueryExpression) && arg.query.singular?) ||
+                   (function_return_type(arg) == :value_expression)
+              raise JSONPathTypeError.new(
+                "#{name}() argument #{i} must be of ValueType",
+                arg.token,
+                @query
+              )
+            end
+          when :logical_expression
+            unless arg.is_a?(QueryExpression) || arg.is_a?(InfixExpression)
+              raise JSONPathTypeError.new(
+                "#{name}() argument #{i} must be of LogicalType",
+                arg.token,
+                @query
+              )
+            end
+          when :nodes_expression
+            unless arg.is_a?(QueryExpression) || function_return_type(arg) == :nodes_expression
+              raise JSONPathTypeError.new(
+                "#{name}() argument #{i} must be of NodesType",
+                arg.token,
+                @query
+              )
+            end
+          end
+        end
       end
 
-      def literal?(expr)
-        raise "not implemented"
-      end
+      def function_return_type(expression)
+        return nil unless expression.is_a? FunctionExpression
 
-      def filter_query?(expr)
-        raise "not implemented"
-      end
-
-      def infix_expression?(expr)
-        raise "not implemented"
-      end
-
-      def singular_query?(query)
-        raise "not implemented"
+        expression.func.class::RETURN_TYPE
       end
     end
   end

@@ -4,11 +4,11 @@ require_relative "json_p3/version"
 require_relative "json_p3/environment"
 require_relative "json_p3/pointer"
 require_relative "json_p3/patch"
-require_relative "json_p3/scanner"
+require_relative "json_p3/lexer"
 
 # RFC 9535 JSONPath query expressions for JSON.
 module JSONP3
-  DefaultEnvironment = JSONPathEnvironment.new
+  DefaultEnvironment = JSONP3::Path::Environment.new
 
   def self.find(path, data)
     DefaultEnvironment.find(path, data)

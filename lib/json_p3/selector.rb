@@ -51,7 +51,7 @@ module JSONP3
       end
 
       def to_s
-        JSONP3.canonical_string(@name)
+        JSONP3::Path.canonical_string(@name)
       end
 
       def ==(other)

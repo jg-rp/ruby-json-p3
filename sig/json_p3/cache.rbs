@@ -1,0 +1,21 @@
+module JSONP3
+  # A least recently used cache relying on Ruby hash insertion order.
+  class LRUCache
+    @data: Hash[untyped, untyped]
+
+    @max_size: Integer
+
+    attr_reader max_size: Integer
+
+    def initialize: (?::Integer max_size) -> void
+
+    # Return the cached value or nil if _key_ does not exist.
+    def []: (untyped key) -> (nil | untyped)
+
+    def []=: (untyped key, untyped value) -> untyped
+
+    def length: () -> Integer
+
+    def keys: () -> Array[untyped]
+  end
+end

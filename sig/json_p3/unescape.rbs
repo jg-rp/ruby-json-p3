@@ -1,0 +1,12 @@
+module JSONP3
+  module Path
+    RE_SLASH_U: ::Regexp
+
+    # Replace escape sequences with their equivalent Unicode code point.
+    def self.unescape: (String value, t_token token, String query) -> String
+
+    def self.high_surrogate?: (untyped code_point) -> untyped
+
+    def self.low_surrogate?: (untyped code_point) -> untyped
+  end
+end

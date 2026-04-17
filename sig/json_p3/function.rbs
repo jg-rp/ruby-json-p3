@@ -1,0 +1,94 @@
+module JSONP3
+  module Path
+    def self.map_iregexp: (String pattern) -> String
+                        
+    # Base class for all filter functions.
+    class FunctionExtension
+      ARG_TYPES: Array[Symbol]
+      RETURN_TYPE: Symbol
+
+      def call: (*untyped _args, **untyped _kwargs) -> untyped
+    end
+
+    # The standard `count` function.
+    class Count < FunctionExtension
+      ARG_TYPES: Array[Symbol]
+      RETURN_TYPE: Symbol
+      def call: (NodeList node_list) -> untyped
+    end
+
+    # The standard `count` function.
+    class Length < FunctionExtension
+      ARG_TYPES: Array[Symbol]
+      RETURN_TYPE: Symbol
+      def call: (untyped obj) -> untyped
+    end
+
+    # The standard `match` function.
+    class Match < FunctionExtension
+      @cache_size: Integer
+
+      @raise_errors: (true | false)
+
+      @cache: LRUCache
+
+      ARG_TYPES: ::Array[Symbol]
+
+      RETURN_TYPE: Symbol
+
+      # @param cache_size [Integer] the maximum size of the regexp cache. Set it to
+      #   zero or negative to disable the cache.
+      # @param raise_errors [Boolean] if _false_ (the default), return _false_ when this
+      #   function causes a RegexpError instead of raising the exception.
+      def initialize: (?::Integer cache_size, ?raise_errors: bool) -> void
+
+      # @param value [String]
+      # @param pattern [String]
+      # @return Boolean
+      def call: (untyped value, untyped pattern) -> untyped
+
+      private
+
+      def full_match: (String pattern) -> String
+    end
+
+    # The standard `search` function.
+    class Search < FunctionExtension
+      @cache_size: Integer
+
+      @raise_errors: (true | false)
+
+      @cache: LRUCache
+
+      ARG_TYPES: ::Array[Symbol]
+
+      RETURN_TYPE: Symbol
+
+      # @param cache_size [Integer] the maximum size of the regexp cache. Set it to
+      #   zero or negative to disable the cache.
+      # @param raise_errors [Boolean] if _false_ (the default), return _false_ when this
+      #   function causes a RegexpError instead of raising the exception.
+      def initialize: (?::Integer cache_size, ?raise_errors: bool) -> void
+
+      # @param value [String]
+      # @param pattern [String]
+      # @return Boolean
+      def call: (untyped value, untyped pattern) -> untyped
+    end
+
+    # The standard `value` function.
+    class Value < FunctionExtension
+      ARG_TYPES: ::Array[Symbol]
+
+      RETURN_TYPE: Symbol
+
+      def call: (NodeList node_list) -> untyped
+    end
+  end
+end
+
+
+
+
+    
+
