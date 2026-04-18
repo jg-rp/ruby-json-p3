@@ -5,9 +5,9 @@ require_relative "errors"
 module JSONP3
   # JSONPath
   module Path
-    RE_FLOAT = /(?:-?\d+\.\d+(?:[eE][+-]?\d+)?)|(-?\d+[eE]-\d+)/
-    RE_INDEX = /-?\d+/
-    RE_INT = /-?\d+[eE]\+?\d+/
+    RE_FLOAT = /\G(?:-?\d+\.\d+(?:[eE][+-]?\d+)?)|(-?\d+[eE]-\d+)/
+    RE_INDEX = /\G-?\d+/
+    RE_INT = /\G-?\d+[eE]\+?\d+/
 
     # rubocop:disable Metrics/AbcSize
     # rubocop:disable Metrics/CyclomaticComplexity
@@ -15,7 +15,7 @@ module JSONP3
 
     def self.tokenize(query)
       tokens = [] #: Array[t_token]
-      length = query.size
+      length = query.bytesize
       start = 0
       pos = 0
 
@@ -154,7 +154,7 @@ module JSONP3
 
     def self.scan_string_literal(query, byte, pos)
       start = pos
-      length = query.size
+      length = query.bytesize
 
       # @type var token: t_token
       # @type var kind: t_token_kind
@@ -183,7 +183,14 @@ module JSONP3
           pos += 1
         else
           # Escaped strings get scanned by the parser, where invalid characters will be caught.
-          kind = esc_kind if ch <= 0x1f
+          if ch <= 0x1f
+            token = [:token_error, start, pos]
+            raise JSONPathSyntaxError.new(
+              "invalid character",
+              token,
+              query
+            )
+          end
           pos += 1
         end
       end
@@ -191,7 +198,8 @@ module JSONP3
       token = [:token_error, start, pos]
       raise JSONPathSyntaxError.new(
         "unclosed string literal",
-        token, query
+        token,
+        query
       )
     end
 
@@ -213,7 +221,7 @@ module JSONP3
 
     # TODO: Move to Token module
     def self.get_token_value(token, query)
-      query[token[1]...token.last] || raise
+      query.byteslice(token[1], token.last - token[1]) || raise
     end
   end
 end

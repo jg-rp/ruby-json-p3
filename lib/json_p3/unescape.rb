@@ -33,6 +33,15 @@ module JSONP3
             end
 
             low_surrogate = (scanner.captures&.first || raise).to_i(16)
+
+            unless low_surrogate?(low_surrogate)
+              raise JSONPathSyntaxError.new(
+                "expected a low surrogate",
+                token,
+                query
+              )
+            end
+
             code_point = 0x10000 + (
               ((code_point & 0x03FF) << 10) | (low_surrogate & 0x03FF)
             )
@@ -87,10 +96,12 @@ module JSONP3
           unescaped << "\r"
         when "t"
           unescaped << "\t"
+        when "u"
+          raise JSONPathSyntaxError.new("unexpected \\u escape sequence", token, query)
         when nil
-          JSONPathSyntaxError.new("incomplete escape sequence", token, query)
+          raise JSONPathSyntaxError.new("incomplete escape sequence", token, query)
         else
-          JSONPathSyntaxError.new("unknown escape sequence", token, query)
+          raise JSONPathSyntaxError.new("unknown escape sequence", token, query)
         end
       end
 
