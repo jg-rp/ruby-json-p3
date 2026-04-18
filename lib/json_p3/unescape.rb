@@ -3,11 +3,12 @@
 require "strscan"
 
 module JSONP3
+  # JSONPath query expressions.
   module Path
     RE_SLASH_U = /\\u([0-9a-fA-F]{4})/
 
     # Replace escape sequences with their equivalent Unicode code point.
-    def self.unescape(value, token, query) # rubocop: disable Metrics/CyclomaticComplexity
+    def self.unescape(value, token, query)
       unescaped = String.new(encoding: "UTF-8")
       scanner = StringScanner.new(value)
 
@@ -79,8 +80,22 @@ module JSONP3
 
         case ch
         when "\""
+          if token.first == :token_single_quoted_esc_string
+            raise JSONPathSyntaxError.new(
+              "unexpected \\\" escape in single quoted string",
+              token,
+              query
+            )
+          end
           unescaped << "\""
         when "'"
+          if token.first == :token_double_quoted_esc_string
+            raise JSONPathSyntaxError.new(
+              "unexpected \\' escape in double quoted string",
+              token,
+              query
+            )
+          end
           unescaped << "'"
         when "\\"
           unescaped << "\\"

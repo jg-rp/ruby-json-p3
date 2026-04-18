@@ -316,7 +316,7 @@ module JSONP3
         token = eat(:token_question)
         expr = parse_filter_expression(Precedence::LOWEST)
         throw_for_not_compared(expr)
-        FilterSelector.new(@env, token, expr)
+        FilterSelector.new(@env, token, FilterExpression.new(token, expr))
       end
 
       def parse_filter_expression(precedence)

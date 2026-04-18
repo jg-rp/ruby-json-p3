@@ -12,7 +12,7 @@ module JSONP3
       end
 
       def to_s
-        "$#{@segments.map(&:to_s).join}"
+        "$#{@segments.join}"
       end
 
       # Apply this JSONPath expression to JSON-like value _root_.
@@ -21,7 +21,7 @@ module JSONP3
       def find(root)
         nodes = [Node.new(root, [], root)]
         @segments.each { |segment| nodes = segment.resolve(nodes) }
-        NodeList.new(nodes) # TODO: use NodeList internally?
+        NodeList.new(nodes)
       end
 
       alias apply find

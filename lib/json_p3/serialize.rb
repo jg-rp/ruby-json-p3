@@ -3,6 +3,7 @@
 require "json"
 
 module JSONP3
+  # JSONPath query expressions.
   module Path
     TRANS = { "\\\"" => "\"", "'" => "\\'" }.freeze
 

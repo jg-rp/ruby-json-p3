@@ -51,7 +51,7 @@ module JSONP3
       end
 
       def to_s
-        "[#{@selectors.map(&:to_s).join(", ")}]"
+        "[#{@selectors.join(", ")}]"
       end
 
       def ==(other)
@@ -96,7 +96,7 @@ module JSONP3
       end
 
       def to_s
-        "..[#{@selectors.map(&:to_s).join(", ")}]"
+        "..[#{@selectors.join(", ")}]"
       end
 
       def ==(other)

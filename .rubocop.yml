@@ -20,19 +20,19 @@ Layout/LeadingCommentSpace:
   Enabled: false
 
 Metrics/AbcSize:
-  Max: 50
+  Enabled: false
 
 Metrics/ClassLength:
   Enabled: false
 
 Metrics/CyclomaticComplexity:
-  Max: 20
+  Enabled: false
 
 Metrics/MethodLength:
   Enabled: false
 
 Metrics/PerceivedComplexity:
-  Max: 20
+  Enabled: false
 
 Metrics/BlockNesting:
   Max: 4

@@ -9,10 +9,6 @@ module JSONP3
     RE_INDEX = /\G-?\d+/
     RE_INT = /\G-?\d+[eE]\+?\d+/
 
-    # rubocop:disable Metrics/AbcSize
-    # rubocop:disable Metrics/CyclomaticComplexity
-    # rubocop:disable Metrics/PerceivedComplexity
-
     def self.tokenize(query)
       tokens = [] #: Array[t_token]
       length = query.bytesize
@@ -148,10 +144,6 @@ module JSONP3
       tokens
     end
 
-    # rubocop:enable Metrics/AbcSize
-    # rubocop:enable Metrics/CyclomaticComplexity
-    # rubocop:enable Metrics/PerceivedComplexity
-
     def self.scan_string_literal(query, byte, pos)
       start = pos
       length = query.bytesize
@@ -208,7 +200,11 @@ module JSONP3
     end
 
     def self.name_ch?(ch)
-      (ch >= 48 && ch <= 57) || (ch >= 65 && ch <= 90) || (ch >= 97 && ch <= 122) || ch == 95 || (ch >= 0x80 && ch <= 0xffff)
+      (ch >= 48 && ch <= 57) ||
+        (ch >= 65 && ch <= 90) ||
+        (ch >= 97 && ch <= 122) ||
+        ch == 95 ||
+        (ch >= 0x80 && ch <= 0xffff)
     end
 
     def self.number_ch?(ch)
@@ -219,7 +215,6 @@ module JSONP3
       ch == 32 || ch == 9 || ch == 10 || ch == 13 # rubocop: disable Style/MultipleComparison
     end
 
-    # TODO: Move to Token module
     def self.get_token_value(token, query)
       query.byteslice(token[1], token.last - token[1]) || raise
     end

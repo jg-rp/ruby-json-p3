@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 module JSONP3
+  # JSONPath query expressions.
   module Path
     # Map I-Regexp pattern to Ruby regex pattern.
     # @param pattern [String]

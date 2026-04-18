@@ -144,11 +144,11 @@ end
 
 ### find
 
-`find(query, value) -> Array<JSONPathNode>`
+`find(query, value) -> Array<JSONP3::Path::Node>`
 
-Apply JSONPath expression _query_ to JSON-like data _value_. An array of JSONPathNode instances is returned, one node for each value matched by _query_. The returned array will be empty if there were no matches.
+Apply query expression _query_ to JSON-like data _value_. An array of `Node` instances is returned, one node for each value matched by _query_. The returned array will be empty if there were no matches.
 
-Each `JSONPathNode` has:
+Each `JSONP3::Path::Node` has:
 
 - a `value` attribute, which is the JSON-like value associated with the node.
 - a `location` attribute, which is a nested array of hash/object names and array indices that were required to reach the node's value in the target JSON document.
@@ -194,9 +194,9 @@ end
 
 ### find_enum
 
-`find_enum(query, value) -> Enumerable<JSONPathNode>`
+`find_enum(query, value) -> Enumerable<JSONP3::Path::Node>`
 
-`find_enum` is an alternative to `find` which returns an enumerable (usually an enumerator) of `JSONPathNode` instances instead of an array. Depending on the query and the data the query is applied to, `find_enum` can be more efficient than `find`, especially for large data and queries using recursive descent segments.
+`find_enum` is an alternative to `find` which returns an enumerable (usually an enumerator) of `Node` instances instead of an array. Depending on the query and the data the query is applied to, `find_enum` can be more efficient than `find`, especially for large data and queries using recursive descent segments.
 
 ```ruby
 # ... continued from above
@@ -211,9 +211,9 @@ end
 
 ### compile
 
-`compile(query) -> JSONPath`
+`compile(query) -> JSONP3::Path::Query`
 
-Prepare a JSONPath expression for repeated application to different JSON-like data. An instance of `JSONPath` has a `find(data)` method, which behaves similarly to the module-level `find(query, data)` method.
+Prepare a query for repeated application to different JSON-like data. An instance of `Query` has a `find(data)` method, which behaves similarly to the module-level `find(query, data)` method.
 
 ```ruby
 require "json_p3"
@@ -257,7 +257,7 @@ end
 
 ### match / first
 
-`match(query, value) -> JSONPathNode | nil`
+`match(query, value) -> JSONP3::Path::Node | nil`
 
 `match` (alias `first`) returns a node for the first available match when applying _query_ to _value_, or `nil` if there were no matches.
 
@@ -267,7 +267,7 @@ end
 
 `match?` returns `true` if there was at least one match from applying _query_ to _value_, or `false` otherwise.
 
-### JSONPathEnvironment
+### JSONP3::Path::Environment
 
 The `find`, `find_enum` and `compile` methods described above are convenience methods equivalent to:
 
@@ -290,15 +290,15 @@ You could create your own environment like this:
 ```ruby
 require "json_p3"
 
-jsonpath = JSONP3::JSONPathEnvironment.new
+jsonpath = JSONP3::Path::Environment.new
 nodes = jsonpath.find("$.*", { "a" => "b", "c" => "d" })
 pp nodes.map(&:value) # ["b", "d"]
 ```
 
-To configure an environment with custom filter functions or non-standard selectors, inherit from `JSONPathEnvironment` and override some of its constants or the `#setup_function_extensions` method.
+To configure an environment with custom filter functions or non-standard selectors, inherit from `JSONP3::Path::Environment` and override some of its constants or the `#setup_function_extensions` method.
 
 ```ruby
-class MyJSONPathEnvironment < JSONP3::JSONPathEnvironment
+class MyJSONPathEnvironment < JSONP3::Path::Environment
   # The maximum integer allowed when selecting array items by index.
   MAX_INT_INDEX = (2**53) - 1
 
@@ -326,11 +326,11 @@ class MyJSONPathEnvironment < JSONP3::JSONPathEnvironment
   # Override this function to configure JSONPath function extensions.
   # By default, only the standard functions described in RFC 9535 are enabled.
   def setup_function_extensions
-    @function_extensions["length"] = Length.new
-    @function_extensions["count"] = Count.new
-    @function_extensions["value"] = Value.new
-    @function_extensions["match"] = Match.new
-    @function_extensions["search"] = Search.new
+    @function_extensions["length"] = JSONP3::Path::Length.new
+    @function_extensions["count"] = JSONP3::Path::Count.new
+    @function_extensions["value"] = JSONP3::Path::Value.new
+    @function_extensions["match"] = JSONP3::Path::Match.new
+    @function_extensions["search"] = JSONP3::Path::Search.new
   end
 ```
 
