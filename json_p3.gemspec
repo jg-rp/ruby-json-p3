@@ -12,7 +12,7 @@ Gem::Specification.new do |spec|
   spec.summary = "JSONPath: Query Expressions for JSON in Ruby"
   spec.description = "JSONPath following RFC 9535"
   spec.homepage = "https://github.com/jg-rp/ruby-json-p3"
-  spec.required_ruby_version = ">= 3.0.0"
+  spec.required_ruby_version = ">= 3.3.0"
 
   # spec.metadata["allowed_push_host"] = "TODO: Set to your gem server 'https://example.com'"
 
