@@ -2,7 +2,7 @@
 
 require "test_helper"
 
-class MockEnvironment < JSONP3::JSONPathEnvironment
+class MockEnvironment < JSONP3::Path::Environment
   MAX_RECURSION_DEPTH = 3
 end
 

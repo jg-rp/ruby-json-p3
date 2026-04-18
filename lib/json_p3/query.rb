@@ -59,7 +59,7 @@ module JSONP3
       # Return _true_ if this JSONPath expression is a singular query.
       def singular?
         @segments.each do |segment|
-          return false if segment.instance_of? RecursiveDescentSegment
+          return false if segment.instance_of? DescendantSegment
           return false unless segment.selectors.length == 1 && segment.selectors[0].singular?
         end
         true

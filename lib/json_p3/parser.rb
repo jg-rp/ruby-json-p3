@@ -48,12 +48,12 @@ module JSONP3
       }.freeze
 
       COMPARISON_OPERATORS = Set[
-        "==",
-        ">=",
-        ">",
-        "<=",
-        "<",
-        "!="
+        :token_eq,
+        :token_ge,
+        :token_gt,
+        :token_le,
+        :token_lt,
+        :token_ne
       ]
 
       # @param env [JSONPathEnvironment]
@@ -90,12 +90,11 @@ module JSONP3
       end
 
       def skip(kind)
-        @pos += 1 if (@tokens[@pos] || @eoi) == kind
+        @pos += 1 if (@tokens[@pos] || @eoi).first == kind
       end
 
-      def current = @tokens[@pos] || @eoi
-      def current_kind = (@tokens[@pos] || @eoi).first
-      def peek(offset = 1) = @tokens[@pos + offset] || @eoi
+      def kind = (@tokens[@pos] || @eoi).first
+      def peek = @tokens[@pos] || @eoi
 
       def parse
         eat(:token_dollar)
@@ -108,37 +107,35 @@ module JSONP3
         segments = [] #: Array[Segment]
 
         loop do
-          token = self.next
-
-          case token.first
+          case peek.first
           when :token_trivia
+            @pos += 1
             if peek.first == :token_eoi
               raise JSONPathSyntaxError.new(
                 "unexpected trailing whitespace",
-                token,
+                peek,
                 @query
               )
             end
           when :token_double_dot
             segments << DescendantSegment.new(
               @env,
-              token,
+              self.next,
               parse_descendant_selectors
             )
           when :token_dot
             segments << ChildSegment.new(
               @env,
-              token,
+              self.next,
               [parse_shorthand_selector]
             )
           when :token_lbracket
             segments << ChildSegment.new(
               @env,
-              token,
+              peek,
               parse_bracketed_selectors
             )
           else
-            @pos -= 1
             break
           end
         end
@@ -183,6 +180,7 @@ module JSONP3
       end
 
       def parse_bracketed_selectors
+        segment_token = eat(:token_lbracket)
         selectors = [] #: Array[Selector]
 
         loop do
@@ -218,12 +216,12 @@ module JSONP3
           when :token_eoi
             raise JSONPathSyntaxError.new(
               "unexpected end of query",
-              current,
+              peek,
               @query
             )
           else
             raise JSONPathSyntaxError.new(
-              "unexpected token",
+              "unexpected token #{JSONP3::Path.get_token_value(peek, @query).inspect}",
               self.next,
               @query
             )
@@ -235,7 +233,7 @@ module JSONP3
           when :token_eoi
             raise JSONPathSyntaxError.new(
               "unexpected end of query",
-              current,
+              peek,
               @query
             )
           when :token_rbracket
@@ -251,6 +249,19 @@ module JSONP3
             end
           end
         end
+
+        skip(:token_trivia)
+        eat(:token_rbracket)
+
+        if selectors.empty?
+          raise JSONPathSyntaxError.new(
+            "unexpected empty segment",
+            segment_token,
+            @query
+          )
+        end
+
+        selectors
       end
 
       def parse_index_or_slice
@@ -315,10 +326,12 @@ module JSONP3
           skip(:token_trivia)
           kind = peek.first
 
-          break if kind == :token_eoi || kind == :token_rbracket || PRECEDENCES.fetch(
-            kind,
-            Precedence::LOWEST
-          ) < precedence
+          if kind == :token_eoi ||
+             kind == :token_rbracket ||
+             !BINARY_OPERATORS.include?(kind) ||
+             PRECEDENCES.fetch(kind, Precedence::LOWEST) < precedence
+            break
+          end
 
           left = parse_infix_expression(left)
         end
@@ -337,6 +350,7 @@ module JSONP3
           skip(:token_trivia)
 
           expr = parse_infix_expression(expr) while BINARY_OPERATORS.include?(peek.first)
+          args << expr
 
           if peek.first != :token_rparen
             skip(:token_trivia)
@@ -346,7 +360,7 @@ module JSONP3
         end
 
         skip(:token_trivia)
-        eat(:token_comma)
+        eat(:token_rparen)
 
         name = JSONP3::Path.get_token_value(token, @query)
         func = @env.function_extensions[name]
@@ -398,7 +412,7 @@ module JSONP3
           end
         when :token_lparen
           parse_grouped_expression
-        when :token_index, :token_integer
+        when :token_index, :token_int
           parse_integer_literal
         when :token_float
           parse_float_literal
@@ -410,7 +424,7 @@ module JSONP3
           parse_prefix_expression
         else
           raise JSONPathSyntaxError.new(
-            "unexpected token",
+            "unexpected token #{peek.first}",
             self.next,
             @query
           )
@@ -536,7 +550,7 @@ module JSONP3
       end
 
       def parse_relative_query
-        token = eat(:token_dollar)
+        token = eat(:token_at)
         RelativeQueryExpression.new(token, Query.new(@env, parse_segments))
       end
 

@@ -256,12 +256,12 @@ module JSONP3
         if node.value.is_a?(Array)
           node.value.each_with_index do |e, i|
             context = FilterContext.new(@env, e, node.root)
-            nodes << node.new_child(e, i) if @expression.evaluate(context)
+            nodes << node.new_child(e, i) if JSONP3::Path.truthy?(@expression.evaluate(context))
           end
         elsif node.value.is_a?(Hash)
           node.value.each_pair do |k, v|
             context = FilterContext.new(@env, v, node.root)
-            nodes << node.new_child(v, k) if @expression.evaluate(context)
+            nodes << node.new_child(v, k) if JSONP3::Path.truthy?(@expression.evaluate(context))
           end
         end
 
@@ -273,12 +273,12 @@ module JSONP3
           if node.value.is_a?(Array)
             node.value.each_with_index do |e, i|
               context = FilterContext.new(@env, e, node.root)
-              yielder << node.new_child(e, i) if @expression.evaluate(context)
+              yielder << node.new_child(e, i) if JSONP3::Path.truthy?(@expression.evaluate(context))
             end
           elsif node.value.is_a?(Hash)
             node.value.each_pair do |k, v|
               context = FilterContext.new(@env, v, node.root)
-              yielder << node.new_child(v, k) if @expression.evaluate(context)
+              yielder << node.new_child(v, k) if JSONP3::Path.truthy?(@expression.evaluate(context))
             end
           end
         end

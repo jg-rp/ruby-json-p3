@@ -2,8 +2,8 @@
 
 require "test_helper"
 
-class SymbolSelectorEnvironment < JSONP3::JSONPathEnvironment
-  NAME_SELECTOR = JSONP3::SymbolNameSelector
+class SymbolSelectorEnvironment < JSONP3::Path::Environment
+  NAME_SELECTOR = JSONP3::Path::SymbolNameSelector
 end
 
 SomeStruct = Struct.new("SomeStruct", :x)

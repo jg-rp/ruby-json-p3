@@ -25,7 +25,7 @@ module JSONP3
 
       BINARY_OPERATORS: Hash[Symbol, String]
 
-      COMPARISON_OPERATORS: Set[String]
+      COMPARISON_OPERATORS: Set[Symbol]
 
       # @param env [Environment]
       # @param query [String]
@@ -38,11 +38,9 @@ module JSONP3
 
       def skip: (t_token_kind kind) -> void
 
-      def current: () -> t_token
+      def kind: () -> t_token_kind
 
-      def current_kind: () -> t_token_kind
-
-      def peek: (?::Integer offset) -> t_token
+      def peek: () -> t_token
 
       def parse: () -> Array[Segment]
 

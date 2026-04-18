@@ -20,69 +20,6 @@ module JSONP3
       end
     end
 
-    # An expression that evaluates to true or false.
-    class FilterExpression < Expression
-      attr_reader :expression
-
-      def initialize(token, expression)
-        super(token)
-        @expression = expression
-      end
-
-      def evaluate(context)
-        JSONP3::Path.truthy?(@expression.evaluate(context))
-      end
-
-      def to_s
-        to_canonical_string(@expression, Precedence::LOWEST)
-      end
-
-      def ==(other)
-        self.class == other.class &&
-          @expression == other.expression &&
-          @token == other.token
-      end
-
-      alias eql? ==
-
-      def hash
-        [@expression, @token].hash
-      end
-
-      private
-
-      class Precedence
-        LOWEST = 1
-        LOGICAL_OR = 3
-        LOGICAL_AND = 4
-        PREFIX = 7
-      end
-
-      def to_canonical_string(expression, parent_precedence)
-        if expression.instance_of? LogicalAndExpression
-          left = to_canonical_string(expression.left, Precedence::LOGICAL_AND)
-          right = to_canonical_string(expression.right, Precedence::LOGICAL_AND)
-          expr = "#{left} && #{right}"
-          return parent_precedence >= Precedence::LOGICAL_AND ? "(#{expr})" : expr
-        end
-
-        if expression.instance_of? LogicalOrExpression
-          left = to_canonical_string(expression.left, Precedence::LOGICAL_OR)
-          right = to_canonical_string(expression.right, Precedence::LOGICAL_OR)
-          expr = "#{left} || #{right}"
-          return parent_precedence >= Precedence::LOGICAL_OR ? "(#{expr})" : expr
-        end
-
-        if expression.instance_of? LogicalNotExpression
-          operand = to_canonical_string(expression.expression, Precedence::PREFIX)
-          expr = "!#{operand}"
-          return parent_precedence > Precedence::PREFIX ? `(#{expr})` : expr
-        end
-
-        expression.to_s
-      end
-    end
-
     # Base class for expression literals.
     class FilterExpressionLiteral < Expression
       attr_reader :value

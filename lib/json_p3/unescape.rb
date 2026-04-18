@@ -14,10 +14,23 @@ module JSONP3
       until scanner.eos?
         if scanner.scan(RE_SLASH_U)
           code_point = (scanner.captures&.first || raise).to_i(16)
-          raise "unexpected low surrogate" if low_surrogate?(code_point)
+
+          if low_surrogate?(code_point)
+            raise JSONPathSyntaxError.new(
+              "unexpected low surrogate",
+              token,
+              query
+            )
+          end
 
           if high_surrogate?(code_point)
-            raise "expected a low surrogate" unless scanner.scan(RE_SLASH_U)
+            unless scanner.scan(RE_SLASH_U)
+              raise JSONPathSyntaxError.new(
+                "expected a low surrogate",
+                token,
+                query
+              )
+            end
 
             low_surrogate = (scanner.captures&.first || raise).to_i(16)
             code_point = 0x10000 + (
