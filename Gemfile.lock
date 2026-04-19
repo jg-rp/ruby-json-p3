@@ -15,7 +15,7 @@ GEM
     ffi (1.17.4-x86_64-linux-gnu)
     fiddle (1.1.8)
     fileutils (1.8.0)
-    json (2.19.3)
+    json (2.19.4)
     language_server-protocol (3.17.0.5)
     lint_roller (1.1.0)
     listen (3.10.0)
@@ -117,4 +117,4 @@ DEPENDENCIES
   steep (~> 2.0)
 
 BUNDLED WITH
-   2.6.3
+  4.0.10
