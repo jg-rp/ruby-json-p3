@@ -1,7 +1,5 @@
 # JSONPath, JSON Patch and JSON Pointer for Ruby
 module JSONP3
-  extend SingleForwardable
-  
   VERSION: String
 
   module Path
