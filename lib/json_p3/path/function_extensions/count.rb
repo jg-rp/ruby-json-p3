@@ -1,7 +1,5 @@
 # frozen_string_literal: true
 
-require_relative "../function"
-
 module JSONP3
   module Path
     # The standard `count` function.

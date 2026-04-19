@@ -1,7 +1,5 @@
 # frozen_string_literal: true
 
-require_relative "errors"
-
 module JSONP3
   # JSONPath
   module Path

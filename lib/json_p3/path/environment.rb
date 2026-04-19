@@ -3,6 +3,7 @@
 require_relative "lexer"
 require_relative "parser"
 require_relative "query"
+require_relative "function"
 require_relative "function_extensions/length"
 require_relative "function_extensions/value"
 require_relative "function_extensions/count"

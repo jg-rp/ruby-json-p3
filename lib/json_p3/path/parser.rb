@@ -2,7 +2,6 @@
 
 require "json"
 
-require_relative "errors"
 require_relative "filter"
 require_relative "function"
 require_relative "segment"
@@ -10,7 +9,7 @@ require_relative "selector"
 require_relative "unescape"
 
 module JSONP3
-  # JSONPath
+  # JSONPath query expressions.
   module Path
     # JSONPath query parser.
     class Parser
