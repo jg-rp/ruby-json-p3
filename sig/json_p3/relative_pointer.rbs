@@ -1,0 +1,30 @@
+module JSONP3
+  # A relative JSON Pointer.
+  # See https://datatracker.ietf.org/doc/html/draft-hha-relative-json-pointer
+  class RelativePointer
+    @origin: Integer
+
+    @index: Integer
+
+    @pointer: (String | Pointer)
+
+    RE_RELATIVE_POINTER: ::Regexp
+
+    RE_INT: ::Regexp
+
+    # @param rel [String]
+    def initialize: (String rel) -> void
+
+    def to_s: () -> ::String
+
+    # @param pointer [String | Pointer]
+    # @return [Pointer]
+    def to: ((String | Pointer) pointer) -> Pointer
+
+    private
+
+    # @param token [String]
+    # @return [Integer]
+    def parse_int: (String token) -> Integer
+  end
+end

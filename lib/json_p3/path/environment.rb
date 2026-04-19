@@ -23,8 +23,8 @@ module JSONP3
       # The minimum integer allowed when selecting array items by index.
       MIN_INT_INDEX = -(2**53) + 1
 
-      # The maximum number of arrays and hashes the recursive descent segment will
-      # traverse before raising a {JSONPathRecursionError}.
+      # The maximum number of arrays and hashes the descendent segment will traverse
+      # before raising a {JSONPathRecursionError}.
       MAX_RECURSION_DEPTH = 100
 
       # One of the available implementations of the _name selector_.

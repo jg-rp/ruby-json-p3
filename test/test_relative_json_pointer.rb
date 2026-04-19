@@ -10,8 +10,8 @@ class TestRelativeJSONPointer < Minitest::Test
 
   def test_zero_origin
     rel = "0"
-    p = JSONP3::JSONPointer.new("/foo/1")
-    r = JSONP3::RelativeJSONPointer.new(rel)
+    p = JSONP3::Pointer.new("/foo/1")
+    r = JSONP3::RelativePointer.new(rel)
     new_pointer = r.to(p)
 
     assert_equal("baz", new_pointer.resolve(DOC))
@@ -21,8 +21,8 @@ class TestRelativeJSONPointer < Minitest::Test
 
   def test_parent_origin_pointer_index
     rel = "1/0"
-    p = JSONP3::JSONPointer.new("/foo/1")
-    r = JSONP3::RelativeJSONPointer.new(rel)
+    p = JSONP3::Pointer.new("/foo/1")
+    r = JSONP3::RelativePointer.new(rel)
     new_pointer = r.to(p)
 
     assert_equal("bar", new_pointer.resolve(DOC))
@@ -32,8 +32,8 @@ class TestRelativeJSONPointer < Minitest::Test
 
   def test_negative_index_manipulation
     rel = "0-1"
-    p = JSONP3::JSONPointer.new("/foo/1")
-    r = JSONP3::RelativeJSONPointer.new(rel)
+    p = JSONP3::Pointer.new("/foo/1")
+    r = JSONP3::RelativePointer.new(rel)
     new_pointer = r.to(p)
 
     assert_equal("bar", new_pointer.resolve(DOC))
@@ -43,8 +43,8 @@ class TestRelativeJSONPointer < Minitest::Test
 
   def test_grandparent_origin_nested_pointer
     rel = "2/highly/nested/objects"
-    p = JSONP3::JSONPointer.new("/foo/1")
-    r = JSONP3::RelativeJSONPointer.new(rel)
+    p = JSONP3::Pointer.new("/foo/1")
+    r = JSONP3::RelativePointer.new(rel)
     new_pointer = r.to(p)
 
     assert_equal(true, new_pointer.resolve(DOC)) # rubocop:disable Minitest/AssertTruthy
@@ -54,8 +54,8 @@ class TestRelativeJSONPointer < Minitest::Test
 
   def test_zero_origin_index
     rel = "0#"
-    p = JSONP3::JSONPointer.new("/foo/1")
-    r = JSONP3::RelativeJSONPointer.new(rel)
+    p = JSONP3::Pointer.new("/foo/1")
+    r = JSONP3::RelativePointer.new(rel)
     new_pointer = r.to(p)
 
     assert_equal(1, new_pointer.resolve(DOC))
@@ -65,8 +65,8 @@ class TestRelativeJSONPointer < Minitest::Test
 
   def test_zero_origin_offset_index
     rel = "0+1#"
-    p = JSONP3::JSONPointer.new("/foo/1")
-    r = JSONP3::RelativeJSONPointer.new(rel)
+    p = JSONP3::Pointer.new("/foo/1")
+    r = JSONP3::RelativePointer.new(rel)
     new_pointer = r.to(p)
 
     assert_equal(2, new_pointer.resolve(DOC))
@@ -76,8 +76,8 @@ class TestRelativeJSONPointer < Minitest::Test
 
   def test_parent_index
     rel = "1#"
-    p = JSONP3::JSONPointer.new("/foo/1")
-    r = JSONP3::RelativeJSONPointer.new(rel)
+    p = JSONP3::Pointer.new("/foo/1")
+    r = JSONP3::RelativePointer.new(rel)
     new_pointer = r.to(p)
 
     assert_equal("foo", new_pointer.resolve(DOC))
@@ -87,8 +87,8 @@ class TestRelativeJSONPointer < Minitest::Test
 
   def test_same_origin_pointer
     rel = "0/objects"
-    p = JSONP3::JSONPointer.new("/highly/nested")
-    r = JSONP3::RelativeJSONPointer.new(rel)
+    p = JSONP3::Pointer.new("/highly/nested")
+    r = JSONP3::RelativePointer.new(rel)
     new_pointer = r.to(p)
 
     assert_equal(true, new_pointer.resolve(DOC)) # rubocop: disable Minitest/AssertTruthy
@@ -98,8 +98,8 @@ class TestRelativeJSONPointer < Minitest::Test
 
   def test_parent_nested_pointer
     rel = "1/nested/objects"
-    p = JSONP3::JSONPointer.new("/highly/nested")
-    r = JSONP3::RelativeJSONPointer.new(rel)
+    p = JSONP3::Pointer.new("/highly/nested")
+    r = JSONP3::RelativePointer.new(rel)
     new_pointer = r.to(p)
 
     assert_equal(true, new_pointer.resolve(DOC)) # rubocop: disable Minitest/AssertTruthy
@@ -109,8 +109,8 @@ class TestRelativeJSONPointer < Minitest::Test
 
   def test_parent_nested_pointer_index
     rel = "2/foo/0"
-    p = JSONP3::JSONPointer.new("/highly/nested")
-    r = JSONP3::RelativeJSONPointer.new(rel)
+    p = JSONP3::Pointer.new("/highly/nested")
+    r = JSONP3::RelativePointer.new(rel)
     new_pointer = r.to(p)
 
     assert_equal("bar", new_pointer.resolve(DOC))
@@ -120,8 +120,8 @@ class TestRelativeJSONPointer < Minitest::Test
 
   def test_current_key
     rel = "0#"
-    p = JSONP3::JSONPointer.new("/highly/nested")
-    r = JSONP3::RelativeJSONPointer.new(rel)
+    p = JSONP3::Pointer.new("/highly/nested")
+    r = JSONP3::RelativePointer.new(rel)
     new_pointer = r.to(p)
 
     assert_equal("nested", new_pointer.resolve(DOC))
@@ -131,8 +131,8 @@ class TestRelativeJSONPointer < Minitest::Test
 
   def test_parent_key
     rel = "1#"
-    p = JSONP3::JSONPointer.new("/highly/nested")
-    r = JSONP3::RelativeJSONPointer.new(rel)
+    p = JSONP3::Pointer.new("/highly/nested")
+    r = JSONP3::RelativePointer.new(rel)
     new_pointer = r.to(p)
 
     assert_equal("highly", new_pointer.resolve(DOC))

@@ -77,7 +77,7 @@ module JSONP3
       def eat(kind, message = nil)
         token = self.next
         unless token.first == kind
-          raise JSONPathSyntaxError.new(
+          raise SyntaxError.new(
             message || "expected #{kind}, found #{token.first}",
             token,
             @query
@@ -109,7 +109,7 @@ module JSONP3
           when :token_trivia
             @pos += 1
             if peek.first == :token_eoi
-              raise JSONPathSyntaxError.new(
+              raise SyntaxError.new(
                 "unexpected trailing whitespace",
                 peek,
                 @query
@@ -148,7 +148,7 @@ module JSONP3
         when :token_lbracket
           parse_bracketed_selectors
         else
-          raise JSONPathSyntaxError.new(
+          raise SyntaxError.new(
             "expected a selector",
             peek,
             @query
@@ -169,7 +169,7 @@ module JSONP3
         when :token_asterisk
           WildcardSelector.new(@env, token)
         else
-          raise JSONPathSyntaxError.new(
+          raise SyntaxError.new(
             "expected a shorthand selector",
             token,
             @query
@@ -212,13 +212,13 @@ module JSONP3
           when :token_question
             selectors << parse_filter_selector
           when :token_eoi
-            raise JSONPathSyntaxError.new(
+            raise SyntaxError.new(
               "unexpected end of query",
               peek,
               @query
             )
           else
-            raise JSONPathSyntaxError.new(
+            raise SyntaxError.new(
               "unexpected token #{JSONP3::Path.get_token_value(peek, @query).inspect}",
               self.next,
               @query
@@ -229,7 +229,7 @@ module JSONP3
 
           case peek.first
           when :token_eoi
-            raise JSONPathSyntaxError.new(
+            raise SyntaxError.new(
               "unexpected end of query",
               peek,
               @query
@@ -239,7 +239,7 @@ module JSONP3
           else
             eat(:token_comma)
             if peek.first == :token_rbracket
-              raise JSONPathSyntaxError.new(
+              raise SyntaxError.new(
                 "unexpected trailing comma",
                 peek,
                 @query
@@ -252,7 +252,7 @@ module JSONP3
         eat(:token_rbracket)
 
         if selectors.empty?
-          raise JSONPathSyntaxError.new(
+          raise SyntaxError.new(
             "unexpected empty segment",
             segment_token,
             @query
@@ -421,7 +421,7 @@ module JSONP3
         when :token_not
           parse_prefix_expression
         else
-          raise JSONPathSyntaxError.new(
+          raise SyntaxError.new(
             "unexpected token #{peek.first}",
             self.next,
             @query
@@ -440,7 +440,7 @@ module JSONP3
           break if peeked.first == :token_rparen
 
           if peeked.first == :token_eoi
-            raise JSONPathSyntaxError.new(
+            raise SyntaxError.new(
               "unbalanced parentheses",
               peeked,
               @query
@@ -487,7 +487,7 @@ module JSONP3
           when :token_ge
             GeExpression.new(token, left, right)
           else
-            raise JSONPathSyntaxError.new(
+            raise SyntaxError.new(
               "expected an infix operator",
               token,
               @query
@@ -503,7 +503,7 @@ module JSONP3
           when :token_or
             LogicalOrExpression.new(token, left, right)
           else
-            raise JSONPathSyntaxError.new(
+            raise SyntaxError.new(
               "expected an infix operator",
               token,
               @query
@@ -517,7 +517,7 @@ module JSONP3
         value = JSONP3::Path.get_token_value(token, @query)
 
         if value.start_with?("0") && value.length > 1
-          raise JSONPathSyntaxError.new(
+          raise SyntaxError.new(
             "invalid integer literal",
             token,
             @query
@@ -532,7 +532,7 @@ module JSONP3
         value = JSONP3::Path.get_token_value(token, @query)
 
         if value.start_with?("0") && value.split(".").first.length > 1
-          raise JSONPathSyntaxError.new(
+          raise SyntaxError.new(
             "invalid float literal",
             token,
             @query
@@ -556,7 +556,7 @@ module JSONP3
         value = JSONP3::Path.get_token_value(token, @query)
 
         if value.length > 1 && value.start_with?("0", "-0")
-          raise JSONPathSyntaxError.new(
+          raise SyntaxError.new(
             "invalid index '#{value}'",
             token,
             @query
@@ -566,7 +566,7 @@ module JSONP3
         begin
           int = Integer(value)
         rescue ArgumentError
-          raise JSONPathSyntaxError.new(
+          raise SyntaxError.new(
             "invalid I-JSON integer",
             token,
             @query
@@ -574,7 +574,7 @@ module JSONP3
         end
 
         if int < @env.class::MIN_INT_INDEX || int > @env.class::MAX_INT_INDEX
-          raise JSONPathSyntaxError.new(
+          raise SyntaxError.new(
             "index out of range",
             token,
             @query
@@ -586,7 +586,7 @@ module JSONP3
 
       def throw_for_not_compared(expression)
         if expression.is_a?(FilterExpressionLiteral)
-          raise JSONPathTypeError.new(
+          raise TypeError.new(
             "filter expression literals must be compared",
             expression.token,
             @query
@@ -595,7 +595,7 @@ module JSONP3
 
         if expression.is_a?(FunctionExpression) &&
            expression.func.class::RETURN_TYPE == :value_expression
-          raise JSONPathTypeError.new(
+          raise TypeError.new(
             "result of #{expression.name}() must be compared",
             expression.token,
             @query
@@ -605,7 +605,7 @@ module JSONP3
 
       def throw_for_non_comparable(expression)
         if expression.is_a?(QueryExpression) && !expression.query.singular?
-          raise JSONPathTypeError.new(
+          raise TypeError.new(
             "non-singular query is not comparable",
             expression.token,
             @query
@@ -614,7 +614,7 @@ module JSONP3
 
         if expression.is_a?(FunctionExpression) &&
            expression.func.class::RETURN_TYPE != :value_expression
-          raise JSONPathTypeError.new(
+          raise TypeError.new(
             "result of #{expression.name}() is not comparable",
             expression.token,
             @query
@@ -626,7 +626,7 @@ module JSONP3
         count = func.class::ARG_TYPES.length
 
         unless args.length == count
-          raise JSONPathTypeError.new(
+          raise TypeError.new(
             "#{name}() takes #{count} argument#{"s" unless count == 1} (#{args.length} given)",
             token,
             @query
@@ -640,7 +640,7 @@ module JSONP3
             unless arg.is_a?(FilterExpressionLiteral) ||
                    (arg.is_a?(QueryExpression) && arg.query.singular?) ||
                    (function_return_type(arg) == :value_expression)
-              raise JSONPathTypeError.new(
+              raise TypeError.new(
                 "#{name}() argument #{i} must be of ValueType",
                 arg.token,
                 @query
@@ -648,7 +648,7 @@ module JSONP3
             end
           when :logical_expression
             unless arg.is_a?(QueryExpression) || arg.is_a?(InfixExpression)
-              raise JSONPathTypeError.new(
+              raise TypeError.new(
                 "#{name}() argument #{i} must be of LogicalType",
                 arg.token,
                 @query
@@ -656,7 +656,7 @@ module JSONP3
             end
           when :nodes_expression
             unless arg.is_a?(QueryExpression) || function_return_type(arg) == :nodes_expression
-              raise JSONPathTypeError.new(
+              raise TypeError.new(
                 "#{name}() argument #{i} must be of NodesType",
                 arg.token,
                 @query

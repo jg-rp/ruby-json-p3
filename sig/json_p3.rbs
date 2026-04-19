@@ -1,11 +1,31 @@
 # JSONPath, JSON Patch and JSON Pointer for Ruby
 module JSONP3
+  extend SingleForwardable
+  
   VERSION: String
 
-  DefaultEnvironment: JSONP3::Path::Environment
+  module Path
+    DefaultEnvironment: JSONP3::Path::Environment
+
+    def self.find: (String path, untyped data) -> JSONP3::Path::NodeList
+                
+    def self.find_enum: (String path, untyped data) -> Enumerable[JSONP3::Path::Node]
+
+    def self.compile: (String path) -> JSONP3::Path::Query
+                    
+    def self.match: (String path, untyped data) -> (JSONP3::Path::Node | nil)
+                  
+    def self.first: (String path, untyped data) -> (JSONP3::Path::Node | nil)
+                  
+    def self.match?: (String path, untyped data) -> bool
+                    
+    def self.resolve: (String pointer, untyped value, ?default: untyped) -> untyped
+
+    def self.apply: (Array[Patch::Op | Hash[String, untyped]] ops, untyped value) -> untyped
+  end
 
   def self.find: (String path, untyped data) -> JSONP3::Path::NodeList
-               
+                
   def self.find_enum: (String path, untyped data) -> Enumerable[JSONP3::Path::Node]
 
   def self.compile: (String path) -> JSONP3::Path::Query
@@ -18,5 +38,5 @@ module JSONP3
                   
   def self.resolve: (String pointer, untyped value, ?default: untyped) -> untyped
 
-  def self.apply: (Array[Op | Hash[String, untyped]] ops, untyped value) -> untyped
+  def self.apply: (Array[Patch::Op | Hash[String, untyped]] ops, untyped value) -> untyped
 end

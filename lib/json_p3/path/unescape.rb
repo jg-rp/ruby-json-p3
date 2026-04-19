@@ -17,7 +17,7 @@ module JSONP3
           code_point = (scanner.captures&.first || raise).to_i(16)
 
           if low_surrogate?(code_point)
-            raise JSONPathSyntaxError.new(
+            raise JSONP3::Path::SyntaxError.new(
               "unexpected low surrogate",
               token,
               query
@@ -26,7 +26,7 @@ module JSONP3
 
           if high_surrogate?(code_point)
             unless scanner.scan(RE_SLASH_U)
-              raise JSONPathSyntaxError.new(
+              raise JSONP3::Path::SyntaxError.new(
                 "expected a low surrogate",
                 token,
                 query
@@ -36,7 +36,7 @@ module JSONP3
             low_surrogate = (scanner.captures&.first || raise).to_i(16)
 
             unless low_surrogate?(low_surrogate)
-              raise JSONPathSyntaxError.new(
+              raise JSONP3::Path::SyntaxError.new(
                 "expected a low surrogate",
                 token,
                 query
@@ -49,7 +49,7 @@ module JSONP3
           end
 
           if code_point <= 0x1f
-            raise JSONPathSyntaxError.new(
+            raise JSONP3::Path::SyntaxError.new(
               "invalid character #{code_point}",
               token,
               query
@@ -66,7 +66,7 @@ module JSONP3
 
         unless ch == "\\"
           if ch.ord <= 0x1f
-            raise JSONPathSyntaxError.new(
+            raise JSONP3::Path::SyntaxError.new(
               "invalid character #{ch.ord}",
               token,
               query
@@ -81,7 +81,7 @@ module JSONP3
         case ch
         when "\""
           if token.first == :token_single_quoted_esc_string
-            raise JSONPathSyntaxError.new(
+            raise JSONP3::Path::SyntaxError.new(
               "unexpected \\\" escape in single quoted string",
               token,
               query
@@ -90,7 +90,7 @@ module JSONP3
           unescaped << "\""
         when "'"
           if token.first == :token_double_quoted_esc_string
-            raise JSONPathSyntaxError.new(
+            raise JSONP3::Path::SyntaxError.new(
               "unexpected \\' escape in double quoted string",
               token,
               query
@@ -112,11 +112,11 @@ module JSONP3
         when "t"
           unescaped << "\t"
         when "u"
-          raise JSONPathSyntaxError.new("unexpected \\u escape sequence", token, query)
+          raise JSONP3::Path::SyntaxError.new("unexpected \\u escape sequence", token, query)
         when nil
-          raise JSONPathSyntaxError.new("incomplete escape sequence", token, query)
+          raise JSONP3::Path::SyntaxError.new("incomplete escape sequence", token, query)
         else
-          raise JSONPathSyntaxError.new("unknown escape sequence", token, query)
+          raise JSONP3::Path::SyntaxError.new("unknown escape sequence", token, query)
         end
       end
 

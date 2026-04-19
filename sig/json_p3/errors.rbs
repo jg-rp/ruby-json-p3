@@ -1,48 +1,69 @@
-
 module JSONP3
-  # An exception raised when a JSONPathEnvironment is misconfigured.
-  class JSONPathEnvironmentError < StandardError
+  # The base class for all errors raised from this gem.
+  class Error < StandardError
   end
 
-  # Base class for JSONPath exceptions that happen when parsing or evaluating a query.
-  class JSONPathError < StandardError
-    FULL_MESSAGE: bool
-    
-    @token: t_token
+  module Path
+    class Error < JSONP3::Error
+      @token: t_token
 
-    @query: String
+      @query: String
 
-    def initialize: (String msg, t_token token, String query) -> void
+      FULL_MESSAGE: bool
+
+      def initialize: (String msg, t_token token, String query) -> void
+
+      def detailed_message: (?highlight: bool, **untyped _kwargs) -> String
+
+      def full_message: (?highlight: bool, ?order: ::Symbol) -> (::String | untyped)
+    end
+
+    class SyntaxError < Error
+    end
+
+    class TypeError < Error
+    end
+
+    class NameError < Error
+    end
+
+    class RecursionError < Error
+    end
   end
 
-  class JSONPathSyntaxError < JSONPathError
+  class Pointer
+    class Error < JSONP3::Error
+    end
+
+    class IndexError < Error
+    end
+
+    class SyntaxError < Error
+    end
+
+    class TypeError < Error
+    end
   end
 
-  class JSONPathTypeError < JSONPathError
+  class RelativePointer
+    class Error < JSONP3::Error
+    end
+
+    class IndexError < Error
+    end
+
+    class SyntaxError < Error
+    end
+
+    class TypeError < Error
+    end
   end
 
-  class JSONPathNameError < JSONPathError
-  end
+  class Patch
+    class Error < JSONP3::Error
+    end
 
-  class JSONPathRecursionError < JSONPathError
+    class TestFailure < Error
+    end
   end
-
-  class JSONPointerError < StandardError
-  end
-
-  class JSONPointerIndexError < JSONPointerError
-  end
-
-  class JSONPointerSyntaxError < JSONPointerError
-  end
-
-  class JSONPointerTypeError < JSONPointerError
-  end
-
-  class JSONPatchError < StandardError
-  end
-
-  class JSONPatchTestFailure < JSONPatchError
-  end
-  
 end

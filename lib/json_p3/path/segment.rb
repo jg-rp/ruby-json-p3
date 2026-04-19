@@ -115,7 +115,7 @@ module JSONP3
 
       def visit(node, depth = 1)
         if depth > @env.class::MAX_RECURSION_DEPTH
-          raise JSONPathRecursionError.new(
+          raise JSONP3::Path::RecursionError.new(
             "recursion limit exceeded",
             @token,
             ""
@@ -141,7 +141,7 @@ module JSONP3
 
       def visit_enum(node, depth = 1)
         if depth > @env.class::MAX_RECURSION_DEPTH
-          raise JSONPathRecursionError.new(
+          raise JSONP3::Path::RecursionError.new(
             "recursion limit exceeded",
             @token,
             ""

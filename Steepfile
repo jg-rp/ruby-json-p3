@@ -16,6 +16,7 @@ target :lib do
 
   library "json"
   library "strscan"
+  library "forwardable"
 
   # configure_code_diagnostics(D::Ruby.default)      # `default` diagnostics setting (applies by default)
   # configure_code_diagnostics(D::Ruby.strict)       # `strict` diagnostics setting

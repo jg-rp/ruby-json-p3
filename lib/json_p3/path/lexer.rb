@@ -175,7 +175,7 @@ module JSONP3
           # Escaped strings get scanned by the parser, where invalid characters will be caught.
           if ch <= 0x1f
             token = [:token_error, start, pos]
-            raise JSONPathSyntaxError.new(
+            raise JSONP3::Path::SyntaxError.new(
               "invalid character",
               token,
               query
@@ -186,7 +186,7 @@ module JSONP3
       end
 
       token = [:token_error, start, pos]
-      raise JSONPathSyntaxError.new(
+      raise JSONP3::Path::SyntaxError.new(
         "unclosed string literal",
         token,
         query

@@ -36,7 +36,7 @@ module JSONP3
       end
 
       def to_s
-        "JSONPathNode(#{value} at #{path})"
+        "Node(#{value} at #{path})"
       end
     end
 

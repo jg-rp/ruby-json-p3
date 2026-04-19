@@ -196,7 +196,7 @@ end
 
 `find_enum(query, value) -> Enumerable<JSONP3::Path::Node>`
 
-`find_enum` is an alternative to `find` which returns an enumerable (usually an enumerator) of `Node` instances instead of an array. Depending on the query and the data the query is applied to, `find_enum` can be more efficient than `find`, especially for large data and queries using recursive descent segments.
+`find_enum` is an alternative to `find` which returns an enumerable (usually an enumerator) of `Node` instances instead of an array. Depending on the query and the data the query is applied to, `find_enum` can be more efficient than `find`, especially for large data and queries using descendant segments.
 
 ```ruby
 # ... continued from above
@@ -392,7 +392,7 @@ puts JSONP3.resolve("/users/1", data)
 # {"name"=>"Sally", "score"=>84, "admin"=>false}
 ```
 
-If a pointer can not be resolved, `JSONP3::JSONPointer::UNDEFINED` is returned instead. You can use your own default value using the `default:` keyword argument.
+If a pointer can not be resolved, `JSONP3::Pointer::UNDEFINED` is returned instead. You can use your own default value using the `default:` keyword argument.
 
 ```ruby
 # continued from above
