@@ -5,8 +5,8 @@ require "English"
 module JSONP3
   # A JSON Patch containing zero or more patch operations.
   class Patch
-    def self.apply(ops, value)
-      new(ops).apply(value)
+    def self.apply!(ops, value)
+      new(ops).apply!(value)
     end
 
     # @param ops [Array<Op | Hash<String, untyped>>?]
@@ -69,8 +69,8 @@ module JSONP3
     end
 
     # Apply this patch to JSON-like value _value_.
-    def apply(value)
-      @ops.each_with_index { |op, i| value = op.apply(value, i) }
+    def apply!(value)
+      @ops.each_with_index { |op, i| value = op.apply!(value, i) }
       value
     end
 

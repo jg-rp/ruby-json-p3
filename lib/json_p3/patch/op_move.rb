@@ -16,7 +16,7 @@ module JSONP3
         "move"
       end
 
-      def apply(value, index)
+      def apply!(value, index)
         if @pointer.relative_to?(@from)
           raise JSONP3::Patch::Error,
                 "can't move object to one of its children (#{name}:#{index})"

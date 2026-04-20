@@ -123,8 +123,8 @@ class TestRFC6902 < Minitest::Spec
   describe "RFC6902" do
     TEST_CASES.each do |test_case|
       it test_case["description"] do
-        _(test_case["patch"].apply(deep_copy(test_case["data"]))).must_equal(test_case["want"])
-        _(JSONP3::Patch.new([test_case["op"]]).apply(deep_copy(test_case["data"]))).must_equal(test_case["want"])
+        _(test_case["patch"].apply!(deep_copy(test_case["data"]))).must_equal(test_case["want"])
+        _(JSONP3::Patch.new([test_case["op"]]).apply!(deep_copy(test_case["data"]))).must_equal(test_case["want"])
       end
     end
   end

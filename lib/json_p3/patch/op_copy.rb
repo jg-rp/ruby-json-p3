@@ -16,7 +16,7 @@ module JSONP3
         "copy"
       end
 
-      def apply(value, index)
+      def apply!(value, index)
         # Grab the source value.
         _source_parent, source_obj = @from.resolve_with_parent(value)
         if source_obj == JSONP3::Pointer::UNDEFINED

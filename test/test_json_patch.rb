@@ -7,34 +7,34 @@ class TestJSONPatch < Minitest::Test
 
   def test_remove_root
     patch = JSONP3::Patch.new.remove("")
-    error = assert_raises(JSONP3::Patch::Error) { patch.apply({ "foo" => "bar" }) }
+    error = assert_raises(JSONP3::Patch::Error) { patch.apply!({ "foo" => "bar" }) }
     assert_equal("can't remove root (remove:0)", error.message)
   end
 
   def test_test_op_fail
     patch = JSONP3::Patch.new.test("/baz", "bar")
-    error = assert_raises(JSONP3::Patch::Error) { patch.apply({ "baz" => "qux" }) }
+    error = assert_raises(JSONP3::Patch::Error) { patch.apply!({ "baz" => "qux" }) }
     assert_equal("test failed (test:0)", error.message)
   end
 
   def test_add_to_missing_target
     patch = JSONP3::Patch.new.add("/baz/bat", "qux")
 
-    error = assert_raises(JSONP3::Patch::Error) { patch.apply({ "foo" => "bar" }) }
+    error = assert_raises(JSONP3::Patch::Error) { patch.apply!({ "foo" => "bar" }) }
     assert_equal("no such property or item '/baz' (add:0)", error.message)
   end
 
   def test_move_to_child
     patch = JSONP3::Patch.new.move("/foo/bar", "/foo/bar/baz")
 
-    error = assert_raises(JSONP3::Patch::Error) { patch.apply({ "foo" => { "bar" => { "baz" => [1, 2, 3] } } }) }
+    error = assert_raises(JSONP3::Patch::Error) { patch.apply!({ "foo" => { "bar" => { "baz" => [1, 2, 3] } } }) }
     assert_equal("can't move object to one of its children (move:0)", error.message)
   end
 
   def test_array_index_out_of_range
     patch = JSONP3::Patch.new.add("/foo/7", 99)
 
-    error = assert_raises(JSONP3::Patch::Error) { patch.apply({ "foo" => [1, 2, 3] }) }
+    error = assert_raises(JSONP3::Patch::Error) { patch.apply!({ "foo" => [1, 2, 3] }) }
     assert_equal("index out of range (add:0)", error.message)
   end
 
@@ -56,42 +56,42 @@ class TestJSONPatch < Minitest::Test
   def test_remove_missing_array_item
     patch = JSONP3::Patch.new.remove("/foo/99")
 
-    error = assert_raises(JSONP3::Patch::Error) { patch.apply({ "foo" => [1, 2, 3] }) }
+    error = assert_raises(JSONP3::Patch::Error) { patch.apply!({ "foo" => [1, 2, 3] }) }
     assert_equal("no item to remove (remove:0)", error.message)
   end
 
   def test_remove_missing_hash_property
     patch = JSONP3::Patch.new.remove("/foo/baz")
 
-    error = assert_raises(JSONP3::Patch::Error) { patch.apply({ "foo" => { "bar" => [1, 2, 3] } }) }
+    error = assert_raises(JSONP3::Patch::Error) { patch.apply!({ "foo" => { "bar" => [1, 2, 3] } }) }
     assert_equal("no property to remove (remove:0)", error.message)
   end
 
   def test_replace_missing_array_item
     patch = JSONP3::Patch.new.replace("/foo/99", 42)
 
-    error = assert_raises(JSONP3::Patch::Error) { patch.apply({ "foo" => [1, 2, 3] }) }
+    error = assert_raises(JSONP3::Patch::Error) { patch.apply!({ "foo" => [1, 2, 3] }) }
     assert_equal("no item to replace (replace:0)", error.message)
   end
 
   def test_replace_missing_hash_property
     patch = JSONP3::Patch.new.replace("/foo/baz", 42)
 
-    error = assert_raises(JSONP3::Patch::Error) { patch.apply({ "foo" => { "bar" => [1, 2, 3] } }) }
+    error = assert_raises(JSONP3::Patch::Error) { patch.apply!({ "foo" => { "bar" => [1, 2, 3] } }) }
     assert_equal("no property to replace (replace:0)", error.message)
   end
 
   def test_move_to_root
     patch = JSONP3::Patch.new.move("/foo", "")
 
-    assert_equal({ "bar" => [1, 2, 3] }, patch.apply({ "foo" => { "bar" => [1, 2, 3] } }))
+    assert_equal({ "bar" => [1, 2, 3] }, patch.apply!({ "foo" => { "bar" => [1, 2, 3] } }))
   end
 
   def test_copy_to_root
     patch = JSONP3::Patch.new.copy("/foo", "")
     data = { "foo" => { "bar" => [1, 2, 3] } }
 
-    assert_equal({ "bar" => [1, 2, 3] }, patch.apply(data))
+    assert_equal({ "bar" => [1, 2, 3] }, patch.apply!(data))
     assert_equal({ "foo" => { "bar" => [1, 2, 3] } }, data)
   end
 
@@ -124,13 +124,13 @@ class TestJSONPatch < Minitest::Test
     patch = JSONP3::Patch.new.move("/a", "/foo/bar/-")
     data = { "foo" => { "bar" => [1, 2, 3] }, "a" => "b" }
 
-    assert_equal({ "foo" => { "bar" => [1, 2, 3, "b"] } }, patch.apply(data))
+    assert_equal({ "foo" => { "bar" => [1, 2, 3, "b"] } }, patch.apply!(data))
   end
 
   def test_copy_to_end_of_array
     patch = JSONP3::Patch.new.copy("/a", "/foo/bar/-")
     data = { "foo" => { "bar" => [1, 2, 3] }, "a" => "b" }
 
-    assert_equal({ "foo" => { "bar" => [1, 2, 3, "b"] }, "a" => "b" }, patch.apply(data))
+    assert_equal({ "foo" => { "bar" => [1, 2, 3, "b"] }, "a" => "b" }, patch.apply!(data))
   end
 end

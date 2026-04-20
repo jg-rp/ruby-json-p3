@@ -360,11 +360,11 @@ If a pointer can not be resolved, `JSONP3::Pointer::UNDEFINED` is returned inste
 pp JSONP3.resolve("/no/such/thing", data, default: nil) # nil
 ```
 
-### apply
+### apply!
 
-`apply: (Array[Patch::Op | Hash[String, untyped]] ops, top value) -> Object`
+`apply!: (Array[Patch::Op | Hash[String, untyped]] ops, top value) -> Object`
 
-Apply a JSON Patch ([RFC 6902](https://datatracker.ietf.org/doc/html/rfc6902)) with `JSONP3.apply`. **Data is modified in place**.
+Apply a JSON Patch ([RFC 6902](https://datatracker.ietf.org/doc/html/rfc6902)) with `JSONP3.apply!`. **Data is modified in place**.
 
 ```ruby
 require "json"
@@ -380,12 +380,12 @@ ops = <<~JSON
 JSON
 
 data = { "some" => { "other" => "thing" } }
-JSONP3.apply(JSON.parse(ops), data)
+JSONP3.apply!(JSON.parse(ops), data)
 pp data
 # {"some"=>{"other"=>"thing", "foo"=>{"bar"=>[1], "else"=>"thing"}}}
 ```
 
-`JSONP3.apply(ops, value)` is a convenience method equivalent to `JSONP3::Patch.new(ops).apply(value)`. Use the `Patch` constructor when you need to apply the same patch to different data.
+`JSONP3.apply!(ops, value)` is a convenience method equivalent to `JSONP3::Patch.new(ops).apply!(value)`. Use the `Patch` constructor when you need to apply the same patch to different data.
 
 As well as passing an array of hashes following RFC 6902 as ops to `Patch`, we offer a builder API to construct JSON Patch documents programmatically.
 
@@ -400,7 +400,7 @@ patch = JSONP3::Patch.new
                      .copy("/some/other", "/some/foo/else")
                      .copy("/some/foo/else", "/some/foo/bar/-")
 
-patch.apply(data)
+patch.apply!(data)
 pp data
 # {"some"=>{"other"=>"thing", "foo"=>{"bar"=>["thing"], "else"=>"thing"}}}
 ```
@@ -444,7 +444,7 @@ module JSONP3
     ├── class OpTest                       
     ├── class Error < JSONP3::Error
     │   └── class TestFailure
-    └── def self.apply
+    └── def self.!apply
 ```
 
 ## Contributing

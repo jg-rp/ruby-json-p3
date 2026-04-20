@@ -74,7 +74,7 @@ module JSONP3
     Pointer.resolve(pointer, value, default: default)
   end
 
-  def self.apply(ops, value)
-    Patch.apply(ops, value)
+  def self.apply!(ops, value)
+    Patch.apply!(ops, value)
   end
 end

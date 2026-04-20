@@ -16,10 +16,6 @@ module JSONP3
     def self.first: (String path, untyped data) -> (JSONP3::Path::Node | nil)
                   
     def self.match?: (String path, untyped data) -> bool
-                    
-    def self.resolve: (String pointer, untyped value, ?default: untyped) -> untyped
-
-    def self.apply: (Array[Patch::Op | Hash[String, untyped]] ops, untyped value) -> untyped
   end
 
   def self.find: (String path, untyped data) -> JSONP3::Path::NodeList
@@ -36,5 +32,5 @@ module JSONP3
                   
   def self.resolve: (String pointer, untyped value, ?default: untyped) -> untyped
 
-  def self.apply: (Array[Patch::Op | Hash[String, untyped]] ops, untyped value) -> untyped
+  def self.apply!: (Array[Patch::Op | Hash[String, untyped]] ops, untyped value) -> untyped
 end
