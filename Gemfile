@@ -7,13 +7,11 @@ gemspec
 
 gem "rake", "~> 13.0"
 
-gem "minitest", "~> 5.16"
+gem "minitest", "~> 6.0"
 
 gem "rubocop", "~> 1.21"
 
-gem "steep", "~> 1.8"
-
-gem "minitest-fail-fast", "~> 0.1.0"
+gem "steep", "~> 2.0"
 
 gem "stackprof", "~> 0.2.26"
 

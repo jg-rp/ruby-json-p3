@@ -1,3 +1,54 @@
+## [1.0.0] - unreleased
+
+- Changed the JSONPath tokenizer and parser. The new parser is faster and more JIT friendly.
+- Changed our module and class layout to better separate JSONPath, JSON Pointer and JSON Patch, and to remove "stuttering". For example, previously we had `JSONP3::JSONPathEnvironment` and `JSONP3::JSONPathNode`. Now we have `JSONP3::Path::Environment` and `JSONP3::Path:Node`. This ASCII tree view show our new module and class hierarchy.
+    
+    ```
+    module JSONP3
+    ├── class Error < StandardError
+    │
+    ├── module Path                              # JSONPath (RFC 9535)
+    │   ├── class Environment                    
+    │   ├── class Query    
+    │   ├── class Node
+    │   ├── class NodeList
+    │   ├── class Error < JSONP3::Error
+    │   │    ├── class SyntaxError
+    │   │    ├── class TypeError
+    │   │    ├── class NameError
+    │   │    └── class RecursionError
+    │   ├── def self.find
+    │   ├── def self.find_enum
+    │   ├── def self.compile
+    │   ├── def self.match
+    │   ├── def self.match?
+    │   └── def self.first
+    │
+    ├── class Pointer                            # JSON Pointer (RFC 6901)
+    │   ├── class Error < JSONP3::Error
+    │   │   ├── class IndexError
+    │   │   ├── class SyntaxError
+    │   │   └── class TypeError
+    │   └── def self.resolve
+    │
+    └── class Patch                              # JSON Patch (RFC 6902)
+        ├── class OpAdd                          
+        ├── class OpCopy                          
+        ├── class OpMove                          
+        ├── class OpRemove                       
+        ├── class OpReplace                       
+        ├── class OpTest                       
+        ├── class Error < JSONP3::Error
+        │   └── class TestFailure
+        └── def self.apply
+    ```
+
+    Note that top-level convenience methods - like `JSONP3.find` and `JSONP3.compile` - are unchanged. Most dependent projects should only need to change error class names.
+
+- Renamed `JSONP3::JSONPath` to `JSONP3::Path::Query`.
+- Renamed `JSONP3::RecursiveDescentSegment` to `JSONP3::Path::DescendantSegment` to better match the spec.
+- Dropped support for Ruby 3.1 and 3.2, they are end of life.
+
 ## [0.4.1] - 2025-03-18
 
 - Fixed `JSONPathSyntaxError` claiming "unbalanced parentheses" when the query has balanced brackets.

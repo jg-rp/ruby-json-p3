@@ -1,0 +1,64 @@
+module JSONP3
+  # Identify a single value in JSON-like data, as per RFC 6901.
+  class Pointer
+    @tokens: Array[String | Integer]
+
+    @pointer: String
+
+    UNDEFINED: :__undefined
+
+    RE_INT: ::Regexp
+
+    attr_reader tokens: Array[String | Integer]
+
+    def self.resolve: (String pointer, untyped value, ?default: untyped) -> untyped
+
+    # Encode an array of strings and integers into a JSON pointer.
+    # @param tokens [Array<String | Integer>]
+    # @return [String]
+    def self.encode: (Array[String | Integer] tokens) -> String
+
+    # @param pointer [String]
+    def initialize: (String pointer) -> void
+
+    # Resolve this pointer against JSON-like data _value_.
+    def resolve: (untyped value, ?default: untyped) -> untyped
+
+    def resolve_with_parent: (untyped value) -> ::Array[untyped]
+
+    def relative_to?: (Pointer pointer) -> bool
+
+    # @param parts [String]
+    def join: (*String parts) -> Pointer
+            
+    # Return _true_ if this pointer can be resolved against _value_, even if the resolved
+    # value is false or nil.
+    def exist?: (untyped value) -> bool
+
+    # Return this pointer's parent as a new pointer. If this pointer points to the
+    # document root, self is returned.
+    def parent: () -> Pointer
+
+    # @param rel [String | RelativePointer]
+    # @return [Pointer]
+    def to: ((String | RelativePointer) rel) -> Pointer
+
+    def to_s: () -> String
+
+    # @param pointer [String]
+    # @return [Array<String | Integer>]
+    def parse: (String pointer) -> Array[(String | Integer)]
+
+    # @param value [Object]
+    # @param token [String | Integer]
+    # @return [Object] the "fetched" object from _value_ or UNDEFINED.
+    def get_item: (untyped value, (String | Integer) token) -> untyped
+
+    # Like `#parse`, but assumes there's no leading slash.
+    # @param pointer [String]
+    # @return [Array<String | Integer>]
+    def _parse: (String pointer) -> Array[(String | Integer)]
+
+    def _join: (String other) -> Pointer
+  end
+end

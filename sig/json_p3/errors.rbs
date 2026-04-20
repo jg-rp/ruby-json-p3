@@ -1,0 +1,55 @@
+module JSONP3
+  # The base class for all errors raised from this gem.
+  class Error < StandardError
+  end
+
+  module Path
+    class Error < JSONP3::Error
+      @token: t_token
+
+      @query: String
+
+      FULL_MESSAGE: bool
+
+      def initialize: (String msg, t_token token, String query) -> void
+
+      def detailed_message: (?highlight: bool, **untyped _kwargs) -> String
+
+      def full_message: (?highlight: bool, ?order: ::Symbol) -> (::String | untyped)
+    end
+
+    class SyntaxError < Error
+    end
+
+    class TypeError < Error
+    end
+
+    class NameError < Error
+    end
+
+    class RecursionError < Error
+    end
+  end
+
+  class Pointer
+    class Error < JSONP3::Error
+    end
+
+    class IndexError < Error
+    end
+
+    class SyntaxError < Error
+    end
+
+    class TypeError < Error
+    end
+  end
+
+  class Patch
+    class Error < JSONP3::Error
+    end
+
+    class TestFailure < Error
+    end
+  end
+end

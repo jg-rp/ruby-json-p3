@@ -4,7 +4,7 @@ plugins:
   - rubocop-performance
 
 AllCops:
-  TargetRubyVersion: 3.0
+  TargetRubyVersion: 3.3
   NewCops: enable
 
 Style/StringLiterals:
@@ -13,24 +13,40 @@ Style/StringLiterals:
 Style/StringLiteralsInInterpolation:
   EnforcedStyle: double_quotes
 
+Style/ComparableBetween:
+  Enabled: false
+
+Layout/LeadingCommentSpace:
+  Enabled: false
+
 Metrics/AbcSize:
-  Max: 50
+  Enabled: false
 
 Metrics/ClassLength:
-  Max: 500
+  Enabled: false
 
 Metrics/CyclomaticComplexity:
-  Max: 20
+  Enabled: false
 
 Metrics/MethodLength:
-  Max: 50
+  Enabled: false
 
 Metrics/PerceivedComplexity:
-  Max: 20
+  Enabled: false
+
+Metrics/BlockNesting:
+  Max: 4
+
+Metrics/BlockLength:
+  Enabled: false
+
+Metrics/ModuleLength:
+  Enabled: false
 
 Naming/MethodParameterName:
   AllowedNames:
     - op
+    - ch
 
 Naming/PredicateMethod:
   Enabled: false

@@ -20,7 +20,7 @@ class TestCompliance < Minitest::Spec
           _(test_case["results"]).must_include(nodes.map(&:value))
           _(test_case["results_paths"]).must_include(nodes.map(&:path))
         elsif test_case.key? "invalid_selector"
-          assert_raises JSONP3::JSONPathError do
+          assert_raises JSONP3::Path::Error do
             JSONP3.compile(test_case["selector"])
           end
         end
@@ -42,7 +42,7 @@ class TestCompliance < Minitest::Spec
           _(test_case["results"]).must_include(nodes.map(&:value))
           _(test_case["results_paths"]).must_include(nodes.map(&:path))
         elsif test_case.key? "invalid_selector"
-          assert_raises JSONP3::JSONPathError do
+          assert_raises JSONP3::Path::Error do
             JSONP3.compile(test_case["selector"])
           end
         end

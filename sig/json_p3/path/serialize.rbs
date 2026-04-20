@@ -1,0 +1,9 @@
+module JSONP3
+  module Path
+    TRANS: Hash[String, String]
+
+    # Return _value_ formatted as a canonical string literal.
+    # @param value [String]
+    def self.canonical_string: (untyped value) -> ::String
+  end
+end

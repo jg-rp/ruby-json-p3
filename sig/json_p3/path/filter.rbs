@@ -1,0 +1,196 @@
+module JSONP3
+  module Path
+    # Base class for all filter expression nodes.
+    class Expression
+      @token: t_token
+
+      # @dynamic token
+      attr_reader token: t_token
+
+      def initialize: (t_token token) -> void
+
+      # Evaluate the filter expression in the given context.
+      def evaluate: (FilterContext _context) -> untyped
+                  
+      def to_s: () -> String
+
+      def ==: (untyped other) -> bool
+
+      alias eql? ==
+
+      def hash: () -> Integer
+    end
+
+    # An expression that evaluates to true or false.
+    class FilterExpression < Expression
+      @expression: Expression
+
+      attr_reader expression: Expression
+
+      def initialize: (t_token token, Expression expression) -> void
+  
+      private
+
+      class Precedence
+        LOWEST: 1
+
+        LOGICAL_OR: 3
+
+        LOGICAL_AND: 4
+
+        PREFIX: 7
+      end
+
+      def to_canonical_string: (Expression expression, Integer parent_precedence) -> String
+    end
+
+    # Base class for expression literals.
+    class FilterExpressionLiteral < Expression
+      @value: untyped
+
+      attr_reader value: untyped
+
+      def initialize: (t_token token, untyped value) -> void
+    end
+
+    # Literal true or false.
+    class BooleanLiteral < FilterExpressionLiteral
+    end
+
+    # A double or single quoted string literal.
+    class StringLiteral < FilterExpressionLiteral
+    end
+
+    # A literal integer.
+    class IntegerLiteral < FilterExpressionLiteral
+    end
+
+    # A literal float
+    class FloatLiteral < FilterExpressionLiteral
+    end
+
+    # A literal null
+    class NullLiteral < FilterExpressionLiteral
+    end
+
+    # An expression prefixed with the logical not operator.
+    class LogicalNotExpression < Expression
+      @expression: Expression
+
+      attr_reader expression: Expression
+
+      def initialize: (t_token token, Expression expression) -> void
+    end
+
+    # Base class for expression with a left expression, operator and right expression.
+    class InfixExpression < Expression
+      @left: Expression
+
+      @right: Expression
+
+      attr_reader left: Expression
+
+      attr_reader right: Expression
+
+      def initialize: (t_token token, Expression left, Expression right) -> void
+    end
+
+    # A logical `&&` expression.
+    class LogicalAndExpression < InfixExpression
+    end
+
+    # A logical `||` expression.
+    class LogicalOrExpression < InfixExpression
+    end
+
+    # An `==` expression.
+    class EqExpression < InfixExpression
+    end
+
+    # A `!=` expression.
+    class NeExpression < InfixExpression
+    end
+
+    # A `<=` expression.
+    class LeExpression < InfixExpression
+    end
+
+    # A `>=` expression.
+    class GeExpression < InfixExpression
+    end
+
+    # A `<` expression.
+    class LtExpression < InfixExpression
+    end
+
+    # A `>` expression.
+    class GtExpression < InfixExpression
+    end
+
+    # Base class for all embedded filter queries
+    class QueryExpression < Expression
+      @query: Query
+
+      attr_reader query: Query
+
+      def initialize: (t_token token, Query query) -> void
+    end
+
+    # An embedded query starting at the current node.
+    class RelativeQueryExpression < QueryExpression
+    end
+
+    # An embedded query starting at the root node.
+    class AbsoluteQueryExpression < QueryExpression
+    end
+
+    # A filter function call.
+    class FunctionExpression < Expression
+      @name: String
+
+      @func: FunctionExtension
+
+      @args: Array[Expression]
+
+      attr_reader name: String
+
+      attr_reader func: FunctionExtension
+
+      attr_reader args: Array[Expression]
+
+      # @param name [String]
+      # @param args [Array<Expression>]
+      def initialize: (t_token token, String name, JSONP3::Path::FunctionExtension func, Array[Expression] args) -> void
+
+      private
+
+      # @param func [Proc]
+      # @param args [Array<Object>]
+      # @return [Array<Object>]
+      def unpack_node_lists: (FunctionExtension func, Array[untyped] args) -> Array[untyped]
+    end
+
+    def self.truthy?: (untyped obj) -> (true | false)
+
+    def self.eq?: (untyped left, untyped right) -> (false | true)
+
+    def self.lt?: (untyped left, untyped right) -> (true | false)
+
+    # Contextual information and data used for evaluating a filter expression.
+    class FilterContext
+      @env: Environment
+
+      @current: untyped
+
+      @root: untyped
+
+      attr_reader env: Environment
+
+      attr_reader current: untyped
+
+      attr_reader root: untyped
+
+      def initialize: (Environment env, untyped current, untyped root) -> void
+    end
+  end
+end

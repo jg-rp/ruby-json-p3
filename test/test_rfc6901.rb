@@ -36,7 +36,7 @@ class TestRFC6901 < Minitest::Spec
   describe "RFC6901" do
     TEST_CASES.each_with_index do |test_case, i|
       it i.to_s do
-        p = JSONP3::JSONPointer.new(test_case["pointer"])
+        p = JSONP3::Pointer.new(test_case["pointer"])
         _(p.resolve(RFC6901_DOCUMENT)).must_equal(test_case["want"])
       end
     end

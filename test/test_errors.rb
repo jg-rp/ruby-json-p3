@@ -2,7 +2,7 @@
 
 require "test_helper"
 
-class MockEnvironment < JSONP3::JSONPathEnvironment
+class MockEnvironment < JSONP3::Path::Environment
   MAX_RECURSION_DEPTH = 3
 end
 
@@ -13,7 +13,7 @@ class TestErrors < Minitest::Test
     data = { "foo" => array }
     array << data
 
-    assert_raises(JSONP3::JSONPathRecursionError) { path.find(data) }
+    assert_raises(JSONP3::Path::RecursionError) { path.find(data) }
   end
 
   def test_low_recursion_limit
@@ -21,18 +21,18 @@ class TestErrors < Minitest::Test
     path = env.compile("$..a")
     data = { "foo" => [{ "bar" => [1, 2, 3] }] }
 
-    assert_raises(JSONP3::JSONPathRecursionError) { path.find(data) }
+    assert_raises(JSONP3::Path::RecursionError) { path.find(data) }
   end
 
   def test_unclosed_selection_list
-    assert_raises(JSONP3::JSONPathSyntaxError) { JSONP3.compile("$[1,2") }
+    assert_raises(JSONP3::Path::SyntaxError) { JSONP3.compile("$[1,2") }
   end
 
   def test_unclosed_selection_list_inside_filter
-    assert_raises(JSONP3::JSONPathSyntaxError) { JSONP3.compile("$[?@.a < 1") }
+    assert_raises(JSONP3::Path::SyntaxError) { JSONP3.compile("$[?@.a < 1") }
   end
 
   def test_nested_functions_with_unbalanced_parens
-    assert_raises(JSONP3::JSONPathSyntaxError) { JSONP3.compile("$.values[?match(@.a, value($..['regex'])]") }
+    assert_raises(JSONP3::Path::SyntaxError) { JSONP3.compile("$.values[?match(@.a, value($..['regex'])]") }
   end
 end

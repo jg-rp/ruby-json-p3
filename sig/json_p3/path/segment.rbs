@@ -1,0 +1,54 @@
+module JSONP3
+  module Path
+    # Base class for all JSONPath segments.
+    class Segment
+      @env: JSONP3::Path::Environment
+
+      @token: t_token
+
+      @selectors: Array[Selector]
+
+      # @dynamic token, selectors
+      attr_reader token: t_token
+
+      # @dynamic token, selectors
+      attr_reader selectors: Array[Selector]
+
+      def initialize: (JSONP3::Path::Environment env, t_token token, Array[Selector] selectors) -> void
+
+      # Select the children of each node in _nodes_.
+      # @return [Array<Node>]
+      def resolve: (Array[Node] _nodes) -> Array[Node]
+
+      # Select the children of each node in _nodes_.
+      # @return [Enumerable<Node>]
+      def resolve_enum: (Enumerable[Node] _nodes) -> Enumerable[Node]
+    end
+
+    # The child selection segment.
+    class ChildSegment < Segment
+      def to_s: () -> ::String
+
+      def ==: (untyped other) -> bool
+
+      alias eql? ==
+
+      def hash: () -> Integer
+    end
+
+    # The descendent segment
+    class DescendantSegment < Segment
+      def to_s: () -> ::String
+
+      def ==: (untyped other) -> bool
+
+      alias eql? ==
+
+      def hash: () -> Integer
+
+      def visit: (Node node, ?::Integer depth) -> Array[Node]
+
+      def visit_enum: (Node node, ?::Integer depth) -> Enumerable[Node]
+    end
+  end
+end

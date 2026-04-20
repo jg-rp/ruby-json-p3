@@ -1,0 +1,100 @@
+module JSONP3
+  module Path
+    # Base class for all JSONPath selectors
+    class Selector
+      @env: JSONP3::Path::Environment
+
+      @token: t_token
+
+      # @dynamic token
+      attr_reader token: t_token
+
+      def initialize: (Environment env, t_token token) -> void
+
+      # Apply this selector to _node_.
+      # @return [Array<JSONPathNode>]
+      def resolve: (Node _node) -> Array[Node]
+
+      # Apply this selector to _node_.
+      # @return [Enumerable<JSONPathNode>]
+      def resolve_enum: (Node node) -> Enumerable[Node]
+
+      # Return true if this selector is a singular selector.
+      def singular?: () -> (false | true)
+                   
+      def to_s: () -> String
+
+      def ==: (untyped other) -> bool
+
+      alias eql? ==
+
+      def hash: () -> Integer
+    end
+
+    # The name selector select values from hashes given a key.
+    class NameSelector < Selector
+      @name: String
+
+      # @dynamic name
+      attr_reader name: untyped
+
+      def initialize: (Environment env, t_token token, String name) -> void      
+    end
+
+    # This non-standard name selector selects values from hashes given a string or
+    # symbol key.
+    class SymbolNameSelector < NameSelector
+      @sym: String
+
+      def initialize: (Environment env, t_token token, String name) -> void
+    end
+
+    # The index selector selects values from arrays given an index.
+    class IndexSelector < Selector
+      @index: Integer
+
+      # @dynamic index
+      attr_reader index: Integer
+
+      def initialize: (Environment env, t_token token, Integer index) -> void
+
+      private
+
+      def normalize: (Integer index, Integer length) -> Integer
+    end
+
+    # The wildcard selector selects all elements from an array or values from a hash.
+    class WildcardSelector < Selector
+    end
+
+    # The slice selector selects a range of elements from an array.
+    class SliceSelector < Selector
+      @start: (Integer | nil)
+
+      @stop: (Integer | nil)
+
+      @step: Integer
+
+      # @dynamic start, stop, step
+      attr_reader start: (Integer | nil)
+
+      # @dynamic start, stop, step
+      attr_reader stop: (Integer | nil)
+
+      # @dynamic start, stop, step
+      attr_reader step: Integer
+
+      def initialize: (Environment env, t_token token, (Integer | nil) start, (Integer | nil) stop, (Integer | nil) step) -> void
+    end
+
+    # Select array elements or hash values according to a filter expression.
+    class FilterSelector < Selector
+      @expression: Expression
+
+      # @dynamic expression
+      attr_reader expression: Expression
+
+      def initialize: (Environment env, t_token token, Expression expression) -> void
+    end
+  end
+end

@@ -16,7 +16,7 @@ We follow <a href="https://datatracker.ietf.org/doc/html/rfc9535">RFC 9535</a> s
     <img alt="Gem Version" src="https://img.shields.io/gem/v/json_p3?style=flat-square">
   </a>
   <a href="https://github.com/jg-rp/ruby-json-p3">
-    <img alt="Static Badge" src="https://img.shields.io/badge/Ruby-3.1%20%7C%203.2%20%7C%203.3%20%7C%203.4-CC342D?style=flat-square">
+    <img alt="Static Badge" src="https://img.shields.io/badge/Ruby-3.3%20%7C%203.4%20%7C%204.0-CC342D?style=flat-square">
   </a>
 </p>
 
@@ -29,6 +29,7 @@ We follow <a href="https://datatracker.ietf.org/doc/html/rfc9535">RFC 9535</a> s
 - [Links](#links)
 - [Related projects](#related-projects)
 - [Quick start](#quick-start)
+- [Class and module layout](#module-layout)
 - [Contributing](#contributing)
 
 ## Install
@@ -36,13 +37,19 @@ We follow <a href="https://datatracker.ietf.org/doc/html/rfc9535">RFC 9535</a> s
 Add `'json_p3'` to your Gemfile:
 
 ```
-gem 'json_p3', '~> 0.4.1'
+gem 'json_p3', '~> 1.0.0'
 ```
 
 Or
 
 ```
 gem install json_p3
+```
+
+Or
+
+```
+bundle add json_p3
 ```
 
 ### Checksum
@@ -70,24 +77,10 @@ require "json"
 data = JSON.parse <<~JSON
   {
     "users": [
-      {
-        "name": "Sue",
-        "score": 100
-      },
-      {
-        "name": "Sally",
-        "score": 84,
-        "admin": false
-      },
-      {
-        "name": "John",
-        "score": 86,
-        "admin": true
-      },
-      {
-        "name": "Jane",
-        "score": 55
-      }
+      { "name": "Sue", "score": 100 },
+      { "name": "Sally", "score": 84, "admin": false },
+      { "name": "John", "score": 86, "admin": true },
+      { "name": "Jane", "score": 55 }
     ],
     "moderator": "John"
   }
@@ -144,15 +137,15 @@ end
 
 ### find
 
-`find(query, value) -> Array<JSONPathNode>`
+`find: (String query, top value) -> Array[JSONP3::Path::Node]`
 
-Apply JSONPath expression _query_ to JSON-like data _value_. An array of JSONPathNode instances is returned, one node for each value matched by _query_. The returned array will be empty if there were no matches.
+Apply query expression _query_ to JSON-like data _value_. An array of `Node` instances is returned, one node for each value matched by _query_.
 
-Each `JSONPathNode` has:
+For each `Node`:
 
-- a `value` attribute, which is the JSON-like value associated with the node.
-- a `location` attribute, which is a nested array of hash/object names and array indices that were required to reach the node's value in the target JSON document.
-- a `path()` method, which returns the normalized path to the node in the target JSON document.
+- `#value` is the JSON-like value associated with the node.
+- `#location` is an array of object keys and array indices used to reach the node's value in the target document.
+- `#path` returns the normalized path to the node in the target JSON document. Normalized paths are computed from `#location` and are not cached between calls.
 
 ```ruby
 require "json_p3"
@@ -161,24 +154,10 @@ require "json"
 data = JSON.parse <<~JSON
   {
     "users": [
-      {
-        "name": "Sue",
-        "score": 100
-      },
-      {
-        "name": "Sally",
-        "score": 84,
-        "admin": false
-      },
-      {
-        "name": "John",
-        "score": 86,
-        "admin": true
-      },
-      {
-        "name": "Jane",
-        "score": 55
-      }
+      { "name": "Sue", "score": 100 },
+      { "name": "Sally", "score": 84, "admin": false },
+      { "name": "John", "score": 86, "admin": true },
+      { "name": "Jane", "score": 55 }
     ],
     "moderator": "John"
   }
@@ -192,11 +171,13 @@ end
 # {"name"=>"John", "score"=>86, "admin"=>true} at $['users'][2]
 ```
 
+The returned array will be empty if there were no matches.
+
 ### find_enum
 
-`find_enum(query, value) -> Enumerable<JSONPathNode>`
+`find_enum: (String query, top value) -> Enumerable[JSONP3::Path::Node]`
 
-`find_enum` is an alternative to `find` which returns an enumerable (usually an enumerator) of `JSONPathNode` instances instead of an array. Depending on the query and the data the query is applied to, `find_enum` can be more efficient than `find`, especially for large data and queries using recursive descent segments.
+`JSONP3.find_enum` is an alternative to `find` which returns an enumerable (usually an enumerator) of `Node` instances instead of an array. Depending on the query and the data the query is applied to, `find_enum` can be more efficient than `find`, especially for large data and queries using descendant segments.
 
 ```ruby
 # ... continued from above
@@ -211,9 +192,9 @@ end
 
 ### compile
 
-`compile(query) -> JSONPath`
+`compile: (String query) -> JSONP3::Path::Query`
 
-Prepare a JSONPath expression for repeated application to different JSON-like data. An instance of `JSONPath` has a `find(data)` method, which behaves similarly to the module-level `find(query, data)` method.
+Prepare a query for repeated application to different JSON-like data. An instance of `Query` has `#find(data)`, which behaves similarly to the module-level `find(query, data)` method.
 
 ```ruby
 require "json_p3"
@@ -222,24 +203,10 @@ require "json"
 data = JSON.parse <<~JSON
   {
     "users": [
-      {
-        "name": "Sue",
-        "score": 100
-      },
-      {
-        "name": "Sally",
-        "score": 84,
-        "admin": false
-      },
-      {
-        "name": "John",
-        "score": 86,
-        "admin": true
-      },
-      {
-        "name": "Jane",
-        "score": 55
-      }
+      { "name": "Sue", "score": 100 },
+      { "name": "Sally", "score": 84, "admin": false },
+      { "name": "John", "score": 86, "admin": true },
+      { "name": "Jane", "score": 55 }
     ],
     "moderator": "John"
   }
@@ -257,48 +224,48 @@ end
 
 ### match / first
 
-`match(query, value) -> JSONPathNode | nil`
+`match: (String query, top value) -> (JSONP3::Path::Node | nil)`
 
-`match` (alias `first`) returns a node for the first available match when applying _query_ to _value_, or `nil` if there were no matches.
+`JSONP3.match` (alias `first`) returns a node for the first available match when applying _query_ to _value_, or `nil` if there were no matches.
 
 ### match?
 
-`match?(query, value) -> bool`
+`match?: (String query, top value) -> bool`
 
-`match?` returns `true` if there was at least one match from applying _query_ to _value_, or `false` otherwise.
+`JSONP3.match?` returns `true` if there was at least one match from applying _query_ to _value_, or `false` otherwise.
 
-### JSONPathEnvironment
+### JSONP3::Path::Environment
 
 The `find`, `find_enum` and `compile` methods described above are convenience methods equivalent to:
 
 ```
-JSONP3::DEFAULT_ENVIRONMENT.find(query, data)
+JSONP3::Path::DEFAULT_ENVIRONMENT.find(query, data)
 ```
 
 ```
-JSONP3::DEFAULT_ENVIRONMENT.find_enum(query, data)
+JSONP3::Path::DEFAULT_ENVIRONMENT.find_enum(query, data)
 ```
 
 and
 
 ```
-JSONP3::DEFAULT_ENVIRONMENT.compile(query)
+JSONP3::Path::DEFAULT_ENVIRONMENT.compile(query)
 ```
 
-You could create your own environment like this:
+You can create your own environment like this:
 
 ```ruby
 require "json_p3"
 
-jsonpath = JSONP3::JSONPathEnvironment.new
+jsonpath = JSONP3::Path::Environment.new
 nodes = jsonpath.find("$.*", { "a" => "b", "c" => "d" })
 pp nodes.map(&:value) # ["b", "d"]
 ```
 
-To configure an environment with custom filter functions or non-standard selectors, inherit from `JSONPathEnvironment` and override some of its constants or the `#setup_function_extensions` method.
+To configure an environment with custom filter functions or non-standard selectors, inherit from `JSONP3::Path::Environment` and override some of its constants or the `#setup_function_extensions` method.
 
 ```ruby
-class MyJSONPathEnvironment < JSONP3::JSONPathEnvironment
+class MyJSONPathEnvironment < JSONP3::Path::Environment
   # The maximum integer allowed when selecting array items by index.
   MAX_INT_INDEX = (2**53) - 1
 
@@ -326,26 +293,33 @@ class MyJSONPathEnvironment < JSONP3::JSONPathEnvironment
   # Override this function to configure JSONPath function extensions.
   # By default, only the standard functions described in RFC 9535 are enabled.
   def setup_function_extensions
-    @function_extensions["length"] = Length.new
-    @function_extensions["count"] = Count.new
-    @function_extensions["value"] = Value.new
-    @function_extensions["match"] = Match.new
-    @function_extensions["search"] = Search.new
+    @function_extensions["length"] = JSONP3::Path::Length.new
+    @function_extensions["count"] = JSONP3::Path::Count.new
+    @function_extensions["value"] = JSONP3::Path::Value.new
+    @function_extensions["match"] = JSONP3::Path::Match.new
+    @function_extensions["search"] = JSONP3::Path::Search.new
   end
 ```
 
-### JSONPathError
+### Errors
 
-`JSONPathError` is the base class for all JSONPath exceptions. The following classes inherit from `JSONPathError` and will only occur when parsing a JSONPath expression, not when applying a path to some data.
-
-- `JSONPathSyntaxError`
-- `JSONPathTypeError`
-- `JSONPathNameError`
-
-`JSONPathError` implements `#detailed_message`. With recent versions of Ruby you should get useful error messages.
+`JSONP3::Error` is the base class for all exceptions raised from this Gem.
 
 ```
-JSONP3::JSONPathSyntaxError: unexpected trailing whitespace
+StandardError
+└── JSONP3::Error
+    ├── JSONP3::Path::Error
+    │   └── SyntaxError, TypeError, NameError, RecursionError
+    ├── JSONP3::Pointer::Error
+    │   └── IndexError, SyntaxError, TypeError
+    └── JSONP3::Patch::Error
+        └── TestFailure
+```
+
+`JSONP3::Path::Error` inherits from `JSONP3::Error` and implements `#detailed_message`. With recent versions of Ruby you should get useful error messages.
+
+```
+JSONP3::Path::SyntaxError: unexpected trailing whitespace
   -> '$.foo ' 1:5
   |
 1 | $.foo
@@ -354,9 +328,9 @@ JSONP3::JSONPathSyntaxError: unexpected trailing whitespace
 
 ### resolve
 
-`resolve(pointer, value) -> Object`
+`resolve: (String pointer, top value, ?default: top) -> Object`
 
-Resolve a JSON Pointer (RFC 6901) against some data using `JSONP3.resolve()`.
+Resolve a JSON Pointer (RFC 6901) against some data using `JSONP3.resolve`.
 
 ```ruby
 require "json_p3"
@@ -365,24 +339,10 @@ require "json"
 data = JSON.parse <<~JSON
   {
     "users": [
-      {
-        "name": "Sue",
-        "score": 100
-      },
-      {
-        "name": "Sally",
-        "score": 84,
-        "admin": false
-      },
-      {
-        "name": "John",
-        "score": 86,
-        "admin": true
-      },
-      {
-        "name": "Jane",
-        "score": 55
-      }
+      { "name": "Sue", "score": 100 },
+      { "name": "Sally", "score": 84, "admin": false },
+      { "name": "John", "score": 86, "admin": true },
+      { "name": "Jane", "score": 55 }
     ],
     "moderator": "John"
   }
@@ -392,7 +352,7 @@ puts JSONP3.resolve("/users/1", data)
 # {"name"=>"Sally", "score"=>84, "admin"=>false}
 ```
 
-If a pointer can not be resolved, `JSONP3::JSONPointer::UNDEFINED` is returned instead. You can use your own default value using the `default:` keyword argument.
+If a pointer can not be resolved, `JSONP3::Pointer::UNDEFINED` is returned instead. You can use your own default value using the `default:` keyword argument.
 
 ```ruby
 # continued from above
@@ -402,9 +362,9 @@ pp JSONP3.resolve("/no/such/thing", data, default: nil) # nil
 
 ### apply
 
-`apply(ops, value) -> Object`
+`apply: (Array[Patch::Op | Hash[String, untyped]] ops, top value) -> Object`
 
-Apply a JSON Patch ([RFC 6902](https://datatracker.ietf.org/doc/html/rfc6902)) with `JSONP3.apply()`. **Data is modified in place**.
+Apply a JSON Patch ([RFC 6902](https://datatracker.ietf.org/doc/html/rfc6902)) with `JSONP3.apply`. **Data is modified in place**.
 
 ```ruby
 require "json"
@@ -425,24 +385,66 @@ pp data
 # {"some"=>{"other"=>"thing", "foo"=>{"bar"=>[1], "else"=>"thing"}}}
 ```
 
-`JSONP3.apply(ops, value)` is a convenience method equivalent to `JSONP3::JSONPatch.new(ops).apply(value)`. Use the `JSONPatch` constructor when you need to apply the same patch to different data.
+`JSONP3.apply(ops, value)` is a convenience method equivalent to `JSONP3::Patch.new(ops).apply(value)`. Use the `Patch` constructor when you need to apply the same patch to different data.
 
-As well as passing an array of hashes following RFC 6902 as ops to `JSONPatch`, we offer a builder API to construct JSON Patch documents programmatically.
+As well as passing an array of hashes following RFC 6902 as ops to `Patch`, we offer a builder API to construct JSON Patch documents programmatically.
 
 ```ruby
 require "json_p3"
 
 data = { "some" => { "other" => "thing" } }
 
-patch = JSONP3::JSONPatch.new
-                         .add("/some/foo", { "foo" => [] })
-                         .add("/some/foo", { "bar" => [] })
-                         .copy("/some/other", "/some/foo/else")
-                         .copy("/some/foo/else", "/some/foo/bar/-")
+patch = JSONP3::Patch.new
+                     .add("/some/foo", { "foo" => [] })
+                     .add("/some/foo", { "bar" => [] })
+                     .copy("/some/other", "/some/foo/else")
+                     .copy("/some/foo/else", "/some/foo/bar/-")
 
 patch.apply(data)
 pp data
 # {"some"=>{"other"=>"thing", "foo"=>{"bar"=>["thing"], "else"=>"thing"}}}
+```
+
+## Module layout
+
+```
+module JSONP3
+├── class Error < StandardError
+│
+├── module Path                              # JSONPath (RFC 9535)
+│   ├── class Environment                    
+│   ├── class Query    
+│   ├── class Node
+│   ├── class NodeList
+│   ├── class Error < JSONP3::Error
+│   │    ├── class SyntaxError
+│   │    ├── class TypeError
+│   │    ├── class NameError
+│   │    └── class RecursionError
+│   ├── def self.find
+│   ├── def self.find_enum
+│   ├── def self.compile
+│   ├── def self.match
+│   ├── def self.match?
+│   └── def self.first
+│
+├── class Pointer                            # JSON Pointer (RFC 6901)
+│   ├── class Error < JSONP3::Error
+│   │   ├── class IndexError
+│   │   ├── class SyntaxError
+│   │   └── class TypeError
+│   └── def self.resolve
+│
+└── class Patch                              # JSON Patch (RFC 6902)
+    ├── class OpAdd                          
+    ├── class OpCopy                          
+    ├── class OpMove                          
+    ├── class OpRemove                       
+    ├── class OpReplace                       
+    ├── class OpTest                       
+    ├── class Error < JSONP3::Error
+    │   └── class TestFailure
+    └── def self.apply
 ```
 
 ## Contributing
