@@ -16,7 +16,7 @@ module JSONP3
         "replace"
       end
 
-      def apply(value, index)
+      def apply!(value, index)
         parent, obj = @pointer.resolve_with_parent(value)
         return @value if parent == JSONP3::Pointer::UNDEFINED && @pointer.tokens.empty?
 

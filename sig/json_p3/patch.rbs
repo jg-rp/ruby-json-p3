@@ -3,7 +3,7 @@ module JSONP3
   class Patch
     @ops: Array[Op]
 
-    def self.apply: (Array[Patch::Op | Hash[String, untyped]] ops, untyped value) -> untyped
+    def self.apply!: (Array[Patch::Op | Hash[String, untyped]] ops, untyped value) -> untyped
 
     # Base class for all JSON Patch operations
     class Op
@@ -11,7 +11,7 @@ module JSONP3
       def name: () -> String
 
       # Apply the patch operation to _value_.
-      def apply: (untyped _value, Integer _index) -> untyped
+      def apply!: (untyped _value, Integer _index) -> untyped
 
       # Return a JSON-like representation of this patch operation.
       def to_h: () -> untyped
@@ -127,7 +127,7 @@ module JSONP3
     def test: (JSONP3::Pointer | String pointer, untyped value) -> self
 
     # Apply this patch to JSON-like value _value_.
-    def apply: (untyped value) -> untyped
+    def apply!: (untyped value) -> untyped
 
     def to_a: () -> Array[untyped]
 

@@ -16,7 +16,7 @@ module JSONP3
         "test"
       end
 
-      def apply(value, index)
+      def apply!(value, index)
         obj = @pointer.resolve(value)
         raise JSONP3::Patch::TestFailure, "test failed (#{name}:#{index})" if obj != @value
 

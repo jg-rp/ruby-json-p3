@@ -1,5 +1,7 @@
 ## [1.0.0] - unreleased
 
+This major release includes breaking changes. No new features have been added.
+
 - Changed the JSONPath tokenizer and parser. The new parser is faster and more JIT friendly.
 - Changed our module and class layout to better separate JSONPath, JSON Pointer and JSON Patch, and to remove "stuttering". For example, previously we had `JSONP3::JSONPathEnvironment` and `JSONP3::JSONPathNode`. Now we have `JSONP3::Path::Environment` and `JSONP3::Path:Node`. This ASCII tree view show our new module and class hierarchy.
     
@@ -40,13 +42,14 @@
         ├── class OpTest                       
         ├── class Error < JSONP3::Error
         │   └── class TestFailure
-        └── def self.apply
+        └── def !self.apply
     ```
 
     Note that top-level convenience methods - like `JSONP3.find` and `JSONP3.compile` - are unchanged. Most dependent projects should only need to change error class names.
 
 - Renamed `JSONP3::JSONPath` to `JSONP3::Path::Query`.
 - Renamed `JSONP3::RecursiveDescentSegment` to `JSONP3::Path::DescendantSegment` to better match the spec.
+- Renamed `JSONP3.apply` to `JSONP3.apply!`, `JSONP3::Patch#apply` to `JSONP3::Patch#apply!` and `JSONP3::Patch::Op#apply` to `JSONP3::Patch::Op#apply!`. There is no "safe", non mutating version of `apply!`.
 - Dropped support for Ruby 3.1 and 3.2, they are end of life.
 
 ## [0.4.1] - 2025-03-18

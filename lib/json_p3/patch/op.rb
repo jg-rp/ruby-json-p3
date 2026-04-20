@@ -10,8 +10,8 @@ module JSONP3
       end
 
       # Apply the patch operation to _value_.
-      def apply(_value, _index)
-        raise "JSON Patch operations must implement apply(value, index)"
+      def apply!(_value, _index)
+        raise "JSON Patch operations must implement apply!(value, index)"
       end
 
       # Return a JSON-like representation of this patch operation.
