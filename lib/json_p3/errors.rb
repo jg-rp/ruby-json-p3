@@ -22,7 +22,7 @@ module JSONP3
           value = JSONP3::Path.get_token_value(@token, @query)
           lines = @query[...@token[1]]&.lines or [""] # pleasing the type checker
           lineno = lines.length
-          col = lines[-1].length
+          col = lines.last.length
           pad = " " * lineno.to_s.length
           pointer = (" " * col) + ("^" * [value.length, 1].max)
           <<~ENDOFMESSAGE.strip
@@ -52,13 +52,6 @@ module JSONP3
   end
 
   class Pointer
-    class Error < JSONP3::Error; end
-    class IndexError < Error; end
-    class SyntaxError < Error; end
-    class TypeError < Error; end
-  end
-
-  class RelativePointer
     class Error < JSONP3::Error; end
     class IndexError < Error; end
     class SyntaxError < Error; end

@@ -111,7 +111,7 @@ module JSONP3
             if peek.first == :token_eoi
               raise SyntaxError.new(
                 "unexpected trailing whitespace",
-                peek,
+                @tokens[@pos - 1],
                 @query
               )
             end

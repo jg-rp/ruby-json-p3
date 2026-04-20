@@ -45,20 +45,6 @@ module JSONP3
     end
   end
 
-  class RelativePointer
-    class Error < JSONP3::Error
-    end
-
-    class IndexError < Error
-    end
-
-    class SyntaxError < Error
-    end
-
-    class TypeError < Error
-    end
-  end
-
   class Patch
     class Error < JSONP3::Error
     end

@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    json_p3 (0.4.1)
+    json_p3 (1.0.0)
 
 GEM
   remote: https://rubygems.org/
