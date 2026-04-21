@@ -1,4 +1,4 @@
-## [1.0.0] - unreleased
+## [1.0.0] - 2026-04-21
 
 This major release includes breaking changes. No new features have been added.
 
