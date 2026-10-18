@@ -1,4 +1,4 @@
-## [1.0.1] - Unreleased
+## [1.0.1] - 2026-10-18
 
 - Fixed the JSON Patch `move` operation overwriting the item at its target array index instead of inserting before it, which corrupted arrays when reordering their items. [RFC 6902 section 4.4](https://datatracker.ietf.org/doc/html/rfc6902#section-4.4) defines `move` as a `remove` followed by an `add`, and [section 4.1](https://datatracker.ietf.org/doc/html/rfc6902#section-4.1) says that when an `add` targets an array index "a new value is inserted into the array at the specified index".
 - Fixed the JSON Patch `add` operation rejecting an array index equal to the length of the array. [RFC 6902 section 4.1](https://datatracker.ietf.org/doc/html/rfc6902#section-4.1) only requires that the specified index "MUST NOT be greater than the number of elements in the array", so an index equal to the length is valid and appends to the array.
