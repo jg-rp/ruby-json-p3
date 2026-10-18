@@ -39,30 +39,20 @@ module JSONP3
         if source_parent.is_a?(Array)
           source_parent.delete_at(source_target.to_i)
         elsif source_parent.is_a?(Hash)
-          source_parent.delete(source_target)
+          source_parent.delete(member_key(source_parent, source_target))
         end
 
         # Find the parent of the destination pointer.
         dest_parent, _dest_obj = @pointer.resolve_with_parent(value)
-        return source_obj if dest_parent == JSONP3::Pointer::UNDEFINED
+        return source_obj if @pointer.tokens.empty?
 
-        dest_target = @pointer.tokens.last
-        if dest_target == JSONP3::Pointer::UNDEFINED
+        if dest_parent == JSONP3::Pointer::UNDEFINED
           raise JSONP3::Patch::Error,
-                "unexpected operation (#{name}:#{index})"
+                "no such property or item '#{@pointer.parent}' (#{name}:#{index})"
         end
 
         # Write the source value to the destination.
-        if dest_parent.is_a?(Array)
-          if dest_target == "-"
-            dest_parent << source_obj
-          else
-            dest_parent[dest_target.to_i] = source_obj
-          end
-        elsif dest_parent.is_a?(Hash)
-          dest_parent[dest_target] = source_obj
-        end
-
+        add_member(dest_parent, @pointer.tokens.last, source_obj, index)
         value
       end
 

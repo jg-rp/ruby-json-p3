@@ -38,7 +38,7 @@ module JSONP3
         elsif parent.is_a?(Hash)
           raise JSONP3::Patch::Error, "no property to replace (#{name}:#{index})" if obj == JSONP3::Pointer::UNDEFINED
 
-          parent[target] = @value
+          parent[member_key(parent, target)] = @value
         else
           raise JSONP3::Patch::Error, "unexpected operation on #{parent.class} (#{name}:#{index})"
         end

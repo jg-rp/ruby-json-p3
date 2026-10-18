@@ -15,6 +15,13 @@ module JSONP3
 
       # Return a JSON-like representation of this patch operation.
       def to_h: () -> untyped
+
+      # Add _obj_ to _parent_ at _target_ following the semantics of the JSON
+      # Patch _add_ operation: insert into arrays, set object members.
+      private def add_member: (untyped parent, String | Integer target, untyped obj, Integer index) -> void
+
+      # Return the key of _parent_ identified by pointer token _target_.
+      private def member_key: (Hash[untyped, untyped] parent, String | Integer target) -> (String | Integer)
     end
 
     # The JSON Patch _add_ operation.
