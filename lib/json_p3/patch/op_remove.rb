@@ -40,7 +40,7 @@ module JSONP3
         elsif parent.is_a?(Hash)
           raise JSONP3::Patch::Error, "no property to remove (#{name}:#{index})" if obj == JSONP3::Pointer::UNDEFINED
 
-          parent.delete(target)
+          parent.delete(member_key(parent, target))
         else
           raise JSONP3::Patch::Error, "unexpected operation on #{parent.class} (#{name}:#{index})"
         end
