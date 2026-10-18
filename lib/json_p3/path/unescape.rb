@@ -48,14 +48,6 @@ module JSONP3
             )
           end
 
-          if code_point <= 0x1f
-            raise JSONP3::Path::SyntaxError.new(
-              "invalid character #{code_point}",
-              token,
-              query
-            )
-          end
-
           unescaped << code_point.chr(Encoding::UTF_8)
           next
         end

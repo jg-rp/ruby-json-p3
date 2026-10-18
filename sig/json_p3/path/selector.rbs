@@ -29,6 +29,9 @@ module JSONP3
       alias eql? ==
 
       def hash: () -> Integer
+              
+      #: (Integer?, Integer, Integer, Integer) -> Integer
+      def normalized_index: (Integer? num, Integer default, Integer length, Integer step) -> Integer
     end
 
     # The name selector select values from hashes given a key.
