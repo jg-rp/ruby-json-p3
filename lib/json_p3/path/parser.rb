@@ -237,11 +237,12 @@ module JSONP3
           when :token_rbracket
             break
           else
-            eat(:token_comma)
+            comma_token = eat(:token_comma)
+            skip(:token_trivia)
             if peek.first == :token_rbracket
               raise SyntaxError.new(
                 "unexpected trailing comma",
-                peek,
+                comma_token,
                 @query
               )
             end
@@ -364,7 +365,7 @@ module JSONP3
         func = @env.function_extensions[name]
 
         unless func
-          raise JSONPathNameError.new(
+          raise NameError.new(
             "unknown function extension #{name}",
             token,
             @query

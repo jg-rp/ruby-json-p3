@@ -199,23 +199,15 @@ module JSONP3
         length = node.value.length
         return [] if length.zero? || @step.zero?
 
-        normalized_start = if @start.nil?
-                             @step.negative? ? length - 1 : 0
-                           elsif @start&.negative?
-                             [length + (@start || raise), 0].max
-                           else
-                             [@start || raise, length - 1].min
-                           end
+        if step.positive?
+          norm_start = normalized_index(@start, 0, length, @step)
+          norm_end = normalized_index(@stop, length, length, @step)
+        else
+          norm_start = normalized_index(@start, length - 1, length, @step)
+          norm_end = normalized_index(@stop, -1, length, @step)
+        end
 
-        normalized_stop = if @stop.nil?
-                            @step.negative? ? -1 : length
-                          elsif @stop&.negative?
-                            [length + (@stop || raise), -1].max
-                          else
-                            [@stop || raise, length].min
-                          end
-
-        (normalized_start...normalized_stop).step(@step).map { |i| node.new_child(node.value[i], i) }
+        (norm_start...norm_end).step(@step).map { |i| node.new_child(node.value[i], i) }
       end
 
       def to_s
@@ -237,6 +229,19 @@ module JSONP3
 
       def hash
         [@start, @stop, @step, @token].hash
+      end
+
+      private
+
+      #: (Integer?, Integer, Integer, Integer) -> Integer
+      def normalized_index(num, default, length, step)
+        return default if num.nil?
+
+        if num.negative?
+          return step.negative? ? [num + length, -1].max : [num + length, 0].max
+        end
+
+        step.negative? ? [num, length - 1].min : [num, length].min
       end
     end
 

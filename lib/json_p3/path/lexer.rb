@@ -194,7 +194,11 @@ module JSONP3
     end
 
     def self.name_first?(ch)
-      (ch >= 65 && ch <= 90) || (ch >= 97 && ch <= 122) || ch == 95 || (ch >= 0x80 && ch <= 0xffff)
+      (ch >= 65 && ch <= 90) ||
+        (ch >= 97 && ch <= 122) ||
+        ch == 95 ||
+        (ch >= 0x80 && ch <= 0xD7FF) ||
+        (ch >= 0xE000 && ch <= 0x10FFFF)
     end
 
     def self.name_ch?(ch)
@@ -202,7 +206,7 @@ module JSONP3
         (ch >= 65 && ch <= 90) ||
         (ch >= 97 && ch <= 122) ||
         ch == 95 ||
-        (ch >= 0x80 && ch <= 0xffff)
+        (ch >= 0x80 && ch <= 0x10FFFF)
     end
 
     def self.number_ch?(ch)
