@@ -37,7 +37,7 @@ We follow <a href="https://datatracker.ietf.org/doc/html/rfc9535">RFC 9535</a> s
 Add `'json_p3'` to your Gemfile:
 
 ```
-gem 'json_p3', '~> 1.0.0'
+gem 'json_p3', '~> 1.0.1'
 ```
 
 Or
